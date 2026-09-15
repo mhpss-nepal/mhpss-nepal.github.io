@@ -2,195 +2,92 @@
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MHPSS Coordination Hub — Rasuwa–Bhote Koshi Flood Response</title>
-<meta name="description" content="Demonstration coordination hub for mental health and psychosocial support in the Rasuwa–Bhote Koshi flood response. All figures are synthetic.">
+<title>MHPSS Nepal — Integrated Hub</title>
+<meta name="description" content="One door to the mental health and psychosocial support information system for the Rasuwa–Bhote Koshi flood response. Demonstration build; all figures synthetic.">
+<meta name="theme-color" content="#005C85">
 <meta name="robots" content="noindex,nofollow">
-<link rel="stylesheet" href="assets/hub.css">
+<link rel="stylesheet" href="assets/door.css">
 </head><body>
 
-<div class="synth">DEMONSTRATION — EVERY FIGURE ON THIS PAGE IS SYNTHETIC
-  <span>· generated for design review · not response data · must not be quoted</span></div>
+<div class="synth">DEMONSTRATION — EVERY FIGURE BEHIND THESE DOORS IS SYNTHETIC
+  <span>· not response data · must not be quoted</span></div>
 
-<header class="site">
-  <div class="wrap">
-    <div class="mast">
-      <div class="mark">MH</div>
-      <div>
-        <h1>MHPSS Coordination Hub</h1>
-        <div class="sub">Rasuwa–Bhote Koshi flood response · mental health and psychosocial support</div>
-      </div>
-      <div class="spacer"></div>
-      <button class="tbtn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button>
-    </div>
-    <nav class="tabs" aria-label="Sections">
-      <a href="#coverage" aria-current="page">Coverage</a>
-      <a href="#who">Who is doing what</a>
-      <a href="#when">Over time</a>
-      <a href="#what">Activities</a>
-      <a href="#people">Workforce</a>
-      <a href="#helpline">Helplines</a>
-      <a href="#layers">Architecture</a>
-      <a href="form/4ws-report.html">Report form</a>
-    </nav>
+<div class="wrap">
+
+  <div class="mark"><i>MH</i></div>
+  <div class="org">World Health Organization · Nepal &nbsp;·&nbsp; Ministry of Health and Food Safety</div>
+  <h1>Integrated Hub</h1>
+  <p class="sub">One door to the mental health and psychosocial support information system for the
+     Rasuwa–Bhote Koshi flood response. Choose the layer you work in.</p>
+  <div class="chipline"><span>Information moves <b>one direction only</b> — field → coordination → public</span></div>
+
+  <div class="grid">
+
+    <a class="door d1" href="form/4ws-report.html">
+      <span class="layer">LAYER 1 · FIELD</span>
+      <span class="ic">📝</span>
+      <b>Report an activity</b>
+      <span class="desc">One row per activity, per site, per day. Coded sites and activities, sex and age
+        disaggregation, both calendars. Works with no signal — opens from a USB stick if it has to.</span>
+      <span class="go">Open the form →</span>
+    </a>
+
+    <a class="door d2" href="coordination/index.html">
+      <span class="layer">LAYER 2 · COORDINATION</span>
+      <span class="ic">📊</span>
+      <b>Coordination view</b>
+      <span class="desc">Which holding centres are at zero, who is working where, activity mix, the deployed
+        workforce and helpline demand. Service-level information only — no individual records exist here.</span>
+      <span class="go">Open the coordination view →</span>
+    </a>
+
+    <a class="door d3" href="layer3.html">
+      <span class="layer">LAYER 3 · PUBLIC</span>
+      <span class="ic">🏛️</span>
+      <b>Public layer</b>
+      <span class="desc">Aggregated figures submitted into the government-owned national 5W, and a public page
+        owned and hosted by EDCD. Not built yet — this page sets out what goes there and who owns it.</span>
+      <span class="soon">Planned · read the handover position</span>
+    </a>
+
+    <a class="door d4" href="architecture.html">
+      <span class="layer">REFERENCE</span>
+      <span class="ic">🧭</span>
+      <b>Architecture concept</b>
+      <span class="desc">The three layers, the one-direction boundary, and the question that decides
+        everything: who <em>hosts</em> the database, who <em>controls</em> it, and who <em>owns</em> it.</span>
+      <span class="go">Read the concept →</span>
+    </a>
+
+    <a class="door d5" href="method.html">
+      <span class="layer">REFERENCE</span>
+      <span class="ic">⚖️</span>
+      <b>Data model &amp; method</b>
+      <span class="desc">Field-by-field mapping to the IASC 4Ws model, and an honest register of what is
+        <em>not</em> established — the codes we refuse to guess and the conversions we refuse to fake.</span>
+      <span class="go">Read the method →</span>
+    </a>
+
   </div>
-</header>
 
-<main class="wrap">
+  <div class="flow">
+    <h2>Why the direction matters</h2>
+    <p>Layer 1 writes. Layer 2 reads Layer 1 and writes nothing back. Layer 3 receives aggregates and
+      <strong>cannot read the layer below it</strong>. No layer can reach down. That is what makes it safe to
+      hand the public layer to the Ministry without handing over anything that identifies a person — and it is
+      why the boundary is a design rule, not a setting someone can change later.</p>
+  </div>
 
-  <section class="hero" id="top">
-    <div class="k">The question this hub exists to answer</div>
-    <div class="v" id="heroLine">…</div>
-    <p>A 4Ws is not a list of who is present. It is the instrument that says <strong>which sites are at zero</strong>.
-       The denominator is the official holding-centre roster; a site that appears in reports but was never on the
-       roster is shown separately and is never counted as a gap.</p>
-  </section>
+  <footer>
+    <div class="hr"></div>
+    Rasuwa–Bhote Koshi flood response · mental health and psychosocial support · draft, September 2026<br>
+    Prepared for the WHO Nepal mental health team, the Ministry of Health and Food Safety and EDCD.
+    Not agreed with EDCD or the MHPSS sub-cluster.<br>
+    <a href="https://github.com/mhpss-nepal/mhpss-nepal.github.io">Source and method on GitHub</a>
+    · mhpss-nepal.github.io<br>
+    No WHO or Government of Nepal emblem is used: WHO emblem use requires express written permission and the
+    Nepal national emblem belongs to the Ministry. Prepared with AI assistance.
+  </footer>
 
-  <div class="kpis" id="kpis"></div>
-
-  <!-- ══ COVERAGE ══ -->
-  <section class="card" id="coverage">
-    <div class="chead">
-      <div class="grow">
-        <h2>Coverage of the holding-centre roster</h2>
-        <div class="note">Every site on the official roster, whether or not anyone has reported working there.
-          Ordered by district, then by roster number. Hover a site for its detail.</div>
-      </div>
-    </div>
-    <div class="cov" id="covGrid"></div>
-    <div class="legend">
-      <b><span class="sw" style="background:var(--critical)"></span> No service reported — a gap</b>
-      <b><span class="sw" style="background:var(--warning)"></span> Reported on 3 days or fewer</b>
-      <b><span class="sw" style="background:var(--good)"></span> Reported on more than 3 days</b>
-      <b style="color:var(--muted)">Roster population shown where recorded</b>
-    </div>
-  </section>
-
-  <!-- ══ WHO ══ -->
-  <section class="card" id="who">
-    <div class="chead">
-      <div class="grow">
-        <h2>Who is doing what, where</h2>
-        <div class="note">Reach by organisation. One measure, one colour — the bars are ranked, not categorised,
-          so colour carries no extra meaning here.</div>
-      </div>
-      <button class="tbtn" data-toggle="whoTbl" type="button">Show table</button>
-    </div>
-    <figure><svg id="orgChart" role="img" aria-label="Reach by organisation, ranked"></svg>
-      <figcaption>Synthetic. Reach counts service contacts, not unique people — one person attending on three days counts three times.</figcaption>
-    </figure>
-    <div class="scroll" id="whoTbl" hidden style="margin-top:14px"></div>
-  </section>
-
-  <!-- ══ WHEN ══ -->
-  <section class="card" id="when">
-    <div class="chead">
-      <div class="grow">
-        <h2>Contacts per day</h2>
-        <div class="note">Bikram Sambat dates as reported. No calendar conversion is performed anywhere in this
-          system — no verified BS conversion table has been obtained.</div>
-      </div>
-      <button class="tbtn" data-toggle="whenTbl" type="button">Show table</button>
-    </div>
-    <figure><svg id="dayChart" role="img" aria-label="Contacts recorded per day"></svg>
-      <figcaption>Synthetic. Hover for the day's figure and the number of sites reporting.</figcaption>
-    </figure>
-    <div class="scroll" id="whenTbl" hidden style="margin-top:14px"></div>
-  </section>
-
-  <!-- ══ WHAT ══ -->
-  <section class="card" id="what">
-    <div class="chead">
-      <div class="grow">
-        <h2>Activity mix by district</h2>
-        <div class="note">Grouped into five activity families plus a residual. Segments are direct-labelled because
-          three of the five fills sit below 3:1 against the light background — the label, not the colour, carries the value.</div>
-      </div>
-      <button class="tbtn" data-toggle="whatTbl" type="button">Show table</button>
-    </div>
-    <div class="keys" id="actKeys"></div>
-    <figure><svg id="actChart" role="img" aria-label="Activity mix by district"></svg>
-      <figcaption>Synthetic. Districts ordered by total reach.</figcaption>
-    </figure>
-    <div class="scroll" id="whatTbl" hidden style="margin-top:14px"></div>
-  </section>
-
-  <!-- ══ PEOPLE ══ -->
-  <section class="card" id="people">
-    <div class="chead">
-      <div class="grow">
-        <h2>Deployed workforce</h2>
-        <div class="note">One row per person, coded cadre. In the live system this replaces six overlapping name
-          lists. <strong>No contact details are held here</strong> — the hub records that a cadre is deployed at a
-          district, not how to reach an individual.</div>
-      </div>
-    </div>
-    <div class="scroll" id="cadreTbl"></div>
-  </section>
-
-  <!-- ══ HELPLINE ══ -->
-  <section class="card" id="helpline">
-    <div class="chead">
-      <div class="grow">
-        <h2>Helpline demand</h2>
-        <div class="note">Remote contacts belong in the same count as face-to-face ones. A line reporting nothing is
-          shown as reporting nothing, not omitted — the silence is the finding.</div>
-      </div>
-    </div>
-    <div class="scroll" id="helpTbl"></div>
-  </section>
-
-  <!-- ══ LAYERS ══ -->
-  <section class="card" id="layers">
-    <h2>How the three layers fit together</h2>
-    <div class="note">Information moves in one direction only. Nothing flows back down, and no layer can read the
-      layer below it.</div>
-    <div class="layers">
-      <div class="layer">
-        <span class="pill l1">Layer 1 · Field</span>
-        <h3>Reporting</h3>
-        <p>One row per activity, per site, per day. Coded sites, activities and organisations. Works with no signal.
-          No beneficiary fields exist and none are to be added.</p>
-        <a href="form/4ws-report.html">Open the report form →</a>
-      </div>
-      <div class="layer">
-        <span class="pill l2">Layer 2 · Coordination</span>
-        <h3>Analysis</h3>
-        <p>Coverage gaps, duplication checks, the 4Ws matrix. Service-level information only. Restricted to the
-          sub-cluster; enforcement sits at the database, never in the page.</p>
-        <a href="dashboard/index.html">Open the analysis view →</a>
-      </div>
-      <div class="layer">
-        <span class="pill l3">Layer 3 · Public</span>
-        <h3>National instruments</h3>
-        <p>Aggregated figures submitted into the government-owned national 5W, and a public page hosted by the
-          Ministry. The gap was never the instrument — it was the connection.</p>
-        <a href="docs/DATA_MODEL.md">Read the data model →</a>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<footer class="site"><div class="wrap">
-  <p><b>This is a demonstration.</b> Every number, name, site figure and date on this page is synthetic, generated
-     deterministically on 15 September 2026 so that the design can be reviewed without exposing response data. It is
-     not the response's data and must not be quoted, screenshotted as evidence, or cited in any report.</p>
-  <p><b>What is real here</b> is the architecture, the instrument, the controlled vocabularies and the method — the
-     site and activity lists are drawn from records the response already holds, and are marked draft until EDCD and
-     the MHPSS sub-cluster sign them off.</p>
-  <p><b>No personal data.</b> This page holds no names, telephone numbers or email addresses of service users or of
-     staff. The workforce view records cadre and district only. The system is a coordination system: it holds
-     service-level information and does not hold individual-level information.</p>
-  <p><b>Governance.</b> Three questions raised on 14 September 2026 — hosting on a non-WHO account, AI assistance in
-     development, and the procurement route for a domain — remain open. Until each has a written answer this remains
-     a demonstration running on synthetic content only.</p>
-  <p style="color:var(--muted)">No WHO or Government of Nepal emblem is used: WHO emblem use requires express written
-     permission and the Nepal national emblem belongs to the Ministry. Prepared with AI assistance.</p>
-</div></footer>
-
-<div id="tip" role="tooltip" aria-hidden="true"></div>
-
-<script src="assets/codes.js"></script>
-<script src="data/demo.js"></script>
-<script src="assets/hub.js"></script>
+</div>
 </body></html>

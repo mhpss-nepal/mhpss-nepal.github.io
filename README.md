@@ -49,9 +49,13 @@ built to supply.
 
 | | |
 |---|---|
-| [`index.html`](index.html) | **The hub.** Coverage gaps, 4Ws matrix, activity mix, workforce, helplines |
+| [`index.html`](index.html) | **The hub** — five doors, one per layer plus two reference pages |
 | [`form/4ws-report.html`](form/4ws-report.html) | **Layer 1.** The activity report form |
-| [`dashboard/index.html`](dashboard/index.html) | **Layer 2.** Coverage, duplication check, 4Ws matrix |
+| [`coordination/index.html`](coordination/index.html) | **Layer 2.** Coverage gaps, 4Ws matrix, activity mix, workforce, helplines |
+| [`dashboard/index.html`](dashboard/index.html) | **Layer 2 tool.** Load your own export and analyse it — nothing is uploaded |
+| [`layer3.html`](layer3.html) | **Layer 3.** Not built. What goes public, who owns it, what blocks submission |
+| [`architecture.html`](architecture.html) | The three layers, the one-direction boundary, hosts/controls/owns |
+| [`method.html`](method.html) | The data model, and the register of what is **not established** |
 | [`assets/codes.js`](assets/codes.js) | Controlled vocabularies — sites, organisations, activities, cadres |
 | [`assets/store.js`](assets/store.js) | Local storage, deterministic ids, validation, export |
 | [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | Field-by-field mapping to the IASC 4Ws model |
@@ -67,7 +71,14 @@ It has **no beneficiary fields and none are to be added.** Resubmitting the same
 site, date, activity and organisation updates that report rather than creating a
 second one, so a double tap or a re-sync cannot inflate a figure.
 
-### The hub and the dashboard
+### The hub
+
+Five doors following the pattern of the Sadar Hati Integrated Hub — one per
+architecture layer, plus the architecture concept and the method register. The
+layer badge on each door says who it is for, so nobody has to guess which page
+they are supposed to open.
+
+### The coordination view and the dashboard
 
 - **Coverage gaps** — which roster sites have *no* report in the period. This is
   what a 4Ws is for: not who is present, but which sites are at zero.

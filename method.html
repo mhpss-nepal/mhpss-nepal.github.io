@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Data model &amp; method — MHPSS Nepal</title>
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#005C85">
+<link rel="stylesheet" href="assets/page.css">
+</head><body>
+<div class="synth">DEMONSTRATION BUILD · draft instrument <span>· code lists not agreed with EDCD or the MHPSS sub-cluster</span></div>
+<div class="bar"><div class="in"><a href="index.html">← Hub</a><span class="sep">·</span><span class="here">Data model &amp; method</span></div></div>
+<main>
+  <div class="eyebrow">Reference</div>
+  <h1>What the model holds, and what it refuses to guess</h1>
+  <p class="lede">A method page is only worth reading if it admits what is missing. The second half of this
+    page is a register of things that are <strong>not established</strong> — and each one is a deliberate
+    blank, not an oversight.</p>
+
+  <h2>The rule the model exists to enforce</h2>
+  <div class="note"><p><strong>This is a coordination system. It holds service-level information. It does not
+    hold individual-level information.</strong></p>
+    <p>The coordination function needs to know which organisation provides which service where. It has no
+    case-management mandate, no clinical role, and therefore no lawful purpose for individual records. That
+    single rule disposes of the gender-based violence, unaccompanied-children, suicide and clinical-case
+    scenarios <em>before</em> they arise rather than after.</p></div>
+
+  <h3>Fields that do not exist, and are not to be added</h3>
+  <p>Beneficiary name · nickname · identity number · phone number · date of birth · address · diagnosis ·
+    assessment score against a person · photograph of a service user · anything from which an individual
+    could be identified.</p>
+
+  <h2>Mapping to the IASC 4Ws model</h2>
+  <p>The IASC MHPSS 4Ws manual (2012), Table 1, defines seventeen core items. The fields map onto them. Four
+    additions are marked, and every one of them comes from a defect observed in the current reporting
+    workbook rather than from the manual:</p>
+  <div class="scroll"><table>
+    <tr><th style="width:30%">Addition</th><th>Why it exists</th></tr>
+    <tr><td><strong>Bikram Sambat date</strong>, stored separately</td>
+      <td>Dates in the current workbook are BS values sitting in Gregorian date cells, so every sort and every period filter is silently corrupted.</td></tr>
+    <tr><td><strong>Sex and age disaggregation</strong> — six numeric fields</td>
+      <td>Partners are already reporting it, as sentences typed into the <em>provider</em> column, because the form has nowhere to put it. It lands in whichever field is nearest.</td></tr>
+    <tr><td><strong>Modality</strong> — in person, outreach, telephone</td>
+      <td>Helpline contacts were otherwise unrecordable, so remote support sat in a separate tab and was counted nowhere.</td></tr>
+    <tr><td><strong>Cadre</strong> — counsellor, psychologist, psychiatrist</td>
+      <td>Absent from the current form, which is exactly why the three cannot be counted apart today.</td></tr>
+  </table></div>
+  <p>The full field-by-field mapping is in
+    <a href="docs/DATA_MODEL.md">docs/DATA_MODEL.md</a>, and the controlled vocabularies are in
+    <a href="assets/codes.js">assets/codes.js</a> — both readable in the repository.</p>
+
+  <h2>Two rules that do the heavy lifting</h2>
+  <h3>Totals are computed, never stored</h3>
+  <p>The CSV export is one flat row per record. The largest defect in the current workbook is subtotal rows
+    sitting in the same column as the data, so a plain sum counts a large share of the reach twice — anyone who
+    opens the file and sums the column gets a materially inflated figure without doing anything wrong.</p>
+  <h3>Record identity is deterministic, so a bad connection cannot inflate a figure</h3>
+  <p>The record id is a hash of organisation, site, date, activity and modality. Submitting the same report
+    twice — a double tap, a page reload, a re-sync after signal returns — produces the same id and therefore
+    one record with a revision history, not two records.</p>
+  <p>That is <em>record identity</em>, and it is a different question from <em>analytical de-duplication</em>:
+    did two <strong>different</strong> organisations report the same site on the same day, and if so did they
+    reach the same people? The coordination view flags those. It does not resolve them, because it cannot —
+    only the two organisations know. The flag distinguishes three readings: different activities (likely
+    different people), one organisation reporting under two funding tags (attribution, not duplication), and
+    the same activity by two organisations (needs a conversation).</p>
+
+  <h2 id="not-established">Register of what is not established</h2>
+  <p>&ldquo;Not established&rdquo; is an acceptable answer. A wrong figure is not.</p>
+  <div class="stack">
+    <div class="card"><h3><span class="est">Not obtained</span> &nbsp; IASC 4Ws activity codes</h3>
+      <p><code>activity.iasc</code> is <code>null</code> throughout. The official code list must come from the
+        manual; it has not been obtained. Guessed codes would look right and be wrong, which is worse than
+        empty, because a wrong code propagates into every aggregate downstream and nobody can see it.</p></div>
+    <div class="card"><h3><span class="est">Not obtained</span> &nbsp; Bikram Sambat conversion table</h3>
+      <p>No calendar conversion is performed anywhere in this system. Nepali month lengths vary from year to
+        year and cannot be computed from a formula — conversion needs a lookup table of days per month per BS
+        year. A verified table for 2082–2085 from a Government of Nepal source is required first. Both
+        calendars are stored separately in the meantime and everything sorts on the Gregorian field.</p></div>
+    <div class="card"><h3><span class="est">Not agreed</span> &nbsp; The site list</h3>
+      <p>Derived from the holding-centre roster of the daily reporting workbook plus sites appearing in
+        submitted reports. EDCD and the MHPSS sub-cluster have not signed it off. Sites that appear in reports
+        but were never on the roster are flagged separately and <strong>never counted as coverage gaps</strong>
+        — a site nobody ever listed as a service point cannot be counted as one that was missed.</p></div>
+    <div class="card"><h3><span class="est">Not agreed</span> &nbsp; The activity list</h3>
+      <p>Consolidated from what partners have actually submitted, not from an agreed taxonomy.</p></div>
+    <div class="card"><h3><span class="est">Unresolved</span> &nbsp; Contacts versus people reached</h3>
+      <p>The reporting sheet counts service contacts; the national 5W counts people reached. Until NDRRMA and
+        EDCD rule on this in writing, no figure from the sheet is submitted. See
+        <a href="layer3.html">Layer 3</a>.</p></div>
+    <div class="card"><h3><span class="est">Not run</span> &nbsp; Accessibility audit · Nepali translation</h3>
+      <p>Colour contrast has been checked numerically across every surface in both light and dark modes, and
+        the chart palette was validated for colour-vision separation. That is not a full accessibility audit,
+        and none has been run. Nothing is translated into Nepali beyond the site names carried from the roster.</p></div>
+  </div>
+
+  <h2>Location granularity</h2>
+  <p>Site-level, coded, and no finer. No GPS coordinates, no ward-level detail below the site. The 4Ws manual
+    leaves granularity open — town names, neighbourhood names or GPS — and in a displacement setting the
+    coarsest level that still supports referral is the right level.</p>
+
+  <footer>Draft instrument, September 2026 · <a href="architecture.html">architecture concept</a> ·
+    <a href="layer3.html">Layer 3 position</a> · <a href="index.html">back to the hub</a><br>
+    Prepared with AI assistance.</footer>
+</main></body></html>
