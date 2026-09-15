@@ -65,6 +65,15 @@ function all() {
   return read().sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
 }
 
+/* Today, on this device, as YYYY-MM-DD. Built from local components on
+   purpose: toISOString() would give the UTC day and reject early-morning
+   reports from Nepal. */
+function todayLocal() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+
 function save(rec) {
   const list = read();
   const id = recordId(rec);
@@ -79,12 +88,36 @@ function save(rec) {
     out.revision = (list[idx].revision || 0) + 1;
     out.previous = list[idx].previous ? [...list[idx].previous, stripHistory(list[idx])] : [stripHistory(list[idx])];
     list[idx] = out;
-    return { record: out, duplicateOf: id, persisted: write(list) };
+    const persistedRev = write(list);
+    syncToRegister(out);   /* a corrected report must reach the register too */
+    return { record: out, duplicateOf: id, persisted: persistedRev };
   }
   out.createdAt = now;
   out.revision = 0;
   list.push(out);
-  return { record: out, duplicateOf: null, persisted: write(list) };
+  const persisted = write(list);
+
+  /* The device copy is written FIRST and unconditionally -- that is the
+     record. Only then is a push attempted, and a failed push leaves the
+     record queued rather than losing it.
+
+     This was missing until 16 Sep 2026: the activity report is the only
+     form that saves through this file rather than l1.js, so wiring the
+     bridge into l1.js alone left the 4Ws report -- the form that feeds
+     the 5W -- saving locally and never reaching the register. Found by
+     submitting the real form and checking the queue. */
+  syncToRegister(out);
+  return { record: out, duplicateOf: null, persisted: persisted };
+}
+
+/* Shape an activity report for the register and hand it to the bridge.
+   `kind` and `schema` are what the security rules match on; the bridge
+   adds the server timestamp and strips the focal point. Silent when no
+   bridge is loaded, so the form still works as a local-only instrument. */
+function syncToRegister(rec) {
+  if (!window.FB || typeof window.FB.submit !== "function") return null;
+  const body = { ...rec, kind: "activity", schema: "mhpss-np-4ws/" + SCHEMA_VERSION };
+  return window.FB.submit(body);
 }
 
 /* Nothing is deleted. A removed record is archived with a reason, so the
@@ -119,7 +152,11 @@ function validate(r) {
   for (const [k, label] of Object.entries(need)) if (!r[k]) p.push(`${label} is required`);
   if (r.org === "OTHER" && !r.orgOther) p.push("Name the organisation");
   if (r.site === "OTHER" && !r.siteOther) p.push("Name the site");
-  if (r.dateAD && r.dateAD > new Date().toISOString().slice(0, 10)) p.push("Date is in the future");
+  /* The DEVICE's date, not UTC. Nepal is UTC+05:45, so from midnight until
+     05:45 local the UTC date is still yesterday -- a worker filing an early
+     report with today's date was told it was in the future and could not
+     submit at all. Found by test, 16 Sep 2026. */
+  if (r.dateAD && r.dateAD > todayLocal()) p.push("Date is in the future");
   if (!(r.targetGroups || []).length) p.push("Select at least one target group");
 
   const t = num(r.reachedTotal);
