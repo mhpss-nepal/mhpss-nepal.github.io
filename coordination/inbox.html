@@ -49,6 +49,7 @@
   <a href="../index.html">← Hub</a>
   <a href="index.html">Coordination view</a>
   <a href="../form/index.html">Field forms</a>
+  <a href="admin.html">Access</a>
   <a href="../method.html">Method</a>
 </div>
 
@@ -542,8 +543,10 @@
         watching = true;
         window.FB.watch(mergeLive, function (err) {
           $("liveBody").innerHTML = '<div class="banner stop" style="margin:0"><b>The database refused ' +
-            'the read.</b> ' + esc(err) + ' — most often this means the account has no role set in ' +
-            'roles/{uid}, which is done by hand in the Firebase console on purpose.</div>';
+            'the read.</b> ' + esc(err) + '<br><br>Almost always this means the account is signed in ' +
+            'but has not been granted access. Signing in proves who you are; it does not grant ' +
+            'sight of the records. Ask an admin to add this address on the ' +
+            '<a href="admin.html">Access</a> page.</div>';
         });
       }
       if (!st.user) { watching = false; LIVE = []; }

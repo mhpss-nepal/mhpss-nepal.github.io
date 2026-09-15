@@ -29,6 +29,16 @@
   var cfg = window.FB_CONFIG || {};
   var COLL = window.FB_COLLECTION || "submissions";
   var QKEY = "mhpss-np-queue-v1";
+  var LKEY = "mhpss-np-linkmail";
+  /* Kept in step with isOwner() in the security rules. The rules are what
+     enforce it; this copy only lets a page explain itself without a read. */
+  var OWNER = "asroriadib@gmail.com";
+  var ROLE_LIST = [
+    ["admin",       "Full access. Can read and delete records, and can grant access to others."],
+    ["coordinator", "Can read every record, and can publish the public aggregates and the site list."],
+    ["im_officer",  "Same as coordinator. A separate label so the audit trail says who did what."],
+    ["viewer",      "Can read records. Cannot publish, delete, or grant access."]
+  ];
 
   var state = {
     configured: !!(cfg.projectId && cfg.apiKey),
@@ -104,10 +114,44 @@
           doc: fsMod.doc, setDoc: fsMod.setDoc, collection: fsMod.collection,
           query: fsMod.query, where: fsMod.where, orderBy: fsMod.orderBy,
           limit: fsMod.limit, onSnapshot: fsMod.onSnapshot, getDocs: fsMod.getDocs,
+          getDoc: fsMod.getDoc, deleteDoc: fsMod.deleteDoc,
           serverTimestamp: fsMod.serverTimestamp,
           signIn: auMod.signInWithEmailAndPassword, signOut: auMod.signOut,
-          onAuth: auMod.onAuthStateChanged
+          onAuth: auMod.onAuthStateChanged,
+          sendLink: auMod.sendSignInLinkToEmail,
+          isLink: auMod.isSignInWithEmailLink,
+          signInLink: auMod.signInWithEmailLink
         };
+        /* An email link arrives as a URL on this same page. Finish the
+           sign-in before wiring anything else up, so the page renders once
+           in its final state rather than flashing a sign-in form first. */
+        try {
+          if (api.isLink(auth, window.location.href)) {
+            var pending = "";
+            try { pending = localStorage.getItem(LKEY) || ""; } catch (e) { /* ignore */ }
+            if (!pending) {
+              /* The link was opened in a different browser from the one that
+                 asked for it, so the address is not on this device. Asking
+                 for it again is the documented flow, not a failure. */
+              pending = window.prompt(
+                "To finish signing in, type the email address this link was sent to:") || "";
+            }
+            if (pending) {
+              await api.signInLink(auth, pending, window.location.href);
+              try { localStorage.removeItem(LKEY); } catch (e) { /* ignore */ }
+              /* Strip the credential out of the address bar so it is not left
+                 in history, bookmarks or a screenshot. */
+              if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title,
+                  window.location.pathname + window.location.search);
+              }
+            }
+          }
+        } catch (e) {
+          state.error = "sign-in link failed: " +
+            (e && e.message ? e.message.replace(/^Firebase:\s*/, "") : String(e));
+        }
+
         api.onAuth(auth, function (u) {
           state.user = u || null;
           userCbs.forEach(function (f) { try { f(state.user); } catch (e) { /* ignore */ } });
@@ -269,8 +313,62 @@
     } else { mount(); }
   })();
 
+  /* ---------- roles ----------------------------------------------------
+     A signed-in account is not access. The rules require a named grant in
+     /roles/{email}; this reads the caller's own grant so a page can say
+     plainly why it can or cannot show records. */
+  function myRole() {
+    if (!state.ready || !state.user) return Promise.resolve(null);
+    var mail = state.user.email || "";
+    if (mail === OWNER) return Promise.resolve({ role: "admin", owner: true });
+    return api.getDoc(api.doc(db, "roles", mail))
+      .then(function (d) { return d.exists() ? d.data() : null; })
+      .catch(function () { return null; });
+  }
+
+  function listRoles() {
+    if (!state.ready) return Promise.reject(new Error("not connected"));
+    return api.getDocs(api.collection(db, "roles")).then(function (snap) {
+      var out = [];
+      snap.forEach(function (d) { var o = d.data(); o._email = d.id; out.push(o); });
+      out.sort(function (a, b) { return (a._email || "").localeCompare(b._email || ""); });
+      return out;
+    });
+  }
+
+  function grantRole(personEmail, role, note) {
+    if (!state.ready || !state.user) return Promise.reject(new Error("not signed in"));
+    var body = {
+      role: role,
+      added_by: state.user.email,
+      added_at: api.serverTimestamp()
+    };
+    if (note) body.note = String(note).slice(0, 200);
+    return api.setDoc(api.doc(db, "roles", personEmail), body);
+  }
+
+  function revokeRole(personEmail) {
+    if (!state.ready) return Promise.reject(new Error("not connected"));
+    return api.deleteDoc(api.doc(db, "roles", personEmail));
+  }
+
+  /* ---------- passwordless sign-in ------------------------------------
+     The person types their address once and clicks a link. No password is
+     ever chosen, typed, shared or stored -- which also means nobody is
+     holding anybody else's password. */
+  function sendLink(mail) {
+    if (!state.ready) return Promise.reject(new Error("not connected"));
+    try { localStorage.setItem(LKEY, mail); } catch (e) { /* ignore */ }
+    return api.sendLink(auth, mail, {
+      url: window.location.origin + window.location.pathname,
+      handleCodeInApp: true
+    });
+  }
+
   window.FB = {
     status: status,
+    myRole: myRole, listRoles: listRoles, grantRole: grantRole, revokeRole: revokeRole,
+    sendLink: sendLink, OWNER: OWNER, ROLES: ROLE_LIST,
     onStatus: function (f) { stateCbs.push(f); f(status()); },
     onUser: function (f) { userCbs.push(f); f(state.user); },
     submit: submit, flush: flush, queue: queue, rid: rid,
