@@ -13,7 +13,13 @@
                       form opens instantly and quietly updates.
    Bump CACHE when anything in PRECACHE changes, or phones keep the old copy.
    ===================================================================== */
-const CACHE = "mhpss-np-field-v2";
+/* BUMP THIS on every change to any precached file.
+   A service worker serves the cached copy until the cache name changes, so
+   a phone that has already opened the form keeps running the OLD code --
+   old validation, and (16 Sep 2026) a version of store.js that did not sync
+   to the register at all. The fix was deployed and had no effect on any
+   device until this line changed. */
+const CACHE = "mhpss-np-field-v3";
 
 const PRECACHE = [
   "./",
