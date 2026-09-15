@@ -197,9 +197,31 @@
     });
   }
 
+  /* ---------- what never crosses the network -------------------------
+     A 4Ws report names a focal point so a figure can be queried later.
+     That is normal humanitarian practice and the detail is useful -- but
+     it is a named professional's mobile number, and the rule the data
+     workstream set is that professionals' contact details stay in the
+     source file and "do not go into any deliverable, any repository, or
+     any hosted system".
+
+     So the focal point stays on the handset and in the private export a
+     worker sends to coordination, and is stripped before the record is
+     pushed. Coordination still gets it, through the file; the hosted
+     database never holds it.
+
+     The security rules reject these keys as well. Two ends, because a
+     form can be edited by anyone with repo access and the rules cannot.
+     If the sub-cluster later decides the hosted copy should carry a focal
+     point, this list and the rules change together -- deliberately, not
+     by an edit to one form. */
+  var NEVER_SENT = ["focalName", "focalPhone", "focalEmail",
+                    "focal_name", "focal_phone", "focal_email"];
+
   function push(r) {
     var body = JSON.parse(JSON.stringify(r));
     delete body._device_ts;
+    for (var i = 0; i < NEVER_SENT.length; i++) delete body[NEVER_SENT[i]];
     body.server_ts = api.serverTimestamp();
     body.device_ts = r._device_ts;
     return api.setDoc(api.doc(db, COLL, r._rid), body);
