@@ -13,7 +13,7 @@
                       form opens instantly and quietly updates.
    Bump CACHE when anything in PRECACHE changes, or phones keep the old copy.
    ===================================================================== */
-const CACHE = "mhpss-np-field-v1";
+const CACHE = "mhpss-np-field-v2";
 
 const PRECACHE = [
   "./",
@@ -32,7 +32,10 @@ const PRECACHE = [
   "../assets/codes.js",
   "../assets/l1.js",
   "../assets/qr.js",
-  "../assets/store.js"
+  "../assets/store.js",
+  "../assets/fb-config.js",
+  "../assets/fb.js",
+  "pwa.js"
 ];
 
 self.addEventListener("install", (e) => {

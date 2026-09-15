@@ -23,10 +23,11 @@
 .attrib .who{flex:1 1 280px; min-width:0; font-size:12.5px; line-height:1.55; color:#5b6b76}
 .attrib .who b{color:#20313b}
 .attrib .marks{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-.attrib .slot{border:1.5px dashed #c9d4db; border-radius:6px; background:#fff;
-  padding:9px 12px; min-width:132px; text-align:center;
-  font:600 10.5px/1.35 'Noto Sans',system-ui,sans-serif; color:#8b98a2; letter-spacing:.03em}
-.attrib .slot span{display:block; font-weight:700; color:#5b6b76; font-size:11.5px;
-  letter-spacing:0; margin-bottom:2px}
+/* The written slot is the fallback when no emblem file is present. It is
+   styled to read as a deliberate credit line, not as a broken image. */
+.attrib .slot{border-left:2px solid #d8dfe4; padding:2px 0 2px 11px; min-width:0;
+  font:400 11px/1.4 'Noto Sans',system-ui,sans-serif; color:#8b98a2}
+.attrib .slot span{display:block; font-weight:700; color:#20313b; font-size:12.5px;
+  letter-spacing:0; margin-top:1px}
 .attrib img.mark{height:46px; width:auto; display:block}
 @media (max-width:600px){ .attrib{gap:14px} .attrib .slot{min-width:0; flex:1 1 140px} }

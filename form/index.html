@@ -241,30 +241,14 @@
     for it — not a substitute.
   </div>
 
-  <!-- ATTRIBUTION BAND.
-       Emblems are NOT used. See the note at the top of assets/brand.css before
-       touching this: the WHO logo needs express written permission from WHO,
-       and its use implies WHO endorsement. Swap a .slot for an <img class="mark">
-       only once that permission and the emblem file are in hand. -->
-  <div class="attrib">
-    <div class="who">
-      <b>Developed for the MHPSS Technical Working Group</b>, Rasuwa / Bhote Koshi flood response,
-      with support from WHO Nepal and in coordination with the Ministry of Health and Population —
-      Epidemiology and Disease Control Division.
-      <br><br>
-      Attribution is in words rather than emblems. The WHO emblem may only be used with WHO's
-      express written permission, because using it implies WHO endorsement — and nothing on this
-      site has been endorsed yet. The two spaces on the right are held for the emblems, to be
-      filled once that permission and the official files are provided.
-    </div>
-    <div class="marks">
-      <div class="slot"><span>WHO Nepal</span>emblem pending<br>written permission</div>
-      <div class="slot"><span>MoHP · EDCD</span>emblem pending<br>official file</div>
-    </div>
-  </div>
+  <!-- Filled by assets/brand.js. Emblems are off until the official
+       files are supplied — see that file before changing anything here. -->
+  <div class="attrib"></div>
 </div>
 
 <script src="../assets/qr.js"></script>
+<script src="../assets/fb-config.js"></script>
+<script src="../assets/fb.js"></script>
 <script>
 function flash(btn, text){
   var old = btn.textContent; btn.textContent = text;
@@ -314,5 +298,7 @@ document.getElementById('qrAll').addEventListener('click', function(){
 });
 </script>
 <script src="pwa.js"></script>
+<script>window.BRAND_PREFIX="../";</script>
+<script src="../assets/brand.js"></script>
 </body>
 </html>

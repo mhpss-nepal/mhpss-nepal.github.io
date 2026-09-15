@@ -71,7 +71,16 @@
     obj._saved = new Date().toISOString();
     list.push(obj);
     var persisted = writeAll(kind, list);
-    return { count: list.length, persisted: persisted };
+
+    /* The device copy is written FIRST and unconditionally — that is the
+       record. Only then is a push attempted, and a failed push leaves the
+       record queued rather than losing it. One call site so no form can
+       forget to sync, and so adding a form cannot accidentally skip it. */
+    var synced = null;
+    if (window.FB && typeof window.FB.submit === "function") {
+      synced = window.FB.submit(obj);
+    }
+    return { count: list.length, persisted: persisted, synced: synced };
   }
   function clear(kind) {
     try { localStorage.removeItem(key(kind)); } catch (e) { /* ignore */ }

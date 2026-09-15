@@ -67,6 +67,16 @@
     database instead of a pile of files.
   </div>
 
+  <div class="card" id="livePanel">
+    <div class="step"><span class="n">1</span><h2>Live from the database</h2>
+      <span class="hint" id="liveState">checking…</span></div>
+    <div id="liveBody"></div>
+  </div>
+
+  <h2>Or bring in an exported file</h2>
+  <p class="lede">Still useful when a worker had no signal at all, or when the records come from
+    somewhere outside this system.</p>
+
   <label class="drop" id="drop" for="pick">
     <b>Drop the exported files here</b>
     <p>Or tap to choose them. Accepts the <code>.json</code> and <code>.csv</code> files the forms
@@ -97,27 +107,16 @@
       workstream, or load into the 4Ws template. It carries no names — the forms never collected any.</p>
   </div>
 
-  <!-- ATTRIBUTION BAND. Emblems are NOT used: see assets/brand.css. -->
-  <div class="attrib">
-    <div class="who">
-      <b>Developed for the MHPSS Technical Working Group</b>, Rasuwa / Bhote Koshi flood response,
-      with support from WHO Nepal and in coordination with the Ministry of Health and Population —
-      Epidemiology and Disease Control Division.
-      <br><br>
-      Attribution is in words rather than emblems. The WHO emblem may only be used with WHO's
-      express written permission, because using it implies WHO endorsement — and nothing on this
-      site has been endorsed yet.
-    </div>
-    <div class="marks">
-      <div class="slot"><span>WHO Nepal</span>emblem pending<br>written permission</div>
-      <div class="slot"><span>MoHP · EDCD</span>emblem pending<br>official file</div>
-    </div>
-  </div>
+  <!-- Filled by assets/brand.js. Emblems are off until the official
+       files are supplied — see that file before changing anything here. -->
+  <div class="attrib"></div>
 
 </div>
 
 <script src="../assets/codes.js"></script>
 <script src="../assets/l1.js"></script>
+<script src="../assets/fb-config.js"></script>
+<script src="../assets/fb.js"></script>
 <script>
 (function () {
   "use strict";
@@ -269,7 +268,16 @@
   function today() { return L.today(); }
 
   /* ---------- render ---------- */
+  function viewRows() {
+    var seen = {}, out = [];
+    (typeof LIVE !== "undefined" ? LIVE : []).concat(ROWS).forEach(function (r) {
+      if (seen[r._rid]) return;
+      seen[r._rid] = 1; out.push(r);
+    });
+    return out;
+  }
   function render() {
+    var ROWS = viewRows();          /* shadows the file store on purpose */
     var n = ROWS.length;
     $("tools").hidden = n === 0;
 
@@ -447,19 +455,105 @@
               "arrived", "barrier", "total", "band", "item9_positive", "coping", "need",
               "knows_where", "could_reach", "lat", "lon", "_file", "_saved"];
   $("expAll").addEventListener("click", function () {
-    L.download("mhpss_np_inbox_" + L.stamp() + ".csv", L.toCSV(ROWS, COLS), "text/csv");
+    L.download("mhpss_np_inbox_" + L.stamp() + ".csv", L.toCSV(viewRows(), COLS), "text/csv");
   });
   $("expJson").addEventListener("click", function () {
-    L.download("mhpss_np_inbox_" + L.stamp() + ".json", JSON.stringify(ROWS, null, 2), "application/json");
+    L.download("mhpss_np_inbox_" + L.stamp() + ".json", JSON.stringify(viewRows(), null, 2), "application/json");
   });
   $("clear").addEventListener("click", function () {
     if (!ROWS.length) return;
-    if (!confirm("Clear every record in this inbox? Export first if you need them.")) return;
+    if (!confirm("Clear the records that were imported from files?\n\nRecords held in the database are not touched — they are not yours to delete from here.")) return;
     ROWS = []; save(ROWS); $("log").innerHTML = ""; render();
   });
 
   render();
+
+  /* ---------- live database feed ---------------------------------------
+     Imported files and live records are merged by the same deterministic
+     id, so a record that arrived over the network and the same record
+     inside an exported file are one row, not two. */
+  /* Two sources, one view. FILES is what was dropped in and is persisted
+     in this browser; LIVE is what the database is streaming and is never
+     persisted here — it belongs to the database. render() draws the union,
+     de-duplicated by the same deterministic id both sides use, so a record
+     that arrived over the network and the same record inside an exported
+     file are one row rather than two. */
+  var LIVE = [];
+  function mergeLive(rows) {
+    LIVE = rows.map(function (r) {
+      var o = JSON.parse(JSON.stringify(r));
+      o._kind = o.kind || classify(o) || "";
+      o._rid = o._id || rid(o, o._kind);
+      o._file = "live";
+      return o;
+    });
+    render();
+  }
+
+  function paintLive(st) {
+    var el = $("liveBody"), s = $("liveState");
+    if (!st.configured) {
+      s.textContent = "not connected";
+      el.innerHTML = '<div class="banner warn" style="margin:0"><b>No database is connected yet.</b> ' +
+        'This page still works from exported files. Once the Firebase project is wired in, records ' +
+        'appear here the moment a worker saves one.</div>';
+      return;
+    }
+    if (!st.ready) {
+      s.textContent = "connecting";
+      el.innerHTML = '<div class="banner warn" style="margin:0"><b>Cannot reach the database.</b> ' +
+        (st.error ? esc(st.error) : "") + '</div>';
+      return;
+    }
+    if (!st.user) {
+      s.textContent = "sign in required";
+      el.innerHTML =
+        '<div class="banner" style="margin:0 0 12px"><b>Reading records needs an account.</b> ' +
+        'Writing does not — a field worker submits with just the link. Reading is a coordination act, ' +
+        'so the database asks who you are.</div>' +
+        '<div class="row"><div class="f"><label for="em">Email</label>' +
+        '<input type="email" id="em" autocomplete="username"></div>' +
+        '<div class="f"><label for="pw">Password</label>' +
+        '<input type="password" id="pw" autocomplete="current-password"></div></div>' +
+        '<div class="btns"><button class="btn" id="signin">Sign in</button>' +
+        '<span class="xs" id="signerr"></span></div>';
+      $("signin").addEventListener("click", function () {
+        var b = this; b.disabled = true; b.textContent = "Signing in…";
+        window.FB.signIn($("em").value.trim(), $("pw").value).catch(function (e) {
+          b.disabled = false; b.textContent = "Sign in";
+          $("signerr").innerHTML = '<span style="color:#9b2c2c">' +
+            esc(e && e.message ? e.message.replace(/^Firebase:\s*/, "") : "could not sign in") + "</span>";
+        });
+      });
+      return;
+    }
+    s.textContent = "live · " + st.user.email;
+    el.innerHTML = '<div class="banner ok" style="margin:0 0 10px"><b>Live.</b> ' + LIVE.length +
+      ' record(s) from the database, updating as workers submit. Signed in as ' +
+      esc(st.user.email) + '.</div><div class="btns"><button class="btn grey sm" id="signout">Sign out</button></div>';
+    $("signout").addEventListener("click", function () { window.FB.signOut(); });
+  }
+
+  if (window.FB) {
+    var watching = false;
+    window.FB.onStatus(function (st) {
+      paintLive(st);
+      if (st.ready && st.user && !watching) {
+        watching = true;
+        window.FB.watch(mergeLive, function (err) {
+          $("liveBody").innerHTML = '<div class="banner stop" style="margin:0"><b>The database refused ' +
+            'the read.</b> ' + esc(err) + ' — most often this means the account has no role set in ' +
+            'roles/{uid}, which is done by hand in the Firebase console on purpose.</div>';
+        });
+      }
+      if (!st.user) { watching = false; LIVE = []; }
+    });
+  } else {
+    paintLive({ configured: false });
+  }
 })();
 </script>
+<script>window.BRAND_PREFIX="../";</script>
+<script src="../assets/brand.js"></script>
 </body>
 </html>
