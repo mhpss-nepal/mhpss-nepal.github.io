@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How are you coping — MHPSS Nepal</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .wrap.simple{max-width:660px}
+  .wrap.simple h1{font-size:26px}
+  .wrap.simple .card{padding:20px}
+  .wrap.simple label{font-size:15px; margin-bottom:8px; line-height:1.45}
+  .wrap.simple .radios label{font-size:14px; font-weight:400; padding:9px 15px}
+  .wrap.simple .help{font-size:12.5px}
+  .helpnow{background:var(--ok-t); border:2px solid var(--ok); border-radius:var(--r);
+    padding:18px 20px; margin:0 0 20px}
+  .helpnow h2{margin:0 0 8px; font-size:18px; color:#24543f}
+  .helpnow p{font-size:14.5px; line-height:1.55; margin:0 0 9px}
+  .helpnow .slot{background:#fff; border:2px dashed var(--warn); border-radius:var(--r);
+    padding:11px 13px; font-size:13.5px; color:var(--warn); font-weight:700}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#20313b">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MHPSS Field">
+</head>
+<body>
+<div style="background:#d03b3b;color:#fff;font:700 12.5px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:.02em;text-align:center;padding:7px 16px;padding-top:calc(7px + env(safe-area-inset-top,0px))">DEMONSTRATION INSTRUMENT — NOT YET IN USE <span style="font-weight:400;opacity:.92">· English only, and the helpline number has not been confirmed · do not print or circulate this page yet</span></div>
+
+<div class="top">
+  <div>
+    <div class="brand">How are you coping</div>
+    <div class="sub">Anonymous · nothing here identifies you</div>
+  </div>
+  <div class="spacer"></div>
+  <a href="index.html">← Forms</a>
+</div>
+
+<div class="wrap simple">
+
+  <div class="helpnow">
+    <h2>If you need help today</h2>
+    <p>You do not have to fill anything in first. Speak to any counsellor or health worker at this
+      site — you can ask for them by name at the help desk, and it is free.</p>
+    <p class="slot">TO BE FILLED IN BY THE MHPSS SUB-CLUSTER: the helpline number for this response.
+      No number has been confirmed, so none is printed here. This page must not be printed or put on a
+      wall until a real, answered number is in this box.</p>
+  </div>
+
+  <h1>Four questions, and nobody will know it was you</h1>
+  <p class="lede">This form is for the people living at a site, not for staff. It does not ask your name,
+    your phone number, or anything that could point back to you — and because of that, <b>nobody can
+    follow up with you afterwards</b>. If you want someone to contact you, tell a worker instead of
+    using this form. What you write here is used to see how a whole site is doing, and what is
+    missing there.</p>
+
+  <div class="banner warn">
+    <b>This form is not in Nepali yet, and it should not be used until it is.</b> The questions have not
+    been translated. A form in a language people do not read gives you the answers of whoever happens to
+    read English, which is worse than no answers at all.
+  </div>
+
+  <form id="f" autocomplete="off" novalidate>
+
+    <div class="card">
+      <div class="f">
+        <label for="site">Which site are you at?</label>
+        <select id="site"></select>
+        <div class="help">The site is the only location recorded. Not your tent, not your ward.</div>
+      </div>
+      <div class="f">
+        <label for="ageband">Roughly how old are you?</label>
+        <select id="ageband">
+          <option value="">— choose —</option>
+          <option value="12-17">Under 18</option>
+          <option value="18-24">18 to 24</option>
+          <option value="25-59">25 to 59</option>
+          <option value="60+">60 or over</option>
+          <option value="NS">I would rather not say</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="f">
+        <label>1. Over the past week, how have you been coping?</label>
+        <div class="radios" id="cope">
+          <label><input type="radio" name="cope" value="4"> Well</label>
+          <label><input type="radio" name="cope" value="3"> Mostly all right</label>
+          <label><input type="radio" name="cope" value="2"> Some difficult days</label>
+          <label><input type="radio" name="cope" value="1"> Difficult most days</label>
+          <label><input type="radio" name="cope" value="0"> I am not coping</label>
+        </div>
+        <div class="help">There is no score and no threshold here. This is not a test and it does not
+          say anything about your health.</div>
+      </div>
+
+      <div class="f">
+        <label>2. What would help most right now?</label>
+        <div class="radios" id="need">
+          <label><input type="radio" name="need" value="TALK"> Someone to talk to</label>
+          <label><input type="radio" name="need" value="NEWS"> News about a missing family member</label>
+          <label><input type="radio" name="need" value="SLEEP"> Help with sleep</label>
+          <label><input type="radio" name="need" value="CHILD"> Support for my children</label>
+          <label><input type="radio" name="need" value="DOC"> Replacing lost documents</label>
+          <label><input type="radio" name="need" value="WORK"> Work or money</label>
+          <label><input type="radio" name="need" value="HEALTH"> Medical care</label>
+          <label><input type="radio" name="need" value="OTH"> Something else</label>
+        </div>
+      </div>
+
+      <div class="f">
+        <label>3. Do you know where to get support for how you are feeling, at this site?</label>
+        <div class="radios" id="know">
+          <label><input type="radio" name="know" value="Y"> Yes</label>
+          <label><input type="radio" name="know" value="N"> No</label>
+          <label><input type="radio" name="know" value="UNS"> I am not sure</label>
+        </div>
+      </div>
+
+      <div class="f">
+        <label>4. Have you been able to reach it?</label>
+        <div class="radios" id="reach">
+          <label><input type="radio" name="reach" value="Y"> Yes</label>
+          <label><input type="radio" name="reach" value="TRIED"> I tried but could not</label>
+          <label><input type="radio" name="reach" value="N"> I have not tried</label>
+          <label><input type="radio" name="reach" value="NA"> I do not need it</label>
+        </div>
+        <div class="help">Question 3 and question 4 together are the useful pair: a site where everyone
+          knows about the service but nobody can reach it has a different problem from a site where
+          nobody has been told it exists.</div>
+      </div>
+
+      <div class="f">
+        <label for="say">Anything you want the people running this site to know? <span class="opt">— optional</span></label>
+        <input type="text" id="say" maxlength="300" placeholder="In your own words">
+        <div class="help">Please do not write your name or anyone else's name here.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="errs"></div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center">
+        <button type="submit" class="btn">Send</button>
+        <button type="button" class="btn ghost" id="csvBtn">Export CSV</button>
+        <button type="button" class="btn grey" id="clearBtn">Clear this device</button>
+        <span class="xs" id="count"></span>
+      </div>
+      <div class="help" style="margin-top:10px">“Send” saves the answer in this browser. There is no
+        server behind this site, so nothing actually leaves the device — a worker exports the answers
+        and passes them on.</div>
+    </div>
+  </form>
+
+  <h2>Notes for whoever fields this</h2>
+  <div class="banner">
+    <b>Why there is no screening questionnaire on this page.</b> An anonymous form filled in by whoever
+    walks past is the worst possible place for a clinical instrument: you cannot consent someone properly,
+    you cannot give them the result, you cannot follow up a positive answer, and the people who answer
+    are not a sample of anything. So this form asks about needs and about access to services — questions
+    an anonymous respondent can actually answer usefully — and the clinical measure sits on the
+    <a href="phq9.html">PHQ-9 form</a>, with a named worker, consent, and a referral pathway behind it.
+  </div>
+  <div class="banner warn">
+    <b>Free text is the risk on this form.</b> Question 5 is open, anonymous, and may be filled in by
+    someone in distress or may name another person. Whoever exports these answers has to read them before
+    they go anywhere, and remove anything that identifies someone. That is a named human
+    responsibility — no form design removes it.
+  </div>
+</div>
+
+<script src="../assets/codes.js"></script>
+<script src="../assets/l1.js"></script>
+<script>
+(function () {
+  "use strict";
+  var C = window.CODES, L = window.L1, KIND = "selfreport";
+  var $ = function (id) { return document.getElementById(id); };
+
+  L.fillSelect($("site"), C.SITES.concat([{ code: "OTHER", name: "Somewhere else" }]),
+               { placeholder: "— choose your site —" });
+
+  function pick(name) {
+    var r = document.querySelector('input[name="' + name + '"]:checked');
+    return r ? r.value : "";
+  }
+  function record() {
+    return {
+      schema: "mhpss-np-selfreport/0.1.0-draft",
+      kind: "self_report",
+      anonymous: true,
+      contact_code: null,
+      site: $("site").value,
+      age_band: $("ageband").value,
+      coping: pick("cope"),
+      need: pick("need"),
+      knows_where: pick("know"),
+      could_reach: pick("reach"),
+      free_text: $("say").value.trim(),
+      free_text_reviewed_by_human: false
+    };
+  }
+  var COLS = Object.keys(record()).concat(["_saved"]);
+
+  function showCount() {
+    var n = L.all(KIND).length;
+    $("count").textContent = n ? n + " answer(s) on this device" : "nothing saved on this device yet";
+  }
+  showCount();
+
+  $("f").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var r = record(), e = [];
+    if (!r.site) e.push("Please choose the site you are at.");
+    if (!r.coping) e.push("Please answer question 1.");
+    if (!r.knows_where) e.push("Please answer question 3.");
+    if (e.length) {
+      $("errs").innerHTML = '<div class="banner stop"><b>Not sent.</b><ul><li>' + e.join("</li><li>") + "</li></ul></div>";
+      return;
+    }
+    L.save(KIND, r);
+    $("errs").innerHTML = '<div class="banner ok"><b>Thank you.</b> Your answer was saved on this device, ' +
+      'with nothing attached to it that could identify you. Remember that nobody can contact you about ' +
+      'it — if you want support, speak to a worker at this site.</div>';
+    /* reset so the next person starts clean and cannot see the previous answer */
+    Array.prototype.forEach.call(document.querySelectorAll('input[type=radio]'), function (i) { i.checked = false; });
+    $("say").value = ""; $("ageband").value = "";
+    showCount();
+    $("errs").scrollIntoView({ block: "center" });
+  });
+
+  $("csvBtn").addEventListener("click", function () {
+    var list = L.all(KIND);
+    if (!list.length) { alert("Nothing saved on this device yet."); return; }
+    L.download("mhpss_np_selfreport_" + L.stamp() + ".csv", L.toCSV(list, COLS), "text/csv");
+  });
+  $("clearBtn").addEventListener("click", function () {
+    if (!L.all(KIND).length) { alert("Nothing saved on this device yet."); return; }
+    if (confirm("Delete every answer held in this browser? This cannot be undone.")) {
+      L.clear(KIND); showCount(); $("errs").innerHTML = '<div class="banner"><b>Cleared.</b></div>';
+    }
+  });
+})();
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>

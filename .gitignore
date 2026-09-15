@@ -18,3 +18,8 @@ shot.py
 node_modules/
 chk-*.png
 check.py
+v-*.png
+verify_l1.py
+proto-*.png
+pwa_test.py
+icon-sheet.png

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Field inbox — MHPSS Nepal</title>
+<link rel="stylesheet" href="../assets/app.css">
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  .drop{border:2px dashed var(--who); background:var(--who-t); border-radius:var(--r);
+    padding:26px 22px; text-align:center; margin:0 0 18px}
+  .drop.hot{background:#dff0f8; border-color:var(--who-d)}
+  .drop b{display:block; font-size:16px; margin-bottom:5px}
+  .drop p{font-size:13px; color:var(--slate); margin:0 auto 14px; max-width:52ch}
+  .drop input[type=file]{display:none}
+  .k{display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:12px; margin:0 0 18px}
+  .kc{background:var(--paper); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px}
+  .kc .v{font:700 27px/1 inherit; letter-spacing:-.02em; display:block; margin-bottom:3px}
+  .kc .l{font-size:11.5px; color:var(--slate); line-height:1.35}
+  .kc.good .v{color:var(--ok)} .kc.bad .v{color:var(--stop)} .kc.warn .v{color:var(--warn)}
+  .bars{display:grid; gap:6px}
+  .br{display:grid; grid-template-columns:minmax(120px,26%) 1fr auto; gap:10px; align-items:center;
+    font-size:12.5px}
+  .br .nm{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink)}
+  /* display:block matters — these are spans, and an inline element ignores
+     height, so without it the bar renders as an invisible zero-height box. */
+  .br .tr{display:block; background:var(--line-s); border-radius:3px; height:16px; position:relative}
+  .br .fl{display:block; background:var(--who); border-radius:3px; height:16px; min-width:3px}
+  .br .vv{font-weight:700; font-variant-numeric:tabular-nums; min-width:3ch; text-align:right}
+  .br.miss .fl{background:var(--warn)}
+  .pill{display:inline-block; font:700 10.5px/1.3 inherit; letter-spacing:.05em;
+    text-transform:uppercase; padding:2px 7px; border-radius:3px; border:1px solid}
+  .pill.ok{color:var(--ok); background:var(--ok-t); border-color:#bcd9c9}
+  .pill.wn{color:var(--warn); background:var(--warn-t); border-color:#e8c9b0}
+  .pill.st{color:var(--stop); background:var(--stop-t); border-color:#f0c9c9}
+  .empty{background:var(--paper); border:1px dashed var(--line); border-radius:var(--r);
+    padding:26px; text-align:center; color:var(--mute); font-size:13.5px}
+</style>
+</head>
+<body>
+<div style="background:#d03b3b;color:#fff;font:700 12.5px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:.02em;text-align:center;padding:7px 16px;padding-top:calc(7px + env(safe-area-inset-top,0px))">TRIAL INSTRUMENT — NOT THE LIVE REPORTING SYSTEM <span style="font-weight:400;opacity:.92">· files you drop here are read in your own browser and sent nowhere</span></div>
+
+<div class="top">
+  <div>
+    <div class="brand">Field inbox</div>
+    <div class="sub">Layer 2 · where the forms arrive</div>
+  </div>
+  <div class="spacer"></div>
+  <a href="../index.html">← Hub</a>
+  <a href="index.html">Coordination view</a>
+  <a href="../form/index.html">Field forms</a>
+  <a href="../method.html">Method</a>
+</div>
+
+<div class="wrap wide">
+
+  <h1>Where the forms come in</h1>
+  <p class="lede">A field worker fills a form on their phone, exports a file, and sends it to you.
+    You drop the file here and it becomes a table. This is the Layer 2 end of the one-direction
+    boundary: field → coordination, never back.</p>
+
+  <div class="banner warn">
+    <b>This is carried by hand, not synced.</b> There is no server behind this site, so nothing travels
+    from a phone to here on its own — someone sends the file over WhatsApp or email and someone drops it
+    in. That is enough to run a trial and to prove the questions work. It is not enough to run a
+    response: a live system needs the WHO or EDCD backend, and then this page becomes a view of a
+    database instead of a pile of files.
+  </div>
+
+  <label class="drop" id="drop" for="pick">
+    <b>Drop the exported files here</b>
+    <p>Or tap to choose them. Accepts the <code>.json</code> and <code>.csv</code> files the forms
+      export — service contacts, activity reports, referrals, PHQ-9, self-reports. Several at once
+      is fine, and re-dropping the same file will not double-count it.</p>
+    <span class="btn">Choose files</span>
+    <input type="file" id="pick" multiple accept=".json,.csv,application/json,text/csv">
+  </label>
+
+  <div id="log"></div>
+
+  <h2>What has arrived</h2>
+  <div class="k" id="kpis"></div>
+
+  <div id="body">
+    <div class="empty">Nothing imported yet. Drop a file above, or open a form, save a record and
+      export it, to see how it lands here.</div>
+  </div>
+
+  <div id="tools" hidden>
+    <h2>Pass it on</h2>
+    <div class="btns">
+      <button class="btn ghost" id="expAll">Export everything as one CSV</button>
+      <button class="btn ghost" id="expJson">Export everything as JSON</button>
+      <button class="btn grey" id="clear">Clear this inbox</button>
+    </div>
+    <p class="xs" style="margin-top:10px">The merged export is what you would hand to the data
+      workstream, or load into the 4Ws template. It carries no names — the forms never collected any.</p>
+  </div>
+
+  <!-- ATTRIBUTION BAND. Emblems are NOT used: see assets/brand.css. -->
+  <div class="attrib">
+    <div class="who">
+      <b>Developed for the MHPSS Technical Working Group</b>, Rasuwa / Bhote Koshi flood response,
+      with support from WHO Nepal and in coordination with the Ministry of Health and Population —
+      Epidemiology and Disease Control Division.
+      <br><br>
+      Attribution is in words rather than emblems. The WHO emblem may only be used with WHO's
+      express written permission, because using it implies WHO endorsement — and nothing on this
+      site has been endorsed yet.
+    </div>
+    <div class="marks">
+      <div class="slot"><span>WHO Nepal</span>emblem pending<br>written permission</div>
+      <div class="slot"><span>MoHP · EDCD</span>emblem pending<br>official file</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/codes.js"></script>
+<script src="../assets/l1.js"></script>
+<script>
+(function () {
+  "use strict";
+  var C = window.CODES, L = window.L1;
+  var $ = function (id) { return document.getElementById(id); };
+  var KEY = "mhpss-np-inbox-v1";
+
+  var KINDS = {
+    service_contact: "Service contact",
+    activity:        "Activity report (4Ws)",
+    referral:        "Referral",
+    phq9:            "PHQ-9",
+    self_report:     "Self-report"
+  };
+
+  /* ---------- store ---------- */
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { return []; }
+  }
+  function save(list) {
+    try { localStorage.setItem(KEY, JSON.stringify(list)); return true; }
+    catch (e) { window.__inbox = list; return false; }
+  }
+  var ROWS = load();
+
+  /* ---------- parsing ---------- */
+  function csvRows(text) {
+    /* small RFC4180 reader — quoted fields, doubled quotes, CRLF */
+    var rows = [], row = [], cur = "", q = false, i, ch;
+    for (i = 0; i < text.length; i++) {
+      ch = text[i];
+      if (q) {
+        if (ch === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else { q = false; } }
+        else cur += ch;
+      } else if (ch === '"') { q = true; }
+      else if (ch === ",") { row.push(cur); cur = ""; }
+      else if (ch === "\n") { row.push(cur); cur = ""; rows.push(row); row = []; }
+      else if (ch !== "\r") { cur += ch; }
+    }
+    if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
+    return rows.filter(function (r) { return r.some(function (c) { return c !== ""; }); });
+  }
+  function fromCSV(text) {
+    var rows = csvRows(text);
+    if (rows.length < 2) return [];
+    var head = rows[0];
+    return rows.slice(1).map(function (r) {
+      var o = {};
+      head.forEach(function (h, i) { o[h] = r[i] === undefined ? "" : r[i]; });
+      return o;
+    });
+  }
+  function classify(rec) {
+    if (rec.kind && KINDS[rec.kind]) return rec.kind;
+    if (rec.schema && /contact/.test(rec.schema)) return "service_contact";
+    if (rec.schema && /referral/.test(rec.schema)) return "referral";
+    if (rec.schema && /phq9/.test(rec.schema)) return "phq9";
+    if (rec.schema && /selfreport/.test(rec.schema)) return "self_report";
+    /* the 4Ws form predates the kind field: recognise it by its columns */
+    if (rec.activity !== undefined || rec.activityCode !== undefined ||
+        rec.reached_total !== undefined || rec.total !== undefined && rec.site !== undefined) {
+      return "activity";
+    }
+    return "";
+  }
+
+  /* Deterministic id so the same record dropped twice is not counted twice.
+     FNV-1a over the fields that identify a record, not over the whole object —
+     a re-export can differ in _saved without being a different record. */
+  function rid(rec, kind) {
+    var basis = [kind, rec.org, rec.date_ad || rec.dateAD || rec.date, rec.site,
+                 rec.contact_code || "", rec.service || rec.activity || "",
+                 rec.total || "", rec.minutes || "", rec.q1 === undefined ? "" : rec.q1,
+                 rec.coping || "", rec.reason || ""].join("|");
+    var h = 0x811c9dc5 >>> 0;
+    for (var i = 0; i < basis.length; i++) {
+      h ^= basis.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return kind + "-" + h.toString(36);
+  }
+
+  function ingest(name, text) {
+    var recs = [], err = "";
+    try {
+      if (/\.json$/i.test(name) || /^\s*[[{]/.test(text)) {
+        var j = JSON.parse(text);
+        recs = Array.isArray(j) ? j : (Array.isArray(j.records) ? j.records : [j]);
+      } else {
+        recs = fromCSV(text);
+      }
+    } catch (e) { err = "could not be read as JSON or CSV"; }
+    if (err) return { name: name, err: err, added: 0, dupe: 0, unknown: 0, kinds: {} };
+
+    var seen = {}; ROWS.forEach(function (r) { seen[r._rid] = 1; });
+    var added = 0, dupe = 0, unknown = 0, kinds = {};
+    recs.forEach(function (rec) {
+      if (!rec || typeof rec !== "object") { unknown++; return; }
+      var kind = classify(rec);
+      if (!kind) { unknown++; return; }
+      var id = rid(rec, kind);
+      if (seen[id]) { dupe++; return; }
+      seen[id] = 1;
+      rec._rid = id; rec._kind = kind; rec._file = name;
+      ROWS.push(rec); added++;
+      kinds[kind] = (kinds[kind] || 0) + 1;
+    });
+    return { name: name, added: added, dupe: dupe, unknown: unknown, kinds: kinds, err: "" };
+  }
+
+  /* ---------- helpers ---------- */
+  function val(r, keys) {
+    for (var i = 0; i < keys.length; i++) {
+      if (r[keys[i]] !== undefined && r[keys[i]] !== "") return r[keys[i]];
+    }
+    return "";
+  }
+  function orgName(code) {
+    var o = C.orgByCode[code]; return o ? o.name : (code || "not stated");
+  }
+  function siteName(code) {
+    if (!code) return "not stated";
+    if (/^OTHER/.test(code)) return "Other — " + (code.split(":")[1] || "unnamed") + " (not on roster)";
+    var s = C.siteByCode[code]; return s ? s.name : code;
+  }
+  function tally(list, fn) {
+    var m = {};
+    list.forEach(function (r) { var k = fn(r); if (k === "" || k === undefined) k = "not stated";
+      m[k] = (m[k] || 0) + 1; });
+    return Object.keys(m).map(function (k) { return { k: k, n: m[k] }; })
+                 .sort(function (a, b) { return b.n - a.n; });
+  }
+  function bars(items, label, opts) {
+    opts = opts || {};
+    if (!items.length) return '<p class="xs">Nothing to show.</p>';
+    var max = items[0].n || 1;
+    return '<div class="bars">' + items.map(function (it) {
+      var name = (opts.name ? opts.name(it.k) : it.k);
+      var miss = /not stated|not on roster/i.test(String(name)) ? " miss" : "";
+      return '<div class="br' + miss + '"><span class="nm" title="' + esc(name) + '">' + esc(name) +
+        '</span><span class="tr"><span class="fl" style="width:' +
+        Math.max(2, Math.round(it.n / max * 100)) + '%"></span></span>' +
+        '<span class="vv">' + it.n + "</span></div>";
+    }).join("") + "</div>";
+  }
+  function esc(s) {
+    return String(s === undefined || s === null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function today() { return L.today(); }
+
+  /* ---------- render ---------- */
+  function render() {
+    var n = ROWS.length;
+    $("tools").hidden = n === 0;
+
+    var contacts = ROWS.filter(function (r) { return r._kind === "service_contact"; });
+    var codes = {}; contacts.forEach(function (r) { if (r.contact_code) codes[r.contact_code] = 1; });
+    var distinct = Object.keys(codes).length;
+    var noCode = contacts.filter(function (r) { return !r.contact_code; }).length;
+    var orgs = {}; ROWS.forEach(function (r) { if (r.org) orgs[r.org] = 1; });
+    var offRoster = ROWS.filter(function (r) { return /^OTHER/.test(String(r.site || "")); }).length;
+
+    $("kpis").innerHTML = [
+      ['<span class="v">' + n + '</span><span class="l">records imported</span>', ""],
+      ['<span class="v">' + Object.keys(orgs).length + '</span><span class="l">organisations reporting</span>', ""],
+      ['<span class="v">' + (contacts.length ? distinct : "—") + '</span><span class="l">distinct people, by contact code</span>', "good"],
+      ['<span class="v">' + (contacts.length ? (contacts.length - distinct) : "—") +
+        '</span><span class="l">repeat contacts folded in</span>', ""],
+      ['<span class="v">' + offRoster + '</span><span class="l">records at a site not on the roster</span>', offRoster ? "warn" : ""],
+      ['<span class="v">' + noCode + '</span><span class="l">contacts with no code — cannot be de-duplicated</span>', noCode ? "bad" : ""]
+    ].map(function (p) { return '<div class="kc ' + p[1] + '">' + p[0] + "</div>"; }).join("");
+
+    if (!n) {
+      $("body").innerHTML = '<div class="empty">Nothing imported yet. Drop a file above, or open a ' +
+        'form, save a record and export it, to see how it lands here.</div>';
+      return;
+    }
+
+    var byKind = tally(ROWS, function (r) { return r._kind; });
+    var html = "";
+
+    html += '<h2>By form</h2>' + bars(byKind, "kind", { name: function (k) { return KINDS[k] || k; } });
+
+    html += '<h2>By organisation</h2>' +
+      bars(tally(ROWS, function (r) { return r.org; }), "org", { name: orgName });
+
+    html += '<h2>By site</h2>' +
+      bars(tally(ROWS, function (r) { return r.site; }), "site", { name: siteName }) +
+      '<p class="xs" style="margin-top:8px">A site shown in amber is not on the holding-centre ' +
+      'roster, so it cannot be counted against the roster denominator until someone reconciles it ' +
+      'by hand. That reconciliation is the open blocker, not a data-entry slip.</p>';
+
+    html += '<h2>By day</h2>' +
+      bars(tally(ROWS, function (r) { return val(r, ["date_ad", "dateAD", "date"]); }).sort(
+        function (a, b) { return a.k < b.k ? -1 : 1; }), "day");
+
+    /* ---- problems ---- */
+    var probs = [];
+    var future = ROWS.filter(function (r) {
+      var d = val(r, ["date_ad", "dateAD", "date"]); return d && d > today();
+    });
+    if (future.length) probs.push(['st', future.length + " record(s) dated in the future",
+      "A date after today is a typing error or a wrongly set phone clock. Fix before these go into any total."]);
+    if (noCode) probs.push(['st', noCode + " service contact(s) with no contact code",
+      "These cannot be matched to a returning person, so they inflate the count of people. Ask the worker to fill the four identity boxes."]);
+    if (offRoster) probs.push(['wn', offRoster + " record(s) at an off-roster site",
+      "Each has to be matched to a roster site or added to the roster. Until then, coverage of the roster cannot be computed from these records."]);
+
+    var nosex = ROWS.filter(function (r) {
+      return (r._kind === "service_contact" || r._kind === "referral") && !r.sex;
+    }).length;
+    if (nosex) probs.push(['wn', nosex + " record(s) with no sex recorded",
+      "Sex and age disaggregation is the minimum the 4Ws expects; without it the report cannot be submitted as complete."]);
+
+    var noage = ROWS.filter(function (r) {
+      return (r._kind === "service_contact" || r._kind === "referral") &&
+             !val(r, ["age_band", "ageBand"]);
+    }).length;
+    if (noage) probs.push(['wn', noage + " record(s) with no age band", "Same reason as sex."]);
+
+    var openRef = ROWS.filter(function (r) {
+      return r._kind === "referral" && (r.arrived === "UNK" || !r.arrived);
+    }).length;
+    var allRef = ROWS.filter(function (r) { return r._kind === "referral"; }).length;
+    if (allRef) probs.push([openRef === allRef ? 'wn' : 'ok',
+      openRef + " of " + allRef + " referral(s) with arrival still unknown",
+      "This is expected and is itself the measure: a referral is only complete when the receiving service confirms it. A number that stays high means the pathway is not closing."]);
+
+    var i9 = ROWS.filter(function (r) {
+      return r._kind === "phq9" && (r.item9_positive === true || r.item9_positive === "true");
+    }).length;
+    if (i9) probs.push(['st', i9 + " PHQ-9 record(s) with a positive item 9",
+      "Item 9 is the self-harm item. Check that a referral was recorded for each one — that is the audit this field exists for."]);
+
+    var freeText = ROWS.filter(function (r) {
+      return r._kind === "self_report" && r.free_text && !r.free_text_reviewed_by_human;
+    }).length;
+    if (freeText) probs.push(['st', freeText + " self-report(s) with unreviewed free text",
+      "Anonymous free text may name someone or describe distress. A person has to read these before they go anywhere."]);
+
+    html += '<h2>What needs a person to look at it</h2>';
+    html += probs.length
+      ? '<div class="tbl-wrap"><table class="prov" style="width:100%"><tr><th>Flag</th><th>What</th><th>Why it matters</th></tr>' +
+        probs.map(function (p) {
+          return '<tr><td><span class="pill ' + p[0] + '">' +
+            (p[0] === 'st' ? 'fix' : p[0] === 'wn' ? 'check' : 'expected') + "</span></td><td><b>" +
+            esc(p[1]) + "</b></td><td>" + esc(p[2]) + "</td></tr>";
+        }).join("") + "</table></div>"
+      : '<div class="banner ok" style="margin:0"><b>Nothing flagged.</b> With this few records that ' +
+        'means little — the checks only bite once there is volume.</div>';
+
+    /* ---- the records ---- */
+    html += '<h2>Every record</h2><div class="tbl-wrap"><table class="prov" style="width:100%">' +
+      '<tr><th>Form</th><th>Org</th><th>Date</th><th>Site</th><th>Code</th><th>Sex</th><th>Age</th>' +
+      '<th>Detail</th><th>File</th></tr>' +
+      ROWS.slice().sort(function (a, b) {
+        var da = val(a, ["date_ad", "dateAD", "date"]), db = val(b, ["date_ad", "dateAD", "date"]);
+        return da < db ? 1 : da > db ? -1 : 0;
+      }).map(function (r) {
+        var detail = r._kind === "phq9" ? ("PHQ-9 total " + (r.total === null ? "—" : r.total) +
+                        (r.band ? " · " + r.band : ""))
+                   : r._kind === "referral" ? (esc(r.reason || "") + " → " + esc(r.to_service_type || ""))
+                   : r._kind === "self_report" ? ("coping " + esc(r.coping || "—") + "/4")
+                   : esc(val(r, ["service", "activity"]) || "");
+        return "<tr><td>" + esc(KINDS[r._kind] || r._kind) + "</td><td>" + esc(orgName(r.org)) +
+          "</td><td>" + esc(val(r, ["date_ad", "dateAD", "date"])) + "</td><td>" +
+          esc(siteName(r.site)) + "</td><td><code style='font-size:11px'>" +
+          esc(r.contact_code || "—") + "</code></td><td>" + esc(r.sex || "—") + "</td><td>" +
+          esc(val(r, ["age_band", "ageBand"]) || "—") + "</td><td>" + detail + "</td><td>" +
+          esc(r._file || "—") + "</td></tr>";
+      }).join("") + "</table></div>";
+
+    $("body").innerHTML = html;
+  }
+
+  /* ---------- file intake ---------- */
+  function report(results) {
+    $("log").innerHTML = results.map(function (r) {
+      if (r.err) {
+        return '<div class="banner stop"><b>' + esc(r.name) + "</b> — " + esc(r.err) +
+          ". Export it again from the form, or check you picked the right file.</div>";
+      }
+      var bits = [];
+      bits.push("<b>" + r.added + "</b> new record(s)");
+      if (r.dupe) bits.push(r.dupe + " already here, skipped");
+      if (r.unknown) bits.push("<b>" + r.unknown + "</b> row(s) not recognised as any known form");
+      var kinds = Object.keys(r.kinds).map(function (k) {
+        return (KINDS[k] || k) + " " + r.kinds[k]; }).join(" · ");
+      return '<div class="banner ' + (r.unknown ? "warn" : "ok") + '"><b>' + esc(r.name) + "</b> — " +
+        bits.join(", ") + (kinds ? "<br>" + esc(kinds) : "") + "</div>";
+    }).join("");
+  }
+
+  function handle(files) {
+    var list = Array.prototype.slice.call(files), out = [], done = 0;
+    if (!list.length) return;
+    list.forEach(function (f, idx) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        out[idx] = ingest(f.name, String(fr.result || ""));
+        if (++done === list.length) { save(ROWS); report(out.filter(Boolean)); render(); }
+      };
+      fr.onerror = function () {
+        out[idx] = { name: f.name, err: "could not be opened", added: 0, dupe: 0, unknown: 0, kinds: {} };
+        if (++done === list.length) { save(ROWS); report(out.filter(Boolean)); render(); }
+      };
+      fr.readAsText(f);
+    });
+  }
+
+  $("pick").addEventListener("change", function () { handle(this.files); this.value = ""; });
+  var drop = $("drop");
+  ["dragenter", "dragover"].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("hot"); });
+  });
+  ["dragleave", "drop"].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("hot"); });
+  });
+  drop.addEventListener("drop", function (e) {
+    if (e.dataTransfer && e.dataTransfer.files) handle(e.dataTransfer.files);
+  });
+
+  /* ---------- export ---------- */
+  var COLS = ["_kind", "org", "date_ad", "date_bs", "district", "site", "ward_text", "contact_code",
+              "client_status", "sex", "age_band", "target_group", "provider_type", "service",
+              "modality", "minutes", "outcome", "reason", "direction", "urgency", "to_service_type",
+              "arrived", "barrier", "total", "band", "item9_positive", "coping", "need",
+              "knows_where", "could_reach", "lat", "lon", "_file", "_saved"];
+  $("expAll").addEventListener("click", function () {
+    L.download("mhpss_np_inbox_" + L.stamp() + ".csv", L.toCSV(ROWS, COLS), "text/csv");
+  });
+  $("expJson").addEventListener("click", function () {
+    L.download("mhpss_np_inbox_" + L.stamp() + ".json", JSON.stringify(ROWS, null, 2), "application/json");
+  });
+  $("clear").addEventListener("click", function () {
+    if (!ROWS.length) return;
+    if (!confirm("Clear every record in this inbox? Export first if you need them.")) return;
+    ROWS = []; save(ROWS); $("log").innerHTML = ""; render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
