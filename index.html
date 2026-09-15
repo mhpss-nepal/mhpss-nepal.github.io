@@ -90,4 +90,20 @@
   </footer>
 
 </div>
+
+<script>
+/* Old-address map. The alamat already shared with the Ministry pointed at
+   /index.html#when, back when this page WAS the Layer 2 view. Those sections
+   now live at coordination/index.html, so anyone arriving on an old anchor is
+   forwarded instead of landing on a hub with nothing matching their hash.
+   Pattern borrowed from the Sadar Hati Integrated Hub, which solved the same
+   problem when its dashboard was split into pages. */
+(function () {
+  var h = (location.hash || '').replace('#', '');
+  if (!h) return;
+  var toCoordination = ['coverage','who','when','what','people','helpline','top'];
+  if (toCoordination.indexOf(h) !== -1) { location.replace('coordination/index.html#' + h); return; }
+  if (h === 'layers' || h === 'architecture') { location.replace('architecture.html'); }
+})();
+</script>
 </body></html>
