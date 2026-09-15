@@ -1,0 +1,20 @@
+# Operational data must never enter this repository.
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+*.tsv
+*.json
+!data/demo.json
+!package.json
+
+# Working files
+shot-*.png
+v[0-9].png
+p[0-9].png
+d[0-9].png
+shot.py
+.DS_Store
+node_modules/
+chk-*.png
+check.py
