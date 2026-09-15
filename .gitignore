@@ -23,3 +23,18 @@ verify_l1.py
 proto-*.png
 pwa_test.py
 icon-sheet.png
+
+# ---- credentials: never, under any circumstances, in a public repo ----
+# A service-account key reads and writes everything and ignores the security
+# rules. If one of these is ever committed, revoke it in the Firebase console
+# immediately -- removing the commit is not enough, because it is public the
+# moment it is pushed.
+service_account.json
+*service_account*.json
+*-serviceaccount*.json
+*.pem
+*.p12
+*.key
+firebase-adminsdk*.json
+snapshots/
+backup_log.csv
