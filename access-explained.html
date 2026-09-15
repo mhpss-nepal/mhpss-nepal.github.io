@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Who can see what</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Noto+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/brand.css">
+<style>
+  /* ---- this page's own voice: a clinical protocol sheet, not a product page.
+         Serif headings put it in the register of a guideline document; the
+         body face is the hub's Noto Sans, which also carries Devanagari. ---- */
+  :root{
+    --open:#2f6b53; --open-t:#ecf4ef; --open-l:#c3dbcd;
+    --gate:#005c85; --gate-t:#ecf4f9; --gate-l:#bcd3de;
+    --turn:#9b2c2c; --turn-t:#fbeeee; --turn-l:#e8c5c5;
+  }
+  .page-h{border-bottom:2px solid var(--ink); padding-bottom:16px; margin:0 0 4px}
+  .page-h .eyebrow{font:700 11px/1.3 "Noto Sans",system-ui,sans-serif; letter-spacing:.11em;
+    text-transform:uppercase; color:var(--who-d); margin:0 0 9px}
+  .page-h h1{font:600 30px/1.14 Lora,Georgia,serif; letter-spacing:-.01em; margin:0 0 12px;
+    text-wrap:balance; max-width:22ch}
+  .page-h .stand{font-size:15.5px; color:var(--slate); max-width:62ch; margin:0}
+  .page-h .stand b{color:var(--ink)}
+
+  h2.sec{font:600 20px/1.25 Lora,Georgia,serif; letter-spacing:-.005em;
+    margin:40px 0 4px; padding-bottom:9px; border-bottom:1px solid var(--line)}
+  h2.sec .n{font:700 11px/1 "Noto Sans",system-ui,sans-serif; letter-spacing:.1em;
+    color:var(--mute); display:block; margin-bottom:7px}
+  .sec-note{font-size:13.5px; color:var(--slate); margin:10px 0 18px; max-width:64ch}
+
+  /* ---- the two-checkpoint diagram ---- */
+  .flow{overflow-x:auto; margin:18px 0 6px; padding-bottom:4px}
+  .flow svg{display:block; min-width:660px; width:100%; height:auto}
+  .fl-box{fill:var(--paper); stroke:var(--line); stroke-width:1.5}
+  .fl-ink{fill:var(--ink)}
+  .fl-slate{fill:var(--slate)}
+  .fl-open{fill:var(--open)} .fl-open-f{fill:var(--open-t); stroke:var(--open-l); stroke-width:1.5}
+  .fl-gate{fill:var(--gate)} .fl-gate-f{fill:var(--gate-t); stroke:var(--gate-l); stroke-width:1.5}
+  .fl-turn{fill:var(--turn)} .fl-turn-f{fill:var(--turn-t); stroke:var(--turn-l); stroke-width:1.5}
+  .fl-line{stroke:var(--ink); stroke-width:1.8; fill:none}
+  .fl-drop{stroke:var(--turn); stroke-width:1.5; fill:none; stroke-dasharray:4 3}
+  .fl-t{font:600 12.5px/1 "Noto Sans",system-ui,sans-serif}
+  .fl-s{font:400 11px/1 "Noto Sans",system-ui,sans-serif}
+  .fl-lab{font:700 9.5px/1 "Noto Sans",system-ui,sans-serif; letter-spacing:.09em}
+
+  /* ---- two-column answer blocks ---- */
+  .two{display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:16px; margin:0 0 6px}
+  .ans{border:1px solid var(--line); border-radius:var(--r); background:var(--paper); padding:18px 20px}
+  .ans.open{border-top:3px solid var(--open)}
+  .ans.gate{border-top:3px solid var(--gate)}
+  .ans .who{font:700 10.5px/1.3 "Noto Sans",system-ui,sans-serif; letter-spacing:.1em;
+    text-transform:uppercase; margin:0 0 8px}
+  .ans.open .who{color:var(--open)} .ans.gate .who{color:var(--gate)}
+  .ans h3{font:600 17px/1.3 Lora,Georgia,serif; margin:0 0 9px}
+  .ans p{font-size:13.5px; color:var(--slate); margin:0 0 9px; line-height:1.55}
+  .ans p:last-child{margin-bottom:0}
+  .ans b{color:var(--ink)}
+  .ans .needs{display:inline-block; font:700 12px/1.3 "Noto Sans",system-ui,sans-serif;
+    padding:5px 10px; border-radius:4px; margin:2px 0 10px}
+  .ans.open .needs{background:var(--open-t); color:var(--open); border:1px solid var(--open-l)}
+  .ans.gate .needs{background:var(--gate-t); color:var(--gate); border:1px solid var(--gate-l)}
+
+  /* ---- the refusal list ---- */
+  .refuse{border:1px solid var(--turn-l); border-radius:var(--r); background:var(--paper);
+    overflow:hidden; margin:0 0 14px}
+  .refuse-h{background:var(--turn-t); border-bottom:1px solid var(--turn-l); padding:13px 18px}
+  .refuse-h b{font:700 13px/1.4 "Noto Sans",system-ui,sans-serif; color:var(--turn); display:block}
+  .refuse-h span{font-size:12.5px; color:var(--slate)}
+  .refuse ul{list-style:none; margin:0; padding:6px 0; display:grid;
+    /* two columns, so ten refusals fill five even rows rather than
+       leaving the last one stranded on a row of its own */
+    grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+  .refuse li{display:flex; gap:11px; align-items:baseline; padding:9px 18px; font-size:13.5px}
+  .refuse li .x{flex:0 0 auto; width:17px; height:17px; border-radius:50%; background:var(--turn-t);
+    border:1px solid var(--turn-l); position:relative; top:3px}
+  .refuse li .x::before,.refuse li .x::after{content:""; position:absolute; left:3.5px; top:7.5px;
+    width:8px; height:1.5px; background:var(--turn)}
+  .refuse li .x::before{transform:rotate(45deg)} .refuse li .x::after{transform:rotate(-45deg)}
+  .refuse li em{font-style:normal; color:var(--mute); font-size:12px; display:block; margin-top:1px}
+
+  /* ---- levels grid ---- */
+  .lv-wrap{overflow-x:auto; margin:0 0 10px}
+  table.lv{width:100%; min-width:560px; border-collapse:collapse; font-size:13.5px; background:var(--paper)}
+  table.lv th,table.lv td{text-align:left; padding:12px 14px; border-bottom:1px solid var(--line-s)}
+  table.lv thead th{font:700 10.5px/1.3 "Noto Sans",system-ui,sans-serif; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--slate); background:var(--bg); border-bottom:1px solid var(--line)}
+  table.lv tbody tr:last-child td{border-bottom:0}
+  table.lv .lvl{font-weight:700; color:var(--ink); white-space:nowrap}
+  table.lv .lvl em{display:block; font-style:normal; font-weight:400; font-size:11.5px;
+    color:var(--mute); margin-top:2px; white-space:normal}
+  table.lv .y{color:var(--open); font-weight:700}
+  table.lv .n{color:var(--mute)}
+  table.lv td.c{text-align:center; font-size:15px}
+
+  /* ---- honest-limits panel ---- */
+  .limits{border:1px solid var(--line); border-left:3px solid var(--warn); border-radius:var(--r);
+    background:var(--paper); padding:18px 20px; margin:0 0 10px}
+  .limits h3{font:600 16px/1.3 Lora,Georgia,serif; margin:0 0 10px}
+  .limits dl{margin:0; display:grid; gap:14px}
+  .limits dt{font:700 13px/1.4 "Noto Sans",system-ui,sans-serif; color:var(--ink); margin:0 0 3px}
+  .limits dd{margin:0; font-size:13px; color:var(--slate); line-height:1.55}
+
+  /* ---- evidence strip ---- */
+  .ev{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:var(--r);
+    overflow:hidden; margin:0 0 12px}
+  .ev div{background:var(--paper); padding:15px 16px}
+  .ev .v{font:700 25px/1 "Noto Sans",system-ui,sans-serif; letter-spacing:-.02em;
+    color:var(--who-d); display:block; margin-bottom:4px; font-variant-numeric:tabular-nums}
+  .ev .l{font-size:11.5px; color:var(--slate); line-height:1.4}
+
+  .foot{margin-top:38px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12px; color:var(--mute); line-height:1.6}
+
+  @media print{
+    .top,.trial{display:none!important}
+    body{background:#fff}
+    .wrap{padding:0; max-width:none}
+    h2.sec{break-after:avoid} .ans,.refuse,.limits,.flow{break-inside:avoid}
+    .page-h h1{font-size:24px}
+  }
+</style>
+</head>
+<body>
+<div class="trial" style="background:#d03b3b;color:#fff;font:700 12.5px/1.45 'Noto Sans',system-ui,sans-serif;letter-spacing:.02em;text-align:center;padding:7px 16px;padding-top:calc(7px + env(safe-area-inset-top,0px))">TRIAL INSTRUMENT — NOT THE LIVE REPORTING SYSTEM</div>
+
+<div class="top">
+  <div>
+    <div class="brand">Who can see what</div>
+    <div class="sub">Access &amp; data protection</div>
+  </div>
+  <div class="spacer"></div>
+  <a href="index.html">← Hub</a>
+  <a href="form/index.html">Field forms</a>
+  <a href="coordination/inbox.html">Field inbox</a>
+  <a href="method.html">Method</a>
+</div>
+
+<div class="wrap">
+
+  <div class="page-h">
+    <p class="eyebrow">MHPSS Technical Working Group · Rasuwa / Bhote Koshi flood response</p>
+    <h1>Who can see what</h1>
+    <p class="stand">Two questions come up whenever a reporting system is put in front of clinical
+      teams: <b>will my staff be locked out of reporting</b>, and <b>could a client's details end up
+      somewhere they should not be</b>. This page answers both, and says plainly what the system does
+      not protect against.</p>
+  </div>
+
+  <h2 class="sec"><span class="n">THE SHORT ANSWER</span>Reporting is open. Reading is not.</h2>
+  <p class="sec-note">These are two separate things, and they are deliberately treated differently.</p>
+
+  <div class="two">
+    <div class="ans open">
+      <p class="who">Anyone providing a service</p>
+      <h3>Filling in a form</h3>
+      <span class="needs">Needs nothing at all</span>
+      <p>A counsellor opens the link, fills in the form, and saves. <b>No account. No email address.
+        No password.</b></p>
+      <p>A psychosocial worker in a holding centre, on a borrowed phone, with no signal, can complete
+        a report and it will be kept on the handset until a connection returns. Nobody has to set
+        them up first, and nothing about access control applies to them.</p>
+    </div>
+    <div class="ans gate">
+      <p class="who">Anyone looking at what was reported</p>
+      <h3>Reading the records</h3>
+      <span class="needs">Must be named, one person at a time</span>
+      <p>Reading service records is a coordination function, so the system asks two things: <b>who are
+        you</b>, and <b>were you given access</b>.</p>
+      <p>Signing in only answers the first. An account with no access granted to it sees nothing at
+        all — not a partial view, not a summary. Access is granted by name, by the coordinator,
+        and can be withdrawn the same way.</p>
+    </div>
+  </div>
+
+  <h2 class="sec"><span class="n">HOW IT WORKS</span>Two checkpoints, not one</h2>
+  <p class="sec-note">A record passes a check on the way in, and a person passes a different check
+    on the way to reading it. The first applies to everybody, including senior staff.</p>
+
+  <div class="flow">
+    <svg viewBox="0 0 700 300" role="img"
+         aria-label="A submitted form passes a content check, which turns away any personal detail, before it is kept in the register. Separately, a person wanting to read the register passes an access check requiring both sign-in and a named grant.">
+      <!-- ORIGIN -->
+      <rect class="fl-box" x="8" y="40" width="132" height="56" rx="5"></rect>
+      <text class="fl-t fl-ink" x="24" y="63">A form is</text>
+      <text class="fl-t fl-ink" x="24" y="80">filled in</text>
+      <text class="fl-lab fl-open" x="24" y="30">NO ACCOUNT NEEDED</text>
+
+      <!-- arrow to check 1 -->
+      <path class="fl-line" d="M140 68 H196"></path>
+      <path class="fl-ink" d="M196 68 l-8 -4.5 v9 z"></path>
+
+      <!-- CHECKPOINT 1 -->
+      <rect class="fl-turn-f" x="200" y="26" width="150" height="84" rx="5"></rect>
+      <text class="fl-lab fl-turn" x="214" y="46">CHECKPOINT 1</text>
+      <text class="fl-t fl-ink" x="214" y="67">What the record</text>
+      <text class="fl-t fl-ink" x="214" y="84">may contain</text>
+      <text class="fl-s fl-slate" x="214" y="101">applies to everyone</text>
+
+      <!-- refusal drop -->
+      <path class="fl-drop" d="M275 110 V146"></path>
+      <path class="fl-turn" d="M275 146 l-4.5 -8 h9 z"></path>
+      <rect class="fl-turn-f" x="176" y="150" width="198" height="52" rx="5"></rect>
+      <text class="fl-t fl-turn" x="190" y="171">Turned away at once:</text>
+      <text class="fl-s fl-slate" x="190" y="190">a name, a phone number, a date of birth</text>
+
+      <!-- arrow to register -->
+      <path class="fl-line" d="M350 68 H406"></path>
+      <path class="fl-ink" d="M406 68 l-8 -4.5 v9 z"></path>
+
+      <!-- REGISTER -->
+      <rect class="fl-box" x="410" y="26" width="132" height="84" rx="5"></rect>
+      <text class="fl-lab fl-slate" x="424" y="46">THE REGISTER</text>
+      <text class="fl-t fl-ink" x="424" y="67">Service records,</text>
+      <text class="fl-t fl-ink" x="424" y="84">coded only</text>
+      <text class="fl-s fl-slate" x="424" y="101">no one is named</text>
+
+      <!-- READER PATH -->
+      <rect class="fl-box" x="8" y="232" width="132" height="56" rx="5"></rect>
+      <text class="fl-t fl-ink" x="24" y="255">Someone wants</text>
+      <text class="fl-t fl-ink" x="24" y="272">to read it</text>
+
+      <path class="fl-line" d="M140 260 H196"></path>
+      <path class="fl-ink" d="M196 260 l-8 -4.5 v9 z"></path>
+
+      <!-- CHECKPOINT 2 -->
+      <rect class="fl-gate-f" x="200" y="218" width="150" height="84" rx="5"></rect>
+      <text class="fl-lab fl-gate" x="214" y="238">CHECKPOINT 2</text>
+      <text class="fl-t fl-ink" x="214" y="259">Signed in AND</text>
+      <text class="fl-t fl-ink" x="214" y="276">granted by name</text>
+      <text class="fl-s fl-slate" x="214" y="293">both, not either</text>
+
+      <!-- one path, right then up into the register, with a single arrowhead -->
+      <path class="fl-line" d="M350 260 H476 V120"></path>
+      <path class="fl-ink" d="M476 120 l-4.5 8 h9 z"></path>
+      <text class="fl-s fl-slate" x="492" y="252">reads the register</text>
+      <text class="fl-s fl-slate" x="492" y="268">— never the person</text>
+    </svg>
+  </div>
+
+  <h2 class="sec"><span class="n">CHECKPOINT 1</span>What the system will not accept</h2>
+  <p class="sec-note">This is the part worth dwelling on with partners. These details are not
+    <em>discouraged</em> by guidance or training — the system refuses to store them. If a form were
+    changed tomorrow to ask for a client's name, the record would still be turned away.</p>
+
+  <div class="refuse">
+    <div class="refuse-h">
+      <b>Refused whatever the form asks for, and whoever submits it</b>
+      <span>Checked at the point of storage, so a change to a form cannot quietly widen what is collected.</span>
+    </div>
+    <ul>
+      <li><span class="x"></span><span>A person's name<em>in any field, in any spelling</em></span></li>
+      <li><span class="x"></span><span>A phone number<em>client's or family member's</em></span></li>
+      <li><span class="x"></span><span>A date of birth<em>age band only, never the date</em></span></li>
+      <li><span class="x"></span><span>A citizenship or national ID number</span></li>
+      <li><span class="x"></span><span>A home address or household identifier</span></li>
+      <li><span class="x"></span><span>A photograph or scanned document</span></li>
+      <li><span class="x"></span><span>A name typed into the coded-reference field<em>the code has a fixed shape, so a name will not fit it</em></span></li>
+      <li><span class="x"></span><span>A location precise enough to identify a dwelling<em>recorded to roughly a 100&nbsp;m area, and only inside Nepal</em></span></li>
+      <li><span class="x"></span><span>A date set by the handset rather than the system<em>so a report cannot be back-dated</em></span></li>
+      <li><span class="x"></span><span>Free text longer than a short note<em>long narrative is where identities leak in</em></span></li>
+    </ul>
+  </div>
+
+  <h2 class="sec"><span class="n">CHECKPOINT 2</span>Four levels of access</h2>
+  <p class="sec-note">Granted by the coordinator to a named email address, and withdrawn the same
+    way. Every grant records who gave it and when.</p>
+
+  <div class="lv-wrap">
+    <table class="lv">
+      <thead>
+        <tr><th>Level</th><th class="c">Read<br>records</th><th class="c">Publish<br>totals</th>
+            <th class="c">Remove<br>an entry</th><th class="c">Grant<br>access</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="lvl">Coordinator<em>MHPSS TWG coordination</em></td>
+          <td class="c y">✓</td><td class="c y">✓</td><td class="c n">—</td><td class="c n">—</td>
+        </tr>
+        <tr>
+          <td class="lvl">Information management<em>same as coordinator; recorded separately so the trail shows who did what</em></td>
+          <td class="c y">✓</td><td class="c y">✓</td><td class="c n">—</td><td class="c n">—</td>
+        </tr>
+        <tr>
+          <td class="lvl">Viewer<em>partner focal points</em></td>
+          <td class="c y">✓</td><td class="c n">—</td><td class="c n">—</td><td class="c n">—</td>
+        </tr>
+        <tr>
+          <td class="lvl">Administrator<em>held by as few people as possible</em></td>
+          <td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td>
+        </tr>
+        <tr>
+          <td class="lvl" style="color:var(--mute)">Signed in, nothing granted<em>the ordinary state of a new account</em></td>
+          <td class="c n">—</td><td class="c n">—</td><td class="c n">—</td><td class="c n">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="xs">Nobody can raise their own level, and no web page can change anyone's level —
+    including an administrator's own. <b>Correcting a figure is not the same as removing an entry:</b>
+    a correction is submitted as a new record, so the reporting history stays intact and a changed
+    number can always be traced. Removal exists only for genuine mistakes — a duplicate, or a test
+    entry — and is why it sits with the administrator alone.</p>
+
+  <h2 class="sec"><span class="n">ASSURANCE</span>How this was checked</h2>
+  <p class="sec-note">Not reviewed on paper — attempted in practice. Each check is a deliberate
+    attempt to get something through that should not get through.</p>
+
+  <div class="ev">
+    <div><span class="v">50</span><span class="l">attempts to bypass the checks, run against a test copy</span></div>
+    <div><span class="v">12</span><span class="l">repeated against the live system after it was switched on</span></div>
+    <div><span class="v">0</span><span class="l">got through</span></div>
+    <div><span class="v">1</span><span class="l">real fault found and fixed this way</span></div>
+  </div>
+  <p class="xs">The fault is worth naming, because it shows the checks are not cosmetic: an early
+    version locked out the coordinator himself. It was found by testing, not in use.
+    The checks are re-run automatically with every backup — if the protections were ever loosened,
+    the backup reports it rather than quietly succeeding.</p>
+
+  <h2 class="sec"><span class="n">LIMITS</span>What this does not protect against</h2>
+  <p class="sec-note">Stated here rather than left to be discovered, because a system described as
+    safer than it is will be trusted with more than it should hold.</p>
+
+  <div class="limits">
+    <h3>Three things to be clear about</h3>
+    <dl>
+      <dt>Anyone with the link can submit a report.</dt>
+      <dd>Reporting is deliberately open, so submissions are not verified as coming from a real
+        service. What that risks is inaccurate counts, not disclosure — nothing identifying can be
+        stored whoever submits it. If false entries ever appear, the answer is a sign-in for each
+        reporting organisation, not a change to these checks.</dd>
+      <dt>A coded reference is a pseudonym, not anonymity.</dt>
+      <dd>It is designed so the same person can be recognised across visits without being named.
+        Someone who already holds the key linking codes to people could still connect them — which
+        is why that key stays with the service that created it and never enters this system.</dd>
+      <dt>This protects records in the system, not conversations around it.</dt>
+      <dd>A name spoken in a coordination meeting, written in a WhatsApp message, or kept in a
+        service's own case notes is outside anything described here. The system can hold the line on
+        what it stores; it cannot hold the line on practice.</dd>
+    </dl>
+  </div>
+
+  <h2 class="sec"><span class="n">IN PRACTICE</span>What this means for a partner organisation</h2>
+  <div class="two">
+    <div class="ans open">
+      <p class="who">For your field staff</p>
+      <h3>Nothing to set up</h3>
+      <p>Send them the form link. That is the whole onboarding. They need no account and you do not
+        need to ask us for anything on their behalf.</p>
+      <p>The form works with no signal and keeps the report on the handset until there is one.</p>
+    </div>
+    <div class="ans gate">
+      <p class="who">For your focal point</p>
+      <h3>One email address</h3>
+      <p>Give the coordinator the email address of the person who needs to see the records. They will
+        be sent a sign-in link — <b>no password is chosen, typed or shared</b>, by them or by anyone
+        holding it on their behalf.</p>
+      <p>Access can be withdrawn immediately if they change post.</p>
+    </div>
+  </div>
+
+  <p class="foot">
+    Prepared for the MHPSS Technical Working Group, Rasuwa / Bhote Koshi flood response.
+    This page describes a trial instrument under development and is not itself a reporting channel.
+    The access levels and the refusal list were checked against the system's own configuration on
+    15 September 2026. If the two ever disagree, the configuration is what is actually enforced and
+    this page is out of date.
+  </p>
+
+  <!-- Filled by assets/brand.js. -->
+  <div class="attrib"></div>
+</div>
+
+<script>window.BRAND_PREFIX="";</script>
+<script src="assets/brand.js"></script>
+</body></html>
