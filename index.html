@@ -2,104 +2,94 @@
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MHPSS Nepal — Integrated Hub</title>
-<meta name="description" content="One door to the mental health and psychosocial support information system for the Rasuwa–Bhote Koshi flood response. Demonstration build; all figures synthetic.">
+<title data-i18n="hub.meta.title">MHPSS Nepal — Integrated Hub</title>
+<meta name="description" data-i18n-title="hub.meta.desc" content="One door to the mental health and psychosocial support information system for the Rasuwa–Bhote Koshi flood response. Demonstration build; all figures synthetic.">
 <meta name="theme-color" content="#005C85">
 <meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Devanagari has its own face in the Noto family. Without it, Nepali
+     falls back to whatever the device happens to have, which on some
+     systems is nothing at all. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="assets/door.css">
 <link rel="stylesheet" href="assets/brand.css">
 </head><body>
 
-<div class="synth">DEMONSTRATION — EVERY FIGURE BEHIND THESE DOORS IS SYNTHETIC
-  <span>· not response data · must not be quoted</span></div>
+<div class="synth"><span data-i18n="hub.synth"></span>
+  <span data-i18n="hub.synthSub"></span></div>
 
 <div class="wrap">
 
   <div class="mark"><i>MH</i></div>
-  <div class="org">World Health Organization · Nepal &nbsp;·&nbsp; Ministry of Health and Food Safety</div>
-  <h1>Integrated Hub</h1>
-  <p class="sub">One door to the mental health and psychosocial support information system for the
-     Rasuwa–Bhote Koshi flood response. Choose the layer you work in.</p>
-  <div class="chipline"><span>Information moves <b>one direction only</b> — field → coordination → public</span></div>
+  <div class="org" data-i18n="hub.org" data-i18n-html></div>
+  <h1 data-i18n="hub.title"></h1>
+  <p class="sub" data-i18n="hub.sub"></p>
+  <div class="chipline"><span data-i18n="hub.oneway" data-i18n-html></span></div>
 
   <div class="grid">
 
     <a class="door d1" href="form/index.html">
-      <span class="layer">LAYER 1 · FIELD</span>
+      <span class="layer" data-i18n="hub.d1.layer"></span>
       <span class="ic">📝</span>
-      <b>Field forms</b>
-      <span class="desc">One link a field worker can open on a phone, with every form behind it: activity
-        report, service contact, referral, follow-up measure, and a self-report for the people at a site.
-        Copy a link to send over WhatsApp, or print a QR code. Works with no signal.</span>
-      <span class="go">Open the form list →</span>
+      <b data-i18n="hub.d1.title"></b>
+      <span class="desc" data-i18n="hub.d1.desc"></span>
+      <span class="go" data-i18n="hub.d1.go"></span>
     </a>
 
     <a class="door d2" href="coordination/index.html">
-      <span class="layer">LAYER 2 · COORDINATION</span>
+      <span class="layer" data-i18n="hub.d2.layer"></span>
       <span class="ic">📊</span>
-      <b>Coordination view</b>
-      <span class="desc">Which holding centres are at zero, who is working where, activity mix, the deployed
-        workforce and helpline demand — plus the field inbox, where forms exported from phones are imported.
-        Service-level information only, and no individual is named anywhere in it.</span>
-      <span class="go">Open the coordination view →</span>
+      <b data-i18n="hub.d2.title"></b>
+      <span class="desc" data-i18n="hub.d2.desc"></span>
+      <span class="go" data-i18n="hub.d2.go"></span>
     </a>
 
     <a class="door d3" href="layer3.html">
-      <span class="layer">LAYER 3 · PUBLIC</span>
+      <span class="layer" data-i18n="hub.d3.layer"></span>
       <span class="ic">🏛️</span>
-      <b>Public layer</b>
-      <span class="desc">Aggregated figures submitted into the government-owned national 5W, and a public page
-        owned and hosted by EDCD. Not built yet — this page sets out what goes there and who owns it.</span>
-      <span class="soon">Planned · read the handover position</span>
+      <b data-i18n="hub.d3.title"></b>
+      <span class="desc" data-i18n="hub.d3.desc"></span>
+      <span class="soon" data-i18n="hub.d3.soon"></span>
     </a>
 
     <a class="door d4" href="architecture.html">
-      <span class="layer">REFERENCE</span>
+      <span class="layer" data-i18n="hub.ref"></span>
       <span class="ic">🧭</span>
-      <b>Architecture concept</b>
-      <span class="desc">The three layers, the one-direction boundary, and the question that decides
-        everything: who <em>hosts</em> the database, who <em>controls</em> it, and who <em>owns</em> it.</span>
-      <span class="go">Read the concept →</span>
+      <b data-i18n="hub.d4.title"></b>
+      <span class="desc" data-i18n="hub.d4.desc" data-i18n-html></span>
+      <span class="go" data-i18n="hub.d4.go"></span>
     </a>
 
     <a class="door d6" href="access-explained.html">
-      <span class="layer">REFERENCE</span>
+      <span class="layer" data-i18n="hub.ref"></span>
       <span class="ic">&#128273;</span>
-      <b>Who can see what</b>
-      <span class="desc">The page to put in front of partners. Reporting needs no account at all;
-        reading the records has to be granted by name. Sets out what the system refuses to store
-        whatever a form asks for &mdash; and what it does <em>not</em> protect against.</span>
-      <span class="go">Read the access model &rarr;</span>
+      <b data-i18n="hub.d6.title"></b>
+      <span class="desc" data-i18n="hub.d6.desc" data-i18n-html></span>
+      <span class="go" data-i18n="hub.d6.go"></span>
     </a>
 
     <a class="door d5" href="method.html">
-      <span class="layer">REFERENCE</span>
+      <span class="layer" data-i18n="hub.ref"></span>
       <span class="ic">⚖️</span>
-      <b>Data model &amp; method</b>
-      <span class="desc">Field-by-field mapping to the IASC 4Ws model, and an honest register of what is
-        <em>not</em> established — the codes we refuse to guess and the conversions we refuse to fake.</span>
-      <span class="go">Read the method →</span>
+      <b data-i18n="hub.d5.title"></b>
+      <span class="desc" data-i18n="hub.d5.desc" data-i18n-html></span>
+      <span class="go" data-i18n="hub.d5.go"></span>
     </a>
 
   </div>
 
   <div class="flow">
-    <h2>Why the direction matters</h2>
-    <p>Layer 1 writes. Layer 2 reads Layer 1 and writes nothing back. Layer 3 receives aggregates and
-      <strong>cannot read the layer below it</strong>. No layer can reach down. That is what makes it safe to
-      hand the public layer to the Ministry without handing over anything that identifies a person — and it is
-      why the boundary is a design rule, not a setting someone can change later.</p>
+    <h2 data-i18n="hub.flow.title"></h2>
+    <p data-i18n="hub.flow.body" data-i18n-html></p>
   </div>
 
   <footer>
     <div class="hr"></div>
-    Rasuwa–Bhote Koshi flood response · mental health and psychosocial support · draft, September 2026<br>
-    Prepared for the WHO Nepal mental health team, the Ministry of Health and Food Safety and EDCD.
-    Not agreed with EDCD or the MHPSS sub-cluster.<br>
-    <a href="https://github.com/mhpss-nepal/mhpss-nepal.github.io">Source and method on GitHub</a>
-    · mhpss-nepal.github.io<br>
-    No WHO or Government of Nepal emblem is used: WHO emblem use requires express written permission and the
-    Nepal national emblem belongs to the Ministry. Prepared with AI assistance.
+    <span data-i18n="hub.foot.line1"></span><br>
+    <span data-i18n="hub.foot.line2"></span><br>
+    <a href="https://github.com/mhpss-nepal/mhpss-nepal.github.io" data-i18n="hub.foot.source"></a>
+    <span data-i18n-skip>· mhpss-nepal.github.io</span><br>
+    <span data-i18n="hub.foot.emblem"></span>
   </footer>
 
   <!-- Filled by assets/brand.js. Emblems are off until the official
@@ -122,6 +112,8 @@
   if (h === 'layers' || h === 'architecture') { location.replace('architecture.html'); }
 })();
 </script>
+<script src="assets/i18n-strings.js"></script>
+<script src="assets/i18n.js"></script>
 <script>window.BRAND_PREFIX="";</script>
 <script src="assets/brand.js"></script>
 </body></html>

@@ -1,0 +1,9 @@
+# Which pages the bilingual gate enforces.
+#   enforced  = fully keyed and fully translated, or the build fails
+#   pending   = not yet migrated; counted and reported, not blocked
+#
+# Move a page to "enforced" only once its keys are in and the Nepali has
+# come back from the translator. Adding English prose to an enforced page
+# without a key fails the gate -- which is the point.
+
+index.html keyed
