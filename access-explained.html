@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Who can see what</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Noto+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="assets/app.css">
 <link rel="stylesheet" href="assets/design.css">
 <link rel="stylesheet" href="assets/brand.css">
@@ -15,7 +15,7 @@
          body face is the hub's Noto Sans, which also carries Devanagari. ---- */
   :root{
     --open:#2f6b53; --open-t:#ecf4ef; --open-l:#c3dbcd;
-    --gate:#005c85; --gate-t:#ecf4f9; --gate-l:#bcd3de;
+    --gate:#006996; --gate-t:#eaf7fd; --gate-l:#acd9ec;
     --turn:#9b2c2c; --turn-t:#fbeeee; --turn-l:#e8c5c5;
   }
   .page-h{border-bottom:2px solid var(--ink); padding-bottom:16px; margin:0 0 4px}
@@ -128,17 +128,42 @@
 <body>
 <div class="trial" style="background:#d03b3b;color:#fff;font:700 12.5px/1.45 'Noto Sans',system-ui,sans-serif;letter-spacing:.02em;text-align:center;padding:7px 16px;padding-top:calc(7px + env(safe-area-inset-top,0px))">TRIAL INSTRUMENT — NOT THE LIVE REPORTING SYSTEM</div>
 
-<div class="top">
-  <div>
-    <div class="brand">Who can see what</div>
-    <div class="sub">Access &amp; data protection</div>
+<!--NAV:top access-->
+<header class="gov">
+  <div class="in">
+    <a class="id" href="./">
+      <span data-mark="44"></span>
+      <span style="min-width:0">
+        <span class="who-line">Health Cluster &middot; Nepal</span>
+        <b>MHPSS Sub-Cluster</b>
+        <span class="place">Rasuwa &middot; Nuwakot &middot; flood response</span>
+      </span>
+    </a>
+    <div class="mid">
+      <b>Mental Health &amp; Psychosocial Support</b>
+      <span>मानसिक स्वास्थ्य र मनोसामाजिक सहयोग</span>
+    </div>
+    <div class="right">
+      <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
+           finds one, instead of floating it top-right over these buttons. -->
+      <span data-i18n-toggle class="langslot"></span>
+      <a class="gbtn out" href="hub/">Coordination hub</a>
+      <a class="gbtn crimson" href="form/">Field forms</a>
+    </div>
   </div>
-  <div class="spacer"></div>
-  <a href="hub/">← Hub</a>
-  <a href="form/index.html">Field forms</a>
-  <a href="hub/inbox.html">Field inbox</a>
-  <a href="method.html">Method</a>
-</div>
+</header>
+<nav class="navband" aria-label="Sections of this site">
+  <div class="in">
+    <a href="./"><b>Overview</b><i>समग्र विवरण</i></a>
+    <a href="form/"><b>Field forms</b><i>फिल्ड फारम</i></a>
+    <a href="hub/"><b>Coordination dashboard</b><i>ड्यासबोर्ड</i></a>
+    <a href="method.html"><b>Method</b><i>विधि</i></a>
+    <a href="architecture.html"><b>Architecture</b><i>संरचना</i></a>
+    <a class="on" aria-current="page" href="access-explained.html"><b>Who sees what</b><i>पहुँच</i></a>
+    <a href="layer3.html"><b>Public layer</b><i>सार्वजनिक तह</i></a>
+  </div>
+</nav>
+<!--/NAV-->
 
 <div class="wrap">
 

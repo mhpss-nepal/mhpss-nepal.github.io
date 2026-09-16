@@ -1,22 +1,33 @@
+/* Retinted 16 September 2026 to the Health Cluster's own palette
+   (healthcluster.who.int Visual Identity Guidelines): Pantone 299 C
+   #009fe3 for the brand, and its darker shade #006996 wherever the brand
+   has to carry text. The dark-mode values are the same hue, lifted.
+
+   --warning was #fab219, a gold, and gold is out for this project. It is
+   now Pantone P 1495 C -- the guidelines' own secondary orange -- darkened
+   from #f39313 (2.33:1 on white, unusable for text) to #a56208, which
+   clears AA. Red, orange and green here are STATUS, not identity: red is a
+   site with no service, green a site reporting. Those meanings are not
+   changed. */
 /* Shared shell for the reference pages behind doors 3–5. Same tokens as the
    hub; plain document typography, generous measure, no charts. */
 :root{
   color-scheme: light;
   --ink:#20313B; --slate:#5B6B76; --muted:#8497A2; --line:#D8DFE4;
-  --brand:#007EB4; --brand-d:#005C85; --wash:#F4F7F9; --paper:#ffffff;
-  --good:#0ca30c; --warning:#fab219; --critical:#d03b3b;
-  --l1:#2F4858; --l2:#007EB4; --l3:#7A6F5B;
+  --brand:#009fe3; --brand-d:#006996; --wash:#F4F7F9; --paper:#ffffff;
+  --good:#0ca30c; --warning:#a56208; --critical:#d03b3b;
+  --l1:#2F4858; --l2:#009fe3; --l3:#7A6F5B;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   color-scheme: dark;
   --ink:#EEF3F6; --slate:#A7B7C0; --muted:#7D8F9A; --line:#2C363C;
-  --brand:#1E9BD7; --brand-d:#4FB4E4; --wash:#1C2226; --paper:#15191C;
+  --brand:#4cb8e8; --brand-d:#79bbd8; --wash:#1C2226; --paper:#15191C;
   --l1:#5B7A8C; --l2:#1E9BD7; --l3:#A4977E;
 }}
 :root[data-theme="dark"]{
   color-scheme: dark;
   --ink:#EEF3F6; --slate:#A7B7C0; --muted:#7D8F9A; --line:#2C363C;
-  --brand:#1E9BD7; --brand-d:#4FB4E4; --wash:#1C2226; --paper:#15191C;
+  --brand:#4cb8e8; --brand-d:#79bbd8; --wash:#1C2226; --paper:#15191C;
   --l1:#5B7A8C; --l2:#1E9BD7; --l3:#A4977E;
 }
 *{margin:0;padding:0;box-sizing:border-box}

@@ -1,3 +1,14 @@
+/* Retinted 16 September 2026 to the Health Cluster's own palette
+   (healthcluster.who.int Visual Identity Guidelines): Pantone 299 C
+   #009fe3 for the brand, and its darker shade #006996 wherever the brand
+   has to carry text. The dark-mode values are the same hue, lifted.
+
+   --warning was #fab219, a gold, and gold is out for this project. It is
+   now Pantone P 1495 C -- the guidelines' own secondary orange -- darkened
+   from #f39313 (2.33:1 on white, unusable for text) to #a56208, which
+   clears AA. Red, orange and green here are STATUS, not identity: red is a
+   site with no service, green a site reporting. Those meanings are not
+   changed. */
 /* ── MHPSS Nepal Hub — one stylesheet, no framework ─────────────────────
    Palette: WHO blue anchors slot 1 of a categorical set validated with the
    data-viz six checks in both modes (light surface #ffffff, dark #15191C).
@@ -8,9 +19,9 @@
   color-scheme: light;
   --surface:#ffffff; --surface-2:#F4F7F9; --surface-3:#EAF0F4;
   --ink:#20313B; --slate:#5B6B76; --muted:#8497A2; --line:#D8DFE4;
-  --brand:#007EB4; --brand-d:#005C85; --brand-wash:#E7F2F8;
-  --s1:#007EB4; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#8497A2;
-  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --brand:#009fe3; --brand-d:#006996; --brand-wash:#eaf7fd;
+  --s1:#009fe3; --s2:#eb6834; --s3:#1baf7a; --s4:#6f4fa8; --s5:#e87ba4; --s6:#8497A2;
+  --good:#0ca30c; --warning:#a56208; --serious:#ec835a; --critical:#d03b3b;
   --grid:#EDF1F4; --wash-bad:#FBEDED; --warn-ink:#8a5f00;
   --shadow:0 1px 2px rgba(32,49,59,.06), 0 4px 14px rgba(32,49,59,.05);
   --r:10px;
@@ -20,9 +31,9 @@
     color-scheme: dark;
     --surface:#15191C; --surface-2:#1C2226; --surface-3:#232B30;
     --ink:#EEF3F6; --slate:#A7B7C0; --muted:#7D8F9A; --line:#2C363C;
-    --brand:#1E9BD7; --brand-d:#4FB4E4; --brand-wash:#182A34;
+    --brand:#4cb8e8; --brand-d:#79bbd8; --brand-wash:#0d2c3c;
     --s1:#1E9BD7; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#7D8F9A;
-    --grid:#232B30; --wash-bad:#2A1B1B; --warn-ink:#fab219;
+    --grid:#232B30; --wash-bad:#2A1B1B; --warn-ink:#f0aa5c;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
   }
 }
@@ -30,9 +41,9 @@
   color-scheme: dark;
   --surface:#15191C; --surface-2:#1C2226; --surface-3:#232B30;
   --ink:#EEF3F6; --slate:#A7B7C0; --muted:#7D8F9A; --line:#2C363C;
-  --brand:#1E9BD7; --brand-d:#4FB4E4; --brand-wash:#182A34;
+  --brand:#4cb8e8; --brand-d:#79bbd8; --brand-wash:#0d2c3c;
   --s1:#1E9BD7; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#7D8F9A;
-  --grid:#232B30; --wash-bad:#2A1B1B; --warn-ink:#fab219;
+  --grid:#232B30; --wash-bad:#2A1B1B; --warn-ink:#f0aa5c;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
 }
 

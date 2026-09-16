@@ -239,14 +239,17 @@
   function mountToggle(cov) {
     if (LANGS.length < 2 || document.getElementById("i18nbar")) return;
     /* Three places to land, in order of preference:
-         .top                a page with a dark header bar -- sits inline
          [data-i18n-toggle]  a slot a page has chosen deliberately
+         .top                a page with a dark header bar -- sits inline
          nothing             the landing page has no header bar, so the
                              control floats top-right rather than not
                              appearing at all. It went missing there on the
                              first build, on the one page the Ministry opens
                              first, because mounting depended on .top. */
-    var bar = document.querySelector(".top") || document.querySelector("[data-i18n-toggle]");
+    /* A deliberate slot wins over a .top bar. It was the other way round, which
+       is why the hub pages put the switch in their dark bar and ignored the
+       slot in the rail -- landing it on top of the synthetic-data banner. */
+    var bar = document.querySelector("[data-i18n-toggle]") || document.querySelector(".top");
     var floating = !bar;
 
     var css = document.createElement("style");

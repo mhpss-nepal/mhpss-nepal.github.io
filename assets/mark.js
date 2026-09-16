@@ -43,18 +43,18 @@
        On a dark background the tile is dropped entirely and the glyph
        itself carries the shape. */
     var mono = !!opts.mono;
-    var tileFill = opts.flat ? "#007eb4" : "url(#" + id + ")";
+    var tileFill = opts.flat ? "#009fe3" : "url(#" + id + ")";
     var glyph = mono ? "#fff" : "#fff";
     /* the notch has to contrast with whatever the glyph sits on */
-    var notch = mono ? "rgba(255,255,255,.30)" : "#005c85";
+    var notch = mono ? "rgba(255,255,255,.30)" : "#004969";
 
     return '' +
     '<svg class="mk" width="' + size + '" height="' + size + '" viewBox="0 0 48 48" ' +
          'role="img" aria-label="MHPSS Nepal" xmlns="http://www.w3.org/2000/svg">' +
       (mono || opts.flat ? '' :
         '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1">' +
-        '<stop offset="0" stop-color="#0d9fd6"/><stop offset=".55" stop-color="#007eb4"/>' +
-        '<stop offset="1" stop-color="#005c85"/></linearGradient></defs>') +
+        '<stop offset="0" stop-color="#00a4eb"/><stop offset=".55" stop-color="#009fe3"/>' +
+        '<stop offset="1" stop-color="#006996"/></linearGradient></defs>') +
       (mono ? '' : '<rect x="0" y="0" width="48" height="48" rx="11" fill="' + tileFill + '"/>') +
       /* two peaks, one taller, meeting on a shared line */
       '<path d="M8 28.5 L18.5 12.5 L25.2 22.5 L30 16 L40 28.5 Z" ' +

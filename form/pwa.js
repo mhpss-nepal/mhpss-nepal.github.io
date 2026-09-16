@@ -24,7 +24,7 @@
   css.textContent =
     "#pwabar{position:sticky;top:0;z-index:40;display:flex;gap:9px;align-items:center;" +
     "flex-wrap:wrap;padding:9px 14px;font:600 12.5px/1.35 'Noto Sans',system-ui,sans-serif;" +
-    "background:#eef7fb;color:#005c85;border-bottom:1px solid #bcdcea}" +
+    "background:#eaf7fd;color:#006996;border-bottom:1px solid #acd9ec}" +
     "#pwabar.off{background:#fdf2ea;color:#8f420f;border-bottom-color:#e8c9b0}" +
     "#pwabar .msg{flex:1 1 200px;min-width:0}" +
     "#pwabar button{font:700 12px/1.2 inherit;font-family:inherit;border:1.5px solid currentColor;" +

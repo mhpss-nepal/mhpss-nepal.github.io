@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MHPSS Sub-Cluster Nepal — Rasuwa–Bhotekoshi flood response</title>
 <meta name="description" content="Coordination and information sharing between mental health and psychosocial support actors in the Rasuwa–Bhotekoshi flood response, Nepal. Health Cluster, with WHO Nepal and MoHP/EDCD.">
-<meta name="theme-color" content="#003893">
+<meta name="theme-color" content="#006996">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Mukta: the typeface the Ministry of Finance uses on its own flood-update
@@ -44,21 +44,21 @@
   ul.tight li{margin-bottom:4px}
   .defquote{border-left:4px solid var(--np-blue);background:var(--np-blue-t);padding:15px 18px;
             border-radius:0 var(--r-md) var(--r-md) 0;margin-top:18px}
-  .defquote p{margin:0;font-size:15px;line-height:1.66;color:#0d2a5c;max-width:none}
-  .defquote cite{display:block;margin-top:7px;font-style:normal;font-size:12px;color:#3a62b8}
+  .defquote p{margin:0;font-size:15px;line-height:1.66;color:#004969;max-width:none}
+  .defquote cite{display:block;margin-top:7px;font-style:normal;font-size:12px;color:#009fe3}
 </style>
 </head>
 <body>
 
-<!-- ============ masthead ============ -->
+<!--NAV:top overview-->
 <header class="gov">
   <div class="in">
     <a class="id" href="./">
       <span data-mark="44"></span>
       <span style="min-width:0">
-        <span class="who-line">Health Cluster · Nepal</span>
+        <span class="who-line">Health Cluster &middot; Nepal</span>
         <b>MHPSS Sub-Cluster</b>
-        <span class="place">Rasuwa · Nuwakot · flood response</span>
+        <span class="place">Rasuwa &middot; Nuwakot &middot; flood response</span>
       </span>
     </a>
     <div class="mid">
@@ -67,29 +67,35 @@
     </div>
     <div class="right">
       <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
-           finds one, instead of floating it top-right. Without this slot it
-           floated straight over the buttons below -- which is what it did on
-           the first render of this page. -->
+           finds one, instead of floating it top-right over these buttons. -->
       <span data-i18n-toggle class="langslot"></span>
       <a class="gbtn out" href="hub/">Coordination hub</a>
       <a class="gbtn crimson" href="form/">Field forms</a>
     </div>
   </div>
 </header>
-
-<!-- ============ nav band, bilingual and stacked ============ -->
-<nav class="navband">
+<nav class="navband" aria-label="Sections of this site">
   <div class="in">
-    <a class="on" href="./"><b>Overview</b><i>समग्र विवरण</i></a>
-    <a href="#coverage"><b>Coverage</b><i>कभरेज</i></a>
-    <a href="#pyramid"><b>Where it sits</b><i>चार तह</i></a>
-    <a href="#members"><b>Who takes part</b><i>सहभागी</i></a>
-    <a href="#work"><b>What the group does</b><i>कार्यक्षेत्र</i></a>
-    <a href="#tools"><b>Forms &amp; dashboard</b><i>फारम र ड्यासबोर्ड</i></a>
-    <a href="#method"><b>Method</b><i>विधि</i></a>
-    <a href="#contact"><b>Contact</b><i>सम्पर्क</i></a>
+    <a class="on" aria-current="page" href="./"><b>Overview</b><i>समग्र विवरण</i></a>
+    <a href="form/"><b>Field forms</b><i>फिल्ड फारम</i></a>
+    <a href="hub/"><b>Coordination dashboard</b><i>ड्यासबोर्ड</i></a>
+    <a href="method.html"><b>Method</b><i>विधि</i></a>
+    <a href="architecture.html"><b>Architecture</b><i>संरचना</i></a>
+    <a href="access-explained.html"><b>Who sees what</b><i>पहुँच</i></a>
+    <a href="layer3.html"><b>Public layer</b><i>सार्वजनिक तह</i></a>
   </div>
 </nav>
+<div class="jump" aria-label="Sections of this page">
+  <div class="in"><span class="lab">On this page</span>
+    <a href="#coverage">§1 What is measured</a>
+    <a href="#pyramid">§2 Where it sits</a>
+    <a href="#members">§3 Who takes part</a>
+    <a href="#work">§4 What the group does</a>
+    <a href="#tools">§5 Forms & dashboard</a>
+    <a href="#method">§6 Three layers</a>
+  </div>
+</div>
+<!--/NAV-->
 
 <!-- ============ status strip ============ -->
 <div class="statusbar">
@@ -183,32 +189,32 @@
        <g font-family="Mukta,sans-serif">
         <!-- Three dated stations, deliberately NOT drawn to scale: the third
              has no date, so an axis with a length would be inventing one. -->
-        <line x1="102" y1="70" x2="416" y2="70" stroke="#c8102e" stroke-width="3"/>
-        <line x1="444" y1="70" x2="756" y2="70" stroke="#c3cada" stroke-width="2"
+        <line x1="102" y1="70" x2="416" y2="70" stroke="#006996" stroke-width="3"/>
+        <line x1="444" y1="70" x2="756" y2="70" stroke="#939391" stroke-width="2"
               stroke-dasharray="6 5"/>
-        <rect x="84" y="64" width="12" height="12" fill="#c8102e"/>
-        <circle cx="430" cy="70" r="7" fill="#003893"/>
-        <circle cx="770" cy="70" r="7" fill="#fff" stroke="#9aa3b4" stroke-width="1.6"
+        <rect x="84" y="64" width="12" height="12" fill="#006996"/>
+        <circle cx="430" cy="70" r="7" fill="#006996"/>
+        <circle cx="770" cy="70" r="7" fill="#fff" stroke="#767674" stroke-width="1.6"
                 stroke-dasharray="3 3"/>
 
         <g text-anchor="middle">
-          <text x="259" y="52" font-size="15" font-weight="800" fill="#c8102e"
+          <text x="259" y="52" font-size="15" font-weight="800" fill="#006996"
                 id="tlSpan">21 days</text>
-          <text x="259" y="36" font-size="11" fill="#5b6478">elapsed</text>
-          <text x="600" y="52" font-size="13" font-weight="700" fill="#5b6478">date not set</text>
-          <text x="600" y="36" font-size="11" fill="#5b6478">the reporting calendar has still to be agreed</text>
+          <text x="259" y="36" font-size="11" fill="#5c5c5a">elapsed</text>
+          <text x="600" y="52" font-size="13" font-weight="700" fill="#5c5c5a">date not set</text>
+          <text x="600" y="36" font-size="11" fill="#5c5c5a">the reporting calendar has still to be agreed</text>
 
-          <text x="90" y="95" font-size="13" font-weight="700" fill="#14213d">Bhotekoshi flood</text>
-          <text x="90" y="111" font-size="11.5" fill="#5b6478">26 August 2026</text>
-          <text x="90" y="125" font-size="11" fill="#5b6478">Bhadra 10, 2083</text>
+          <text x="90" y="95" font-size="13" font-weight="700" fill="#1d1d1b">Bhotekoshi flood</text>
+          <text x="90" y="111" font-size="11.5" fill="#5c5c5a">26 August 2026</text>
+          <text x="90" y="125" font-size="11" fill="#5c5c5a">Bhadra 10, 2083</text>
 
-          <text x="430" y="95" font-size="13" font-weight="700" fill="#003893">Today</text>
-          <text x="430" y="111" font-size="11.5" fill="#5b6478" id="tlToday">16 September 2026</text>
-          <text x="430" y="125" font-size="11" fill="#5b6478">nothing reported into this system yet</text>
+          <text x="430" y="95" font-size="13" font-weight="700" fill="#006996">Today</text>
+          <text x="430" y="111" font-size="11.5" fill="#5c5c5a" id="tlToday">16 September 2026</text>
+          <text x="430" y="125" font-size="11" fill="#5c5c5a">nothing reported into this system yet</text>
 
-          <text x="770" y="95" font-size="13" font-weight="700" fill="#14213d">First reporting cycle</text>
-          <text x="770" y="111" font-size="11.5" fill="#5b6478">not yet scheduled</text>
-          <text x="770" y="125" font-size="11" fill="#5b6478">needs the roster and the code list</text>
+          <text x="770" y="95" font-size="13" font-weight="700" fill="#1d1d1b">First reporting cycle</text>
+          <text x="770" y="111" font-size="11.5" fill="#5c5c5a">not yet scheduled</text>
+          <text x="770" y="125" font-size="11" fill="#5c5c5a">needs the roster and the code list</text>
         </g>
        </g>
       </svg>
@@ -368,14 +374,14 @@
       <svg viewBox="0 0 400 320" role="img"
            aria-label="A four-layer pyramid. The layers are named beside it, from the top down.">
        <g font-family="Mukta,sans-serif">
-        <polygon points="61.25,232.5 338.75,232.5 385,306 15,306"     fill="#e7edfb" stroke="#c6d3f2"/>
-        <polygon points="107.5,159 292.5,159 338.75,232.5 61.25,232.5" fill="#c6d3f2" stroke="#9db3e3"/>
-        <polygon points="153.75,85.5 246.25,85.5 292.5,159 107.5,159"  fill="#3a62b8" stroke="#3a62b8"/>
-        <polygon points="200,12 246.25,85.5 153.75,85.5"               fill="#003893" stroke="#003893"/>
+        <polygon points="61.25,232.5 338.75,232.5 385,306 15,306"     fill="#eaf7fd" stroke="#acd9ec"/>
+        <polygon points="107.5,159 292.5,159 338.75,232.5 61.25,232.5" fill="#acd9ec" stroke="#79bbd8"/>
+        <polygon points="153.75,85.5 246.25,85.5 292.5,159 107.5,159"  fill="#009fe3" stroke="#009fe3"/>
+        <polygon points="200,12 246.25,85.5 153.75,85.5"               fill="#006996" stroke="#006996"/>
         <g font-size="17" font-weight="800" text-anchor="middle">
-          <text x="200" y="283" fill="#003893">1</text>
-          <text x="200" y="209" fill="#0d2a5c">2</text>
-          <text x="200" y="136" fill="#ffffff">3</text>
+          <text x="200" y="283" fill="#006996">1</text>
+          <text x="200" y="209" fill="#004969">2</text>
+          <text x="200" y="136" fill="#1d1d1b">3</text>
           <text x="200" y="71"  fill="#ffffff">4</text>
         </g>
        </g>
@@ -583,42 +589,42 @@
            aria-label="Three layers. Layer 1, field entry: a record with a code, never a name. Layer 2, coordination: counts by site and week. Layer 3, public: gaps against the roster. Data flows upward only.">
         <g font-family="Mukta,sans-serif">
           <!-- layer 1 -->
-          <rect x="1" y="139" width="524" height="62" fill="#e7edfb" stroke="#c6d3f2"/>
-          <rect x="1" y="139" width="4" height="62" fill="#003893"/>
-          <text x="22" y="161" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#003893">LAYER 1 · FIELD</text>
-          <text x="22" y="182" font-size="15" font-weight="600" fill="#14213d">One entry, on a phone, with no signal</text>
+          <rect x="1" y="139" width="524" height="62" fill="#eaf7fd" stroke="#acd9ec"/>
+          <rect x="1" y="139" width="4" height="62" fill="#006996"/>
+          <text x="22" y="161" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#006996">LAYER 1 · FIELD</text>
+          <text x="22" y="182" font-size="15" font-weight="600" fill="#1d1d1b">One entry, on a phone, with no signal</text>
           <!-- layer 2 -->
-          <rect x="1" y="72" width="524" height="60" fill="#f4f6fa" stroke="#dce1ea"/>
-          <rect x="1" y="72" width="4" height="60" fill="#3a62b8"/>
-          <text x="22" y="93" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#003893">LAYER 2 · COORDINATION</text>
-          <text x="22" y="114" font-size="15" font-weight="600" fill="#14213d">Duplication read, coverage measured</text>
+          <rect x="1" y="72" width="524" height="60" fill="#f6f6f5" stroke="#dadada"/>
+          <rect x="1" y="72" width="4" height="60" fill="#009fe3"/>
+          <text x="22" y="93" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#006996">LAYER 2 · COORDINATION</text>
+          <text x="22" y="114" font-size="15" font-weight="600" fill="#1d1d1b">Duplication read, coverage measured</text>
           <!-- layer 3 -->
-          <rect x="1" y="5" width="524" height="60" fill="#14213d"/>
-          <rect x="1" y="5" width="4" height="60" fill="#c8102e"/>
-          <text x="22" y="26" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#f0a7b3">LAYER 3 · PUBLIC</text>
+          <rect x="1" y="5" width="524" height="60" fill="#1d1d1b"/>
+          <rect x="1" y="5" width="4" height="60" fill="#006996"/>
+          <text x="22" y="26" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#79bbd8">LAYER 3 · PUBLIC</text>
           <text x="22" y="47" font-size="15" font-weight="600" fill="#ffffff">Aggregates only — this page</text>
 
           <!-- the one-way arrows, sitting IN the gap between the bars. The
                first version put them at x=505, hard against the right edge of
                the bars, where they read as stray marks rather than as flow. -->
-          <g stroke="#c8102e" stroke-width="2" fill="none" stroke-linecap="round"
+          <g stroke="#006996" stroke-width="2" fill="none" stroke-linecap="round"
              stroke-linejoin="round">
             <path d="M263 138 263 133"/><path d="M258.5 136 263 131.5 267.5 136"/>
             <path d="M263 71 263 66"/><path d="M258.5 69 263 64.5 267.5 69"/>
           </g>
-          <g font-size="10" font-weight="700" fill="#c8102e" letter-spacing=".6">
+          <g font-size="10" font-weight="700" fill="#006996" letter-spacing=".6">
             <text x="276" y="138">aggregated</text>
             <text x="276" y="71">aggregated</text>
           </g>
 
           <!-- what each layer is allowed to hold -->
-          <g font-size="12.5" fill="#5b6478">
+          <g font-size="12.5" fill="#5c5c5a">
             <text x="552" y="164">a record, with a code —</text>
-            <text x="552" y="181" font-weight="700" fill="#c8102e">never a name</text>
+            <text x="552" y="181" font-weight="700" fill="#006996">never a name</text>
             <text x="552" y="105">a count, by site and week</text>
             <text x="552" y="38">a gap, against the roster</text>
           </g>
-          <g stroke="#dce1ea" stroke-width="1.3">
+          <g stroke="#dadada" stroke-width="1.3">
             <path d="M540 160 532 160"/><path d="M540 101 532 101"/><path d="M540 34 532 34"/>
           </g>
         </g>

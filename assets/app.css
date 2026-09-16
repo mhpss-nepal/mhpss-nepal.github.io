@@ -1,10 +1,12 @@
 /* MHPSS Nepal — shared styles.
-   Colours: WHO blue #007eb4 and dark neutral #20313b, sampled from
-   who.int (meta theme-color and card styles) on 15 September 2026.
+   Colours: Pantone 299 C #009fe3 and its text-safe shade #006996, from the
+   Health Cluster's own Visual Identity Guidelines (healthcluster.who.int),
+   read 16 September 2026. The earlier values were sampled off who.int by eye;
+   these are the published ones.
    No emblem is used: WHO emblem use requires express written permission. */
 
 :root{
-  --who:#007eb4; --who-d:#005c85; --who-t:#eef7fb;
+  --who:#009fe3; --who-d:#006996; --who-t:#eaf7fd;
   --ink:#20313b; --slate:#5b6b76; --mute:#8b98a2;
   --line:#d8dfe4; --line-s:#eef2f5; --bg:#f4f7f9; --paper:#fff;
   --warn:#b4541f; --warn-t:#fdf2ea;
@@ -180,7 +182,7 @@ table.data td.n{text-align:right; font-variant-numeric:tabular-nums; white-space
 .qrbox .u{font:11.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--slate);
   word-break:break-all; margin:8px 0 6px}
 
-.ml-note{background:var(--who-t); border:1px solid #bcdcea; border-radius:var(--r);
+.ml-note{background:var(--who-t); border:1px solid #acd9ec; border-radius:var(--r);
   padding:14px 16px; font-size:13px; line-height:1.55; color:var(--ink)}
 .ml-note b{color:var(--who-d)}
 .ml-note ul{margin:8px 0 0; padding-left:20px}
