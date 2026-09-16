@@ -506,6 +506,7 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 .ukey i{width:13px;height:13px;flex:0 0 auto;display:block;background:#fff}
 .ukey i.roster{border:1.6px solid var(--wh-d)}
 .ukey i.offroster{border:1.6px solid var(--hc-ink)}
+.ukey i.govlist{border:1.6px dashed var(--hc-ink)}
 .ukey i.outside{border:1.6px solid #939391}
 .ukey i.served{border:1.6px solid var(--wh-d);background:var(--wh-d)}
 
@@ -555,6 +556,7 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 .u{width:18px;height:18px;display:block;background:#fff;border-radius:2px}
 .u.roster{border:1.6px solid var(--wh-d)}
 .u.offlist{border:1.6px solid var(--hc-ink)}
+.u.govlist{border:1.6px dashed var(--hc-ink)}
 .u.outside{border:1.6px solid #939391}
 .u.served{border:1.6px solid var(--wh-d);background:var(--wh-d)}
 

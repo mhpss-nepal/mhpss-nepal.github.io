@@ -256,7 +256,7 @@
 
   function refreshSites() {
     var d = $("district").value;
-    var list = C.SITES.filter(function (s) { return !d || s.district === d; });
+    var list = C.FORM_SITES.filter(function (s) { return s.source !== "escape" && (!d || s.district === d); });
     L.fillSelect($("site"), list.concat([{ code: "OTHER", name: "Other — not on the roster" }]));
   }
   $("district").addEventListener("change", function () { refreshSites(); payload(); });

@@ -802,9 +802,9 @@
 
   $("expGap").addEventListener("click", function () {
     if (!GAPS.length) return toast("No gaps to export — every roster site has a report", true);
-    var head = "site_code,site_name,site_name_np,district,palika,recorded_population\n";
+    var head = "site_code,site_name,site_name_np,district,palika,palika_pcode,recorded_population\n";
     var body = GAPS.map(function (s) {
-      return [s.code, '"' + s.name + '"', '"' + (s.np || "") + '"', distName(s.district), '"' + (s.palika || "") + '"', s.pop === null ? "" : s.pop].join(",");
+      return [s.code, '"' + s.name + '"', '"' + (s.np || "") + '"', distName(s.district), '"' + C.palikaName(s.palika) + '"', s.palika || "", s.pop === null ? "" : s.pop].join(",");
     }).join("\n");
     S.download("mhpss_np_coverage_gaps_" + S.stamp() + ".csv", "﻿" + head + body + "\n", "text/csv");
   });

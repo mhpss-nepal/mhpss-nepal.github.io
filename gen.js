@@ -15,6 +15,7 @@ const int  = (lo,hi) => lo + Math.floor(rnd()*(hi-lo+1));
 
 const roster   = V.SITES.filter(s=>s.source==='roster');
 const reported = V.SITES.filter(s=>s.source==='reported');
+const offered  = new Set(V.SITES.filter(s=>s.source!=='retired' && s.source!=='escape').map(s=>s.code));
 
 /* Deliberate coverage gaps — the whole point of the hub.
    Six roster sites receive nothing at all. Chosen to be plausible:
@@ -28,15 +29,17 @@ const ACTS = V.ACTIVITIES.filter(a=>!['COORD','TRAIN'].includes(a.code));
 
 /* Which organisations work where — a realistic, fixed assignment. */
 const FOOTPRINT = {
-  TPO:   ['NUW-01','NUW-04','NUW-05','NUW-11','NUW-R3','NUW-R5','NUW-13','DHA-R1'],
-  CMC:   ['RAS-02','RAS-04','RAS-R1','RAS-R2','NUW-01','NUW-02','NUW-07','NUW-10','DHA-R3'],
-  CWIN:  ['NUW-07','NUW-09','NUW-10','NUW-17','NUW-18','NUW-R1','RAS-R3'],
-  NRCS:  ['NUW-01','NUW-06','NUW-09','NUW-R4','RAS-02'],
+  TPO:   ['NUW-01','NUW-04','NUW-05','NUW-11','NUW-R3','NUW-R7','NUW-13','DHA-R1'],
+  CMC:   ['RAS-02','RAS-04','RAS-R1','RAS-R2','NUW-01','NUW-02','NUW-07','NUW-10','DHA-R5'],
+  CWIN:  ['NUW-07','NUW-09','NUW-10','NUW-17','NUW-18','NUW-06','RAS-R7'],
+  NRCS:  ['NUW-01','NUW-06','NUW-09','NUW-R6','RAS-02'],
   KOS:   ['NUW-10','NUW-07','NUW-12'],
-  SAMI:  ['DHA-R1','DHA-R2','DHA-R4','NUW-R5'],
+  SAMI:  ['DHA-R1','DHA-R7','DHA-R9','NUW-R7'],
   VID:   ['NUW-R2','KTM-R2'],
   GOVPSC:['RAS-04','RAS-R4','NUW-12','NUW-15','RAS-03'],
 };
+for (const [o, codes] of Object.entries(FOOTPRINT)) for (const c of codes)
+  if (!offered.has(c)) throw new Error(`FOOTPRINT ${o}: ${c} is not a site the forms offer`);
 const CADRE_OF = { TPO:['PSY','PSC','SPSC'], CMC:['PSC','SPSC','PSY'], CWIN:['PSC','SW','VOL'],
   NRCS:['VOL','PSC'], KOS:['PSC','SW'], SAMI:['PSC'], VID:['PSY','PSYT'], GOVPSC:['PSC','HW'] };
 const ACT_WEIGHT = { PFA:26, 'CNS-I':14, 'CNS-G':8, PSED:11, RECR:13, CFS:8, SPEC:4, MEDS:3, REF:4, HELP:5, IEC:3, ASMT:6, STAFF:5 };
@@ -104,18 +107,16 @@ for (let d = 11; d <= 11+DAYS-1; d++) {
   }
 }
 
-/* Synthetic workforce roster — invented names, no contact details at all. */
-const FIRST = ['Anisha','Bibek','Chandra','Deepa','Ehsan','Gita','Hari','Ishwor','Jyoti','Kabita','Laxman','Mina','Nabin','Ojaswi','Prakash','Rita','Sabin','Tara','Umesh','Yamuna','Bimala','Suraj','Nirmala','Kiran','Sabina','Dipesh','Manisha','Rajesh','Sunita','Anil'];
-const LAST  = ['Adhikari','Bhandari','Chaudhary','Dhakal','Gurung','Karki','Lama','Magar','Neupane','Oli','Pandey','Rai','Shrestha','Tamang','Thapa','Bista','Sherpa','Poudel'];
+/* Synthetic workforce -- counts by organisation, cadre and district, and
+   NOTHING ELSE. An earlier version invented a name per person; two of the
+   invented names turned out to match names on the real rosters (a
+   coincidence, but one a reader cannot tell from a leak), so no name field
+   exists here at all. The hub only ever counted people, never listed them. */
 const workforce = [];
-const seenName = new Set();
 for (const org of ORGS) {
   const nStaff = { TPO:34, CMC:41, CWIN:33, NRCS:29, KOS:12, SAMI:18, VID:8, GOVPSC:14 }[org.code];
   for (let i=0;i<nStaff;i++){
-    let nm; let guard=0;
-    do { nm = `${pick(FIRST)} ${pick(LAST)}`; guard++; } while (seenName.has(nm) && guard<40);
-    seenName.add(nm);
-    workforce.push({ name:nm, org:org.code, cadre:pick(CADRE_OF[org.code]),
+    workforce.push({ org:org.code, cadre:pick(CADRE_OF[org.code]),
                      district: pick([...new Set(FOOTPRINT[org.code].map(c=>V.SITES.find(s=>s.code===c).district))]) });
   }
 }
@@ -143,7 +144,7 @@ roster.forEach(function(s){ sitePop[s.code] = [0,0,8,30,42,50,60,73,75,91,95,115
 
 const out = {
   meta: {
-    generated: '2026-09-15',
+    generated: '2026-09-16',
     synthetic: true,
     notice: 'EVERY FIGURE IN THIS FILE IS SYNTHETIC. Generated deterministically for demonstration only. It is not response data and must never be quoted as such.',
     seed: 20830511,
@@ -153,6 +154,12 @@ const out = {
   lines: LINES.map(({code,name})=>({code,name})),
 };
 fs.writeFileSync('data/demo.json', JSON.stringify(out));
+/* demo.js assigns window.DEMO: a classic script, because the hub has to open
+   from a file:// URL where a module import or a fetch() is refused. */
+fs.writeFileSync('data/demo.js',
+  '/* Synthetic demonstration data. See meta.notice. Loaded as a classic script so the\n' +
+  '   hub works when opened directly from a file, where module imports and fetch() do not. */\n' +
+  'window.DEMO = ' + JSON.stringify(out) + ';\n');
 const reach = records.reduce((a,r)=>a+r.reachedTotal,0);
 const servedRoster = new Set(records.map(r=>r.site).filter(c=>c.length===6 && !c.includes('-R')));
 console.log('records', records.length, '| reach', reach, '| workforce', workforce.length,

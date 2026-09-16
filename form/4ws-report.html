@@ -377,20 +377,24 @@
     fillTargetGroups();
   });
 
+  /* what the dropdown says after a site that is not on the roster */
+  var SITE_TAG = { reported: "  ·  not on roster", "gov-list": "  ·  district list, not on roster" };
   function siteLabel(s) {
     var pop = s.pop === null || s.pop === undefined ? "" : "  ·  " + s.pop + " people";
-    var tag = s.source === "roster" ? "" : s.source === "reported" ? "  ·  not on roster" : "";
-    return C.label(s) + pop + tag;
+    return C.label(s) + pop + (SITE_TAG[s.source] || "");
   }
   function refreshSites() {
     var d = $("district").value;
-    var list = C.SITES.filter(function (s) { return !d || s.district === d || s.code === "OTHER"; });
+    /* FORM_SITES: a retired code stays in the list so old records resolve, but is never a choice */
+    var list = C.FORM_SITES.filter(function (s) { return !d || s.district === d || s.code === "OTHER"; });
     var keep = $("site").value;
     fill($("site"), list, "code", siteLabel, "Select…");
     if (keep && list.some(function (s) { return s.code === keep; })) $("site").value = keep;
     var s = C.siteByCode[$("site").value];
     $("siteHelp").innerHTML = s && s.source === "reported"
       ? "This site appears in submitted reports but is <b>not on the holding-centre roster</b>. It is recorded, and flagged so it can be confirmed or matched."
+      : s && s.source === "gov-list"
+      ? "This site is on the <b>District Administration Office list</b> for Nuwakot but not on the holding-centre roster. It is recorded; whether it counts towards coverage is still to be decided."
       : "Choose from the holding-centre roster. Only pick “Other” if the site genuinely is not listed — every “Other” has to be reconciled by hand later.";
   }
   $("district").addEventListener("change", refreshSites);
