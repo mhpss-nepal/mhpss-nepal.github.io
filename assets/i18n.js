@@ -16,9 +16,15 @@
 
    WHAT IS AUTOMATIC AND WHAT IS NOT, stated plainly
    Translation is not automatic; a person writes the Nepali. What IS
-   automatic is that a missing translation cannot hide: it renders with a
-   visible marker, it is counted on the page, and tools/i18n-check.py
-   fails the deploy when a migrated page has gaps.
+   automatic is that a missing translation cannot hide FROM US:
+   tools/i18n-check.py fails the deploy when a page marked enforced has a
+   gap, and ?i18n=marks paints every gap on the page for whoever is
+   writing the Nepali.
+   What a READER is told is different, and deliberately so: a notice at the
+   top of the Nepali page, saying it was translated automatically and that
+   English is the authoritative version. Not ninety dotted underlines and a
+   "90 to do" counter -- those are our instruments, and a Ministry reader
+   who sees them reads the page as broken rather than as honest.
 
    MARKUP
      <h1 data-i18n="hub.title"></h1>            text content
@@ -82,6 +88,40 @@
 
   var lang = pick();
 
+  /* ---------- reader view vs translator view --------------------------
+     The provenance marks and the coverage count below are working
+     instruments: they tell whoever is writing the Nepali which sentences
+     are still English and which are only a machine draft. They are not
+     for a reader. Left on by default they put a dotted rule under almost
+     every line of a part-translated page and print "90 to do" beside the
+     language buttons -- a Ministry reader opens that and sees a broken
+     page, not an honest one.
+
+     So the marks are off unless asked for:
+       ?i18n=marks   turn them on (kept for the rest of the browser
+                     session, so following links through the site keeps
+                     them on while a translator works)
+       ?i18n=clean   turn them off again
+     What a reader is still told, always, is the notice at the top of the
+     page: this was translated automatically and English is the
+     authoritative version. That is the honest part, and it does not
+     depend on this flag. */
+  var MKEY = "mhpss-np-i18n-marks";
+  function marksOn() {
+    var q = null;
+    try { q = new URLSearchParams(window.location.search).get("i18n"); } catch (e) { /* ignore */ }
+    if (q === "marks" || q === "1") {
+      try { sessionStorage.setItem(MKEY, "1"); } catch (e) { /* ignore */ }
+      return true;
+    }
+    if (q === "clean" || q === "0") {
+      try { sessionStorage.removeItem(MKEY); } catch (e) { /* ignore */ }
+      return false;
+    }
+    try { return sessionStorage.getItem(MKEY) === "1"; } catch (e) { return false; }
+  }
+  var MARKS = marksOn();
+
   /* ---------- lookup ---------------------------------------------------
      Returns the string and whether it was actually translated, so the
      caller can mark the ones that were not. */
@@ -141,9 +181,11 @@
       el.classList.toggle("i18n-todo", !r.translated && lang !== "en");
       el.classList.toggle("i18n-kept", !!r.kept && lang !== "en");
       el.classList.toggle("i18n-machine", r.prov === "machine" && lang !== "en");
-      if (lang !== "en") {
+      if (lang !== "en" && MARKS) {
         if (r.kept) el.setAttribute("title", t("i18n.keptTitle"));
         else if (!r.translated) el.setAttribute("title", t("i18n.todoTitle"));
+      } else if (el.hasAttribute("title")) {
+        el.removeAttribute("title");
       }
     });
 
@@ -160,6 +202,8 @@
     var L = LANGS.filter(function (l) { return l.code === lang; })[0];
     document.documentElement.setAttribute("lang", (L && L.html) || lang);
     document.documentElement.setAttribute("data-lang", lang);
+    if (MARKS) document.documentElement.setAttribute("data-i18n-marks", "on");
+    else document.documentElement.removeAttribute("data-i18n-marks");
 
     var kept = 0, machine = 0, human = 0;
     root.querySelectorAll("[data-i18n]").forEach(function (el) {
@@ -222,11 +266,15 @@
       "@media (max-width:480px){#i18nwrap.float{top:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px))}}" +
       /* Untranslated text is shown, not hidden -- with a mark, so a
          half-done page is never mistaken for a finished one. */
-      ".i18n-todo{border-bottom:1px dotted currentColor;opacity:.92}" +
+      /* The three provenance rules apply only in the translator view
+         (?i18n=marks). The classes are always on the elements, so the
+         worksheet tooling and any DOM check still find them -- it is only
+         their appearance that is gated. */
+      ':root[data-i18n-marks="on"] .i18n-todo{border-bottom:1px dotted currentColor;opacity:.92}' +
       /* kept in English on purpose -- a solid rule, not the dotted "missing"
          one, because it is a decision rather than a gap */
-      ".i18n-kept{border-bottom:1px solid rgba(180,84,31,.45)}" +
-      ".i18n-machine{border-bottom:1px dashed rgba(0,126,180,.5)}" +
+      ':root[data-i18n-marks="on"] .i18n-kept{border-bottom:1px solid rgba(180,84,31,.45)}' +
+      ':root[data-i18n-marks="on"] .i18n-machine{border-bottom:1px dashed rgba(0,126,180,.5)}' +
       ".i18n-missing{background:#fdeeee;color:#9b2c2c;font-family:ui-monospace,monospace;font-size:.9em}" +
       "#i18nprog{font:600 10.5px/1.3 'Noto Sans',system-ui,sans-serif;color:#a9bcc7;" +
       "margin-left:8px;flex:0 0 auto}" +
@@ -285,7 +333,7 @@
     if (!prog) return;
     /* The count is shown only where it means something: on the Nepali
        view, where a gap is a gap. */
-    if (lang === "en" || !cov || !cov.total) { prog.textContent = ""; return; }
+    if (lang === "en" || !MARKS || !cov || !cov.total) { prog.textContent = ""; return; }
     /* Strings kept in English on purpose are not gaps, so they are not
        counted as missing. A machine draft is counted separately from text a
        person has checked -- "38 machine" and "38 reviewed" are very
