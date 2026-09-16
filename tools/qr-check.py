@@ -151,5 +151,33 @@ def main(argv):
     return 1
 
 
+def cards():
+    """Every QR the printable card sheet asks for must exist in qr.js.
+
+    The sheet is the thing a field worker is handed, so a missing key there is
+    a card with a blank square on it. The full test -- render the sheet to A4
+    and decode each card back with OpenCV -- needs a browser and cannot run on
+    the deploy machine; it is done from the cloud workspace before a deploy and
+    passed 6 of 6 at 150 dpi and above on 16 September 2026. This is the part
+    that can run anywhere.
+    """
+    import os, re
+    here = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.dirname(here)
+    card = os.path.join(root, "form/cards.html")
+    if not os.path.exists(card):
+        return 0, "no card sheet"
+    html = open(card, encoding="utf-8").read()
+    want = re.findall(r'data-qr="([a-z0-9]+)"', html)
+    qr = open(os.path.join(root, "assets/qr.js"), encoding="utf-8").read()
+    have = set(re.findall(r'^"([a-z0-9]+)":\{', qr, re.M))
+    missing = [k for k in want if k not in have]
+    if missing:
+        return 1, "the card sheet asks for %s, which assets/qr.js does not hold" % ", ".join(missing)
+    return 0, "the card sheet's %d codes all exist" % len(want)
+
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    rc = main(sys.argv)
+    crc, cmsg = cards()
+    print("  card sheet: %s" % cmsg)
+    sys.exit(rc or crc)

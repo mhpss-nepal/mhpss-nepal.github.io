@@ -308,6 +308,8 @@ window.I18N_STRINGS = {
     "ml.p075": "📱 QR for this page",
     "ml.p076": "🔗 Copy the link to this page",
     "ml.p077": "Send this one link and a field worker has all the forms — no app to install, nothing to sign in to.",
+    "ml.p078": "Printable card sheet",
+    "ml.p079": "One A4 sheet, six cut-out cards, every form's QR on it — asked for by the data system review on 16 September.",
 
     "sr.age.choose": "— choose —",
     "sr.age.u18": "Under 18",

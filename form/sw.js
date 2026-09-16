@@ -29,6 +29,10 @@ const PRECACHE = [
   "phq9.html",
   "referral.html",
   "selfreport.html",
+  /* the printable QR card sheet: asked for on 16 Sep and flagged urgent.
+     It is precached because the person printing it may be doing so from a
+     district office with the same bad connection as the field. */
+  "cards.html",
   "manifest.webmanifest",
   "icons/icon-192.png",
   "icons/icon-512.png",
