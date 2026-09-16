@@ -258,7 +258,7 @@
       "#i18nbar button[aria-pressed=true]{background:#cfe6f2;color:#20313b}" +
       "#i18nbar button:focus-visible{outline:2px solid #fff;outline-offset:-2px}" +
       /* the floating variant, for a page with no header bar */
-      "#i18nwrap.float{position:fixed;z-index:60;top:calc(10px + env(safe-area-inset-top,0px));" +
+      "#i18nwrap.float{position:fixed;z-index:60;top:calc(var(--i18n-float-top,10px) + env(safe-area-inset-top,0px));" +
       "right:12px;display:flex;align-items:center;gap:6px;background:rgba(32,49,59,.94);" +
       "padding:5px 7px;border-radius:7px;box-shadow:0 1px 6px rgba(0,0,0,.22)}" +
       "#i18nwrap.float #i18nbar{margin:0}" +
@@ -387,18 +387,25 @@
        "this page was translated automatically" would be false. A false
        notice is worse than none -- it is the kind of thing a Ministry
        reader checks once and then stops trusting the rest. */
-    var partial = !cov || !cov.total;
-    var ne = partial
-      ? [t("mt.partial.ne"), t("mt.partial.auth.ne")]
-      : [t("mt.notice.ne"), t("mt.authoritative.ne"), t("mt.clinicalKept.ne")];
-    var en = partial
-      ? [t("mt.partial.en"), t("mt.partial.auth.en")]
-      : [t("mt.notice.en"), t("mt.authoritative.en"), t("mt.clinicalKept.en")];
+    var keyed = !!(cov && cov.total);
+    var hasLists = !!document.querySelector("select");
+    var kind = keyed ? "full" : (hasLists ? "partial" : "notyet");
+    var WORDS = {
+      full:    [["mt.notice.ne", "mt.authoritative.ne", "mt.clinicalKept.ne"],
+                ["mt.notice.en", "mt.authoritative.en", "mt.clinicalKept.en"]],
+      partial: [["mt.partial.ne", "mt.partial.auth.ne"],
+                ["mt.partial.en", "mt.partial.auth.en"]],
+      notyet:  [["mt.notyet.ne", "mt.notyet.auth.ne"],
+                ["mt.notyet.en", "mt.notyet.auth.en"]]
+    };
+    var ne = WORDS[kind][0].map(t);
+    var en = WORDS[kind][1].map(t);
+    var partial = kind !== "full";
 
     var n = document.createElement("div");
     n.id = "mtnote";
     n.setAttribute("role", "status");
-    n.setAttribute("data-mt", partial ? "partial" : "full");
+    n.setAttribute("data-mt", kind);
     n.innerHTML =
       '<span class="m">' +
         '<span class="np" lang="ne">' + esc(ne.join(" ")) + "</span>" +
@@ -420,6 +427,25 @@
     acts.appendChild(enBtn); acts.appendChild(x);
     n.appendChild(acts);
     document.body.insertBefore(n, document.body.firstChild);
+
+    /* Keep a floating toggle clear of the notice. The notice is in flow at
+       the top of the page; the toggle is fixed in the same corner, so on a
+       wide screen it landed on top of the notice's own "Read in English"
+       button. Measured rather than guessed, because the notice wraps to two
+       or three lines depending on width and language. */
+    function clearNotice() {
+      var wrap = document.getElementById("i18nwrap");
+      if (!wrap || !wrap.classList.contains("float")) return;
+      var h = n.getBoundingClientRect().height;
+      document.documentElement.style.setProperty(
+        "--i18n-float-top", (h > 0 ? Math.round(h) + 8 : 10) + "px");
+    }
+    clearNotice();
+    window.addEventListener("resize", clearNotice);
+    /* and put it back when the notice is dismissed */
+    x.addEventListener("click", function () {
+      document.documentElement.style.setProperty("--i18n-float-top", "10px");
+    });
   }
 
   function esc(v) {

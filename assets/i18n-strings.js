@@ -388,6 +388,14 @@ window.I18N_STRINGS = {
        which now have Nepali. Saying "this page was translated
        automatically" there would be false, and a false notice is worse
        than no notice. */
+    /* A page with no keys AND no dropdowns: nothing on it is in Nepali,
+       so neither of the other two sentences is true of it. Saying nothing
+       would be worse -- a reader who pressed NEP and saw English needs to
+       know that is the state of the page, not a fault in their browser. */
+    "mt.notyet.ne":       "यो पृष्ठ अझै नेपालीमा उपलब्ध छैन।",
+    "mt.notyet.auth.ne":  "अंग्रेजी संस्करण आधिकारिक हो।",
+    "mt.notyet.en":       "This page is not available in Nepali yet.",
+    "mt.notyet.auth.en":  "The English version is the authoritative one.",
     "mt.partial.ne":      "यो फारमका सूचीका विकल्पहरू नेपालीमा स्वचालित रूपमा अनुवाद गरिएका छन्। बाँकी पृष्ठ अझै अंग्रेजीमा छ।",
     "mt.partial.auth.ne": "अंग्रेजी संस्करण आधिकारिक हो।",
     "mt.partial.en":      "The choices in this form's lists have been translated automatically into Nepali. The rest of this page is still in English.",
