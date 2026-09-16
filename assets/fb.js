@@ -262,6 +262,31 @@
     }, function (e) { if (onErr) onErr(e && e.message ? e.message : String(e)); });
   }
 
+  /* watchKind -- the listen an UNAUTHENTICATED reader has to use.
+     Rules v3 opens one kind of record and only that kind, and Firestore
+     evaluates a query against its POTENTIAL result set: "security rules are
+     not filters ... queries are all or nothing". So an anonymous reader must
+     name the kind in the query itself; watch() above, which names nothing, is
+     refused outright even when every document in the collection would pass.
+
+     No orderBy here, deliberately. Single-field indexes are automatic;
+     combinations of fields are not, and an equality filter plus an orderBy on
+     a different field is a combination. Dropping the sort keeps this path
+     working with no composite index to create in the console, and costs
+     nothing: every page that consumes these rows sorts them itself.
+     If the collection ever outgrows the limit, the fix is the composite index
+     on (kind, server_ts) -- Firestore returns the error with a link to build
+     it -- not a larger limit. */
+  function watchKind(kind, cb, onErr) {
+    if (!state.ready) { if (onErr) onErr("not connected"); return function () {}; }
+    var qq = api.query(api.collection(db, COLL), api.where("kind", "==", kind), api.limit(2000));
+    return api.onSnapshot(qq, function (snap) {
+      var rows = [];
+      snap.forEach(function (d) { var o = d.data(); o._id = d.id; rows.push(o); });
+      cb(rows);
+    }, function (e) { if (onErr) onErr(e && e.message ? e.message : String(e)); });
+  }
+
   function signIn(email, pass) {
     if (!state.ready) return Promise.reject(new Error("not connected"));
     return api.signIn(auth, email, pass);
@@ -394,7 +419,7 @@
     onStatus: function (f) { stateCbs.push(f); f(status()); },
     onUser: function (f) { userCbs.push(f); f(state.user); },
     submit: submit, flush: flush, queue: queue, rid: rid,
-    watch: watch, signIn: signIn, signOut: signOutNow,
+    watch: watch, watchKind: watchKind, signIn: signIn, signOut: signOutNow,
     clearQueue: function () { setQueue([]); announce(); }
   };
 })();

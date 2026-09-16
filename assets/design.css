@@ -76,6 +76,22 @@
   --grey-1:#f6f6f5; --grey-2:#efefee;
   --grey-3:#dadada;  /* Pantone P 427 C                                        */
   --flag-t:#f2f2f1; --flag-b:#cfcfcd;
+  /* ONE PAGE FRAME.
+     Measured 16 Sep 2026: the <h1> on this site landed at ten different
+     x-positions between 109px and 416px depending on the page, because each
+     stylesheet centred a container of its own width -- .page at 1320,
+     page.css main at 960, app.css .wrap at 940, hub.css .wrap at 1760. A
+     centred block moves its own left edge whenever its width changes, so
+     every click slid the text sideways.
+     The fix is one frame for every page in the top-navigation family, with
+     narrower things LEFT-ALIGNED inside it rather than re-centred. Text stays
+     readable because the prose measure is capped in ch, not because the whole
+     page is narrow -- which is what let the canvas stay wide after the
+     Ministry-of-Finance comparison and still read as one site. */
+  --frame:1240px;
+  --gutter:28px;
+  --measure:74ch;      /* prose line length, capped independently of the frame */
+  --formw:940px;       /* a form column; a 1240px-wide input is not a form */
   --sans:'Mukta',system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans',Arial,sans-serif;
   --r-sm:3px; --r:4px; --r-md:10px; --r-lg:12px;
   --sh-card:0 1px 2px rgba(29,29,27,.06);
@@ -94,10 +110,32 @@ a{color:var(--wh-tx)}
    extra width goes to the data, never to the sentences).
    The coordination hub is a different thing and takes a different width -- see
    the rail section and hub.css. */
+/* The demonstration band. Defined here as well as in hub.css so that the
+   pages which do not load hub.css get the same 35px, rather than inheriting a
+   line-height from whichever base stylesheet they happen to use. */
+.synth{background:#a3201f;color:#fff;font-size:12.5px;line-height:1.45;font-weight:700;
+  letter-spacing:.02em;text-align:center;padding:7px 16px;
+  padding-top:calc(7px + env(safe-area-inset-top,0px));position:relative;z-index:40}
+.synth span{font-weight:400;opacity:.92}
 .gov{background:#fff;border-bottom:1px solid var(--grey-3)}
-.gov .in{max-width:1320px;margin:0 auto;padding:13px 20px;display:flex;align-items:center;
+/* The masthead rides the SAME frame as the content, so the emblem block and
+   the page title share a left edge. It was 1320 while the content frame was
+   1240, which put the masthead 48px to the left of everything under it.
+   font-size is pinned here rather than inherited: page.css sets a larger base
+   size, which wrapped the identity block onto an extra line and made the
+   masthead 111px tall on three pages and 88px on the rest -- so the title
+   visibly hopped up and down as you clicked between them. */
+.gov{font-size:15px;line-height:1.35}
+.gov .in{max-width:var(--frame);margin:0 auto;padding:13px var(--gutter);display:flex;align-items:center;
          gap:18px;flex-wrap:wrap}
 .gov .id{display:flex;align-items:center;gap:11px;text-decoration:none;min-width:0}
+/* mark.js drops an inline SVG into [data-mark]; with no box of its own the
+   span took its height from the surrounding line box, which differed between
+   page.css and design.css and made the masthead 84px tall here and 50px
+   there -- a 26px hop in the logo and the whole nav bar on every click
+   between those pages. Pin the box and the mark cannot argue. */
+.gov .id > [data-mark]{flex:0 0 44px;width:44px;height:44px;display:block;line-height:0}
+.gov .id > [data-mark] svg,.gov .id > [data-mark] img{display:block;width:100%;height:100%}
 .gov .id .who-line{font-size:11.5px;color:var(--hc-mute);line-height:1.3}
 .gov .id b{display:block;font-size:19px;font-weight:700;color:var(--wh-d);line-height:1.2;
            letter-spacing:-.2px}
@@ -144,7 +182,7 @@ a{color:var(--wh-tx)}
 .statusbar .sep{color:#6b6b69}
 
 /* ---------- page shell ----------------------------------------------- */
-.page{max-width:1320px;margin:0 auto;padding:0 20px}
+.page{max-width:var(--frame);margin:0 auto;padding:0 var(--gutter)}
 .sheet{background:var(--grey-1);border:1px solid var(--grey-3);border-radius:var(--r-lg);
        padding:26px 28px;margin:22px 0}
 @media (max-width:620px){ .sheet{padding:20px 17px;border-radius:var(--r-md)} }
@@ -280,7 +318,7 @@ a.rc.fill .go{color:#fff}
        color:var(--wh-b)}
 .top a:hover{background:rgba(255,255,255,.1);color:#fff}
 
-.wrap{padding:24px 18px 88px}
+.wrap{padding:24px var(--gutter) 88px}
 /* 18px is a phone's gutter. On the hub, where the content now runs to the edge
    of the space beside the rail, it read as cramped -- so the gutter opens up
    once there is room for it. */

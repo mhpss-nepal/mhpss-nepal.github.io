@@ -33,8 +33,18 @@ a{color:var(--who-d)}
 .top .spacer{flex:1}
 .top a{color:#cfe6f2; text-decoration:none; font-size:13px; font-weight:600}
 .top a:hover{color:#fff}
-.wrap{max-width:940px; margin:0 auto; padding:20px 16px 80px}
-.wrap.wide{max-width:1220px}
+/* Same frame as every other top-navigation page (see --frame in design.css).
+   The form column itself stays at --formw and sits at the frame's left edge
+   rather than being re-centred, which is what used to move the page sideways
+   between a form and a document. */
+.wrap{max-width:var(--frame,1240px); margin:0 auto; padding:20px var(--gutter,28px) 80px}
+/* Cards, banners and field grids take the whole frame, so every block on the
+   page shares one right edge. Only running TEXT is capped, and by line length
+   rather than by a container width -- a 1240px-wide paragraph is unreadable,
+   a 1240px-wide card of three-column fields is not. Capping the cards at 940
+   while the banners ran to the frame was the ragged right edge this replaced. */
+.wrap > :is(p,.lede,.help,.hint){max-width:var(--measure,74ch)}
+.wrap.wide{max-width:var(--frame,1240px)}
 
 h1{font-size:23px; line-height:1.2; margin:0 0 6px; letter-spacing:-.015em}
 h2{font-size:17px; margin:26px 0 10px; letter-spacing:-.01em}

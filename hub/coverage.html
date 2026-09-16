@@ -42,6 +42,12 @@
     animation:livepulse 2s ease-in-out infinite}
   .livestrip .asof{font-variant-numeric:tabular-nums;color:var(--ok);font-weight:700}
   .livestrip .xs{color:var(--slate)}
+  /* The open window is a temporary state, so it reads as one: amber, not the
+     green of the ordinary live path. What is on screen during the window is a
+     SUBSET -- activity reports only -- and is readable by anyone holding the
+     URL. Both facts belong on the strip, not in a footnote. */
+  .livestrip .openwin{background:var(--warn-t);color:var(--warn);border:1px solid var(--warn);
+    border-radius:var(--r);padding:2px 8px;font-size:11.5px;font-weight:600}
   @keyframes livepulse{0%,100%{opacity:1}50%{opacity:.35}}
   @media (prefers-reduced-motion:reduce){ .livestrip .dot{animation:none} }
   .drop{border:2px dashed var(--line); border-radius:var(--r); padding:26px; text-align:center; background:#fff}
@@ -93,7 +99,7 @@
   <div class="card" id="loader">
     <div class="drop" id="drop">
       <p style="margin:0 0 4px"><b>Read the live register</b> — every figure updates as reports arrive.</p>
-      <p class="xs" style="margin:0 0 12px">A Firestore listener, not a refresh schedule: the page recomputes on the change itself. Reading needs an account; submitting a report does not.</p>
+      <p class="xs" style="margin:0 0 12px">A Firestore listener, not a refresh schedule: the page recomputes on the change itself. <b>Until 30 September 2026 the activity reports open without an account</b>, so the dashboard can be tried without credentials being issued; service contacts, PHQ-9 follow-ups and referrals stay behind an account throughout, because those carry a per-person code.</p>
       <div class="btns" style="justify-content:center">
         <button type="button" class="btn" id="useLive">Connect to the live register</button>
       </div>
@@ -378,6 +384,12 @@
      clicking Connect again used to paint "attaching the listener..." over the
      one screen that explained what was actually wrong. */
   var LIVE_ON = false, LIVE_AT = null, LIVE_TICK = null, WANT_LIVE = false, REFUSED = false;
+  /* OPEN_MODE: reading through the time-boxed window rather than as a named
+     account -- the strip has to say so, because what is on screen is then a
+     subset (activity reports only) and it is readable by anyone with the URL.
+     OPEN_TRIED: so the sign-in form is not painted over a working open view. */
+  var OPEN_MODE = false, OPEN_TRIED = false;
+  var WINDOW_ENDS = "30 September 2026";
 
   function liveApply(rows) {
     /* Only activity reports belong on this page. The register also carries
@@ -406,6 +418,8 @@
     var other = (total || 0) - (acts || 0);
     el.innerHTML = '<span class="dot" aria-hidden="true"></span>' +
       '<span><b>Live</b> — recomputed on the register\u2019s own changes, not on a schedule.</span>' +
+      (OPEN_MODE ? '<span class="openwin">Open demonstration window — activity reports only, ' +
+        'readable without an account until <b>' + WINDOW_ENDS + '</b></span>' : '') +
       '<span class="asof">as of <b>' + clock + '</b> <span id="liveAge"></span></span>' +
       '<span class="xs">' + (acts || 0) + ' activity report(s)' +
       (other > 0 ? ' · ' + other + ' other record(s) in the register, not counted here' : '') + '</span>' +
@@ -425,10 +439,13 @@
       : "(" + Math.round(s2 / 60) + " min ago)";
   }
 
-  function livePaint(st) {
+  function livePaint(st, force) {
     var el = $("livePanel");
     el.hidden = false;
     if (REFUSED) return;
+    /* While the open window is serving rows, a password box on the loader is
+       noise -- and the loader is not even on screen. */
+    if (OPEN_MODE && !force) return;
     if (!st.configured) {
       el.innerHTML = '<div class="banner warn" style="margin:0"><b>No register is wired into this build.</b> ' +
         'The file paths below still work. Once the project config is in place, reports appear here the ' +
@@ -465,6 +482,29 @@
       '.</b> Attaching the listener…</div>';
   }
 
+  /* The open demonstration window (rules v3, until 30 Sep 2026).
+     Activity reports read without an account; every other record kind still
+     needs one. Tried FIRST, because during the window the Ministry should be
+     able to open the URL and use the thing, not be met by a password box.
+     The listen MUST name the kind: rules are not filters, so an unfiltered
+     anonymous listen is refused even though every document would pass. */
+  function liveAttachOpen() {
+    if (!WANT_LIVE || LIVE_ON || REFUSED) return;
+    var st = window.FB.status();
+    if (!st.ready || st.user) return;          /* signed in -> use the full path */
+    if (!window.FB.watchKind) return;
+    OPEN_TRIED = true;
+    window.FB.watchKind("activity", function (rows) {
+      OPEN_MODE = true;
+      liveApply(rows);
+    }, function () {
+      /* The window is shut, or this build predates it. Not an error worth
+         showing: fall back to asking who you are. */
+      OPEN_MODE = false;
+      if (!LIVE_ON) { livePaint(window.FB.status(), true); }
+    });
+  }
+
   function liveAttach() {
     if (!WANT_LIVE || LIVE_ON || REFUSED) return;
     var st = window.FB.status();
@@ -488,8 +528,8 @@
   if (window.FB) {
     window.FB.onStatus(function (st) {
       if (!WANT_LIVE) return;
-      if (!st.user) { LIVE_ON = false; clearInterval(LIVE_TICK); $("liveStrip").hidden = true; }
-      if (!$("loader").hidden) { livePaint(st); }
+      if (!st.user && !OPEN_MODE) { LIVE_ON = false; clearInterval(LIVE_TICK); $("liveStrip").hidden = true; }
+      if (!$("loader").hidden && !OPEN_MODE) { livePaint(st); }
       liveAttach();
     });
   }
@@ -497,7 +537,20 @@
   $("useLive").addEventListener("click", function () {
     WANT_LIVE = true; REFUSED = false;
     if (!window.FB) { $("livePanel").hidden = false; livePaint({ configured: false }); return; }
-    livePaint(window.FB.status());
+    var st = window.FB.status();
+    if (st.ready && !st.user) {
+      /* Show nothing yet: the open window usually answers within a moment,
+         and a password box that then disappears is worse than a short wait. */
+      $("livePanel").hidden = false;
+      $("livePanel").innerHTML = '<div class="banner" style="margin:0">Connecting to the register…</div>';
+      liveAttachOpen();
+      /* If the window is shut and no rows arrive, ask who you are. */
+      setTimeout(function () {
+        if (!LIVE_ON && !REFUSED) { livePaint(window.FB.status(), true); }
+      }, 3500);
+      return;
+    }
+    livePaint(st);
     liveAttach();
   });
 
@@ -525,6 +578,7 @@
     /* Leaving the live view stops the clock and hides the strip, so a stale
        "as of" time can never sit over a file's figures. */
     LIVE_ON = false; WANT_LIVE = false; REFUSED = false; clearInterval(LIVE_TICK);
+    OPEN_MODE = false; OPEN_TRIED = false;
     $("livePanel").hidden = true;
     $("liveStrip").hidden = true; $("emptyReg").hidden = true;
     ["stats", "srcNote"].forEach(function (id) { $(id).classList.remove("hideblk"); });

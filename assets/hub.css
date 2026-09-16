@@ -107,7 +107,10 @@ a{color:var(--brand-d)}
 /* the banner is white ON red, so it keeps its own dark red in both modes;
    --critical is a TEXT colour on the page surface and is lifted in dark
    mode, where white on it falls to 2.74:1. */
-.synth{background:#a3201f;color:#fff;font-size:12.5px;font-weight:700;
+/* line-height is pinned, not inherited. At 1.68 (page.css) this band is 35px
+   and at 1.45 it is 32px, so the masthead and the whole nav bar below it sat
+   at a different y on different pages. One value, one height, everywhere. */
+.synth{background:#a3201f;color:#fff;font-size:12.5px;line-height:1.45;font-weight:700;
        letter-spacing:.02em;text-align:center;padding:7px 16px;
        padding-top:calc(7px + env(safe-area-inset-top,0px));position:relative;z-index:40}
 .synth span{font-weight:400;opacity:.92}
