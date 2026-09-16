@@ -108,7 +108,13 @@ def meta_list(name):
     m = re.search(r"\n    " + name + r":\s*\[(.*?)\]", src, re.S)
     if not m:
         return []
-    return [unescape(x) for x in re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1))]
+    body = m.group(1)
+    # Strip comments FIRST. A quoted phrase inside a /* comment */ in the
+    # array was being read as an entry -- which made the gate report a
+    # sentence of English prose as though it were a key prefix.
+    body = re.sub(r"/\*.*?\*/", "", body, flags=re.S)
+    body = re.sub(r"//[^\n]*", "", body)
+    return [unescape(x) for x in re.findall(r'"((?:[^"\\]|\\.)*)"', body)]
 
 
 def load_pages():
@@ -336,6 +342,32 @@ def main(argv):
             print("    Every draft is shown to users as machine-translated. Run")
             print("    --worksheet to get the list a Nepali speaker should check.")
     print()
+
+    # ---- is the "kept in English" list actually keeping anything?
+    # These prefixes were once written against key names that did not
+    # exist, so the list protected 0 of 204 keys while every Nepali page
+    # carried a notice saying clinical wording is kept in English. True
+    # only by accident -- there was no Nepali for those strings anyway --
+    # and the first worksheet import would have ended that silently.
+    pro = meta_list("professionalOnly")
+    if pro:
+        live = [x for x in pro if any(k.startswith(x) for k in d["en"])]
+        dead = [x for x in pro if x not in live]
+        kept = sorted(k for k in d["en"] if any(k.startswith(x) for x in pro))
+        print("  KEPT IN ENGLISH ON PURPOSE")
+        print("    %d strings held back from translation: %s"
+              % (len(kept), ", ".join(kept) if kept else "NONE"))
+        if dead:
+            print("    %d prefix(es) match no key yet (for pages not keyed): %s"
+                  % (len(dead), ", ".join(dead)))
+        if not kept:
+            print("    WARNING: this list protects nothing, so the notice's")
+            print("    claim that clinical wording is kept in English is empty.")
+            fail.append(("_meta.professionalOnly",
+                         "protects nothing -- every prefix matches zero keys, "
+                         "while the Nepali pages claim clinical wording is kept "
+                         "in English", pro))
+        print()
 
     enforced = [p for p, st in pages.items() if st == "enforced"]
     keyed = [p for p, st in pages.items() if st == "keyed"]

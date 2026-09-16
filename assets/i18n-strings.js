@@ -64,32 +64,30 @@ window.I18N_STRINGS = {
        A string matching these renders in ENGLISH on the Nepali page, with
        its own note saying why. That is more honest than a machine-rendered
        clinical instrument, and safer than hiding the gap. */
+    /* KEPT IN ENGLISH ON PURPOSE, by key prefix.
+       -----------------------------------------------------------------
+       These prefixes were written against key names that did not exist
+       yet, so for a while the list protected NOTHING -- 0 of 204 keys --
+       while every Nepali page carried a notice saying clinical wording is
+       kept in English. The claim was true only by accident, because there
+       was no Nepali for those strings anyway. The first worksheet import
+       would have quietly ended that.
+       tools/i18n-check.py now reports any prefix here that matches no key,
+       and the notice only claims this when the page really has one. */
     professionalOnly: [
+      /* the safety statements on the self-report form. These are the
+         sentences that tell a reader the form is not ready and that free
+         text carries a risk -- a machine draft of a safety warning is not
+         a safety warning. */
+      "sr.p007",          /* the not-in-Nepali-yet warning */
+      "sr.p001",          /* the free-text risk warning */
+      "sr.clinicalNote",  /* why there is no screening questionnaire here */
+      /* forward-looking: these pages are not keyed yet, and when they are
+         these prefixes catch the instrument and consent wording before any
+         translator sees it. A machine-rendered PHQ-9 is not the PHQ-9, and
+         consent given to different words is not consent. */
       "phq9.item", "phq9.scale", "phq9.cutoff",
-      "consent.", "safeguard.", "clinical.",
-
-      /* selfreport.*  -- the whole page, and this one is a judgement worth
-         recording rather than a category.
-
-         Every other page has an English reader behind it: a counsellor, a
-         focal point, a Ministry officer. The notice at the top of a machine-
-         translated page works for them, because they can switch to English
-         and check.
-
-         The self-report is filled in by a displaced person about their own
-         distress. They have no English to fall back to, so the notice
-         protects nobody -- it tells them the page may be wrong and offers
-         them no way to find out. And a mistranslated question there does two
-         kinds of harm at once: the answer measures nothing, and someone
-         already distressed is handed a question that does not quite make
-         sense about how they are coping.
-
-         The point of the page is to hear from affected people in their own
-         language. A machine draft is not a faster version of that; it is a
-         different thing wearing its clothes. So the page stays English until
-         a person translates it -- which is also what claude/layer1-forms.md
-         already said: not to be printed or circulated until translated. */
-      "selfreport."
+      "consent.", "safeguard.", "clinical."
     ],
 
     /* Keys that need no Nepali entry: they are already language-specific

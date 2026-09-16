@@ -391,8 +391,15 @@
     var hasLists = !!document.querySelector("select");
     var kind = keyed ? "full" : (hasLists ? "partial" : "notyet");
     var WORDS = {
-      full:    [["mt.notice.ne", "mt.authoritative.ne", "mt.clinicalKept.ne"],
-                ["mt.notice.en", "mt.authoritative.en", "mt.clinicalKept.en"]],
+      /* The "clinical wording is kept in English" sentence is added only
+         when this page actually HAS a string kept in English. Claiming it
+         on a page with none is a promise with no mechanism behind it, and
+         a Ministry reader who checks one claim and finds it hollow stops
+         trusting the others. cov.kept is that count. */
+      full:    [["mt.notice.ne", "mt.authoritative.ne"].concat(
+                  (cov && cov.kept) ? ["mt.clinicalKept.ne"] : []),
+                ["mt.notice.en", "mt.authoritative.en"].concat(
+                  (cov && cov.kept) ? ["mt.clinicalKept.en"] : [])],
       partial: [["mt.partial.ne", "mt.partial.auth.ne"],
                 ["mt.partial.en", "mt.partial.auth.en"]],
       notyet:  [["mt.notyet.ne", "mt.notyet.auth.ne"],
