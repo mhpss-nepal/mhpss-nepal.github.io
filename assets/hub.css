@@ -93,7 +93,14 @@ body{font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica
      padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0)}
 img{max-width:100%} [hidden]{display:none!important}
 a{color:var(--brand-d)}
-.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+/* A DASHBOARD IS NOT A DOCUMENT, so it does not take a document's measure.
+   Measured at a 1920 viewport: this content ran 1180px starting 489px from the
+   left -- the 238px rail plus 251px of nothing, and another 251px of nothing on
+   the right. Half a thousand pixels of a coordination screen were empty.
+   The team's reference, the Nepal 5Ws Power BI report, uses 84% of the
+   viewport. Beside the rail, with a 24px gutter, this comes to about 85% at
+   1920 and still has a ceiling so it does not sprawl on a very wide monitor. */
+.wrap{max-width:1760px;margin:0 auto;padding:0 24px}
 @media(max-width:520px){ .wrap{padding:0 16px} body{font-size:14px} }
 
 /* ── synthetic banner ── */
@@ -142,7 +149,11 @@ main{padding:24px 0 56px}
 .hero p{font-size:13.5px;color:var(--slate);max-width:82ch}
 
 /* ── kpi ── */
+/* Eight figures, and the row is always FULL -- 8, 4 or 2 across. auto-fit was
+   tried first and gave 7 with the eighth stranded on its own line, which reads
+   as a mistake rather than as a row. */
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+@media(min-width:1500px){ .kpis{grid-template-columns:repeat(8,1fr)} }
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
 .kpi{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--brand);
      border-radius:var(--r);padding:13px 14px;box-shadow:var(--shadow)}
