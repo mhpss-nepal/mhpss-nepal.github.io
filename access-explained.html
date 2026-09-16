@@ -214,13 +214,19 @@
     </div>
   </div>
 
+  <p class="sec-note"><b>One exception, until the end of September 2026.</b> So that the Ministry can
+    use the coordination view without anyone issuing accounts, activity reports can be read without
+    signing in — each report as stored: organisation, site, date, activity, counts, and any words typed
+    into it. Service contacts, PHQ-9 answers, referrals and self-reports are not included. The exception is written
+    into the rules with its end date and stops working by itself on 1 October 2026.</p>
+
   <h2 class="sec"><span class="n">HOW IT WORKS</span>Two checkpoints, not one</h2>
   <p class="sec-note">A record passes a check on the way in, and a person passes a different check
     on the way to reading it. The first applies to everybody, including senior staff.</p>
 
   <div class="flow">
     <svg viewBox="0 0 700 300" role="img"
-         aria-label="A submitted form passes a content check, which turns away any personal detail, before it is kept in the register. Separately, a person wanting to read the register passes an access check requiring both sign-in and a named grant.">
+         aria-label="A submitted form passes a check on the way in, which turns away a record carrying a field for a name, a phone number or a date of birth, before it is kept in the register. Separately, a person wanting to read the register passes an access check requiring both sign-in and a named grant.">
       <!-- ORIGIN -->
       <rect class="fl-box" x="8" y="40" width="132" height="56" rx="5"></rect>
       <text class="fl-t fl-ink" x="24" y="63">A form is</text>
@@ -241,9 +247,9 @@
       <!-- refusal drop -->
       <path class="fl-drop" d="M275 110 V146"></path>
       <path class="fl-turn" d="M275 146 l-4.5 -8 h9 z"></path>
-      <rect class="fl-turn-f" x="176" y="150" width="198" height="52" rx="5"></rect>
-      <text class="fl-t fl-turn" x="190" y="171">Turned away at once:</text>
-      <text class="fl-s fl-slate" x="190" y="190">a name, a phone number, a date of birth</text>
+      <rect class="fl-turn-f" x="168" y="150" width="214" height="52" rx="5"></rect>
+      <text class="fl-t fl-turn" x="182" y="171">Turned away at once:</text>
+      <text class="fl-s fl-slate" x="182" y="190">a name, phone or birth-date field</text>
 
       <!-- arrow to register -->
       <path class="fl-line" d="M350 68 H406"></path>
@@ -253,8 +259,8 @@
       <rect class="fl-box" x="410" y="26" width="132" height="84" rx="5"></rect>
       <text class="fl-lab fl-slate" x="424" y="46">THE REGISTER</text>
       <text class="fl-t fl-ink" x="424" y="67">Service records,</text>
-      <text class="fl-t fl-ink" x="424" y="84">coded only</text>
-      <text class="fl-s fl-slate" x="424" y="101">no one is named</text>
+      <text class="fl-t fl-ink" x="424" y="84">with short notes</text>
+      <text class="fl-s fl-slate" x="424" y="101">no field for a name</text>
 
       <!-- READER PATH -->
       <rect class="fl-box" x="8" y="232" width="132" height="56" rx="5"></rect>
@@ -280,27 +286,29 @@
   </div>
 
   <h2 class="sec"><span class="n">CHECKPOINT 1</span>What the system will not accept</h2>
-  <p class="sec-note">This is the part worth dwelling on with partners. These details are not
-    <em>discouraged</em> by guidance or training — the system refuses to store them. If a form were
-    changed tomorrow to ask for a client's name, the record would still be turned away.</p>
+  <p class="sec-note">This is the part worth dwelling on with partners. The details below are not only
+    <em>discouraged</em> by guidance or training — the database itself turns away a record that carries
+    a field for them, whichever form sent it. The check reads the names and the shape of fields, not
+    the words inside them, so what is typed into a free-text note is kept out by the forms and by
+    practice, not by storage.</p>
 
   <div class="refuse">
     <div class="refuse-h">
-      <b>Refused whatever the form asks for, and whoever submits it</b>
-      <span>Checked at the point of storage, so a change to a form cannot quietly widen what is collected.
-        This applies to the people reporting as well as the people being reported on.</span>
+      <b>Refused at the point of storage, whoever submits it</b>
+      <span>The record is turned away, not cleaned. This applies to the people reporting as well as the
+        people being reported on.</span>
     </div>
     <ul>
-      <li><span class="x"></span><span>A person's name<em>in any field, in any spelling</em></span></li>
-      <li><span class="x"></span><span>A phone number<em>client's or family member's</em></span></li>
-      <li><span class="x"></span><span>A date of birth<em>age band only, never the date</em></span></li>
-      <li><span class="x"></span><span>A citizenship or national ID number</span></li>
-      <li><span class="x"></span><span>A home address or household identifier</span></li>
-      <li><span class="x"></span><span>A photograph or scanned document</span></li>
+      <li><span class="x"></span><span>A field for a person's name<em>name, full name, client name and similar field names</em></span></li>
+      <li><span class="x"></span><span>A field for a phone number<em>phone, mobile, telephone</em></span></li>
+      <li><span class="x"></span><span>A field for a date of birth<em>age band only, never the date</em></span></li>
+      <li><span class="x"></span><span>A field for a citizenship, national ID or passport number</span></li>
+      <li><span class="x"></span><span>A field for a home address or household identifier</span></li>
+      <li><span class="x"></span><span>A field for a photograph</span></li>
       <li><span class="x"></span><span>A name typed into the coded-reference field<em>the code has a fixed shape, so a name will not fit it</em></span></li>
-      <li><span class="x"></span><span>A location precise enough to identify a dwelling<em>recorded to roughly a 100&nbsp;m area, and only inside Nepal</em></span></li>
-      <li><span class="x"></span><span>A date set by the handset rather than the system<em>so a report cannot be back-dated</em></span></li>
-      <li><span class="x"></span><span>Free text longer than a short note<em>long narrative is where identities leak in</em></span></li>
+      <li><span class="x"></span><span>A location outside Nepal's latitude and longitude<em>the form rounds a location to roughly a 100&nbsp;m area before sending it; storage checks the range, not the rounding</em></span></li>
+      <li><span class="x"></span><span>A storage time set by the handset<em>the time a record arrived is the server's, so it cannot be faked</em></span></li>
+      <li><span class="x"></span><span>A self-report note longer than 300 characters<em>long narrative is where identities leak in</em></span></li>
       <li><span class="x"></span><span>The reporting focal point's own name, phone or email<em>a named professional; stays on the handset and in the private file sent to coordination, never in the register</em></span></li>
     </ul>
   </div>
@@ -365,13 +373,16 @@
     safer than it is will be trusted with more than it should hold.</p>
 
   <div class="limits">
-    <h3>Three things to be clear about</h3>
+    <h3>Five things to be clear about</h3>
     <dl>
       <dt>Anyone with the link can submit a report.</dt>
       <dd>Reporting is deliberately open, so submissions are not verified as coming from a real
-        service. What that risks is inaccurate counts, not disclosure — nothing identifying can be
-        stored whoever submits it. If false entries ever appear, the answer is a sign-in for each
-        reporting organisation, not a change to these checks.</dd>
+        service. What that mainly risks is inaccurate counts. If false entries ever appear, the answer
+        is a sign-in for each reporting organisation, not a change to these checks.</dd>
+      <dt>Storage cannot read what is typed into a note.</dt>
+      <dd>A field named for an identity is refused, but a name or a phone number written inside a
+        description, a partner's name or an “other” site would be kept. The forms tell field workers
+        never to enter one. That is a rule of practice, not a check.</dd>
       <dt>A coded reference is a pseudonym, not anonymity.</dt>
       <dd>It is designed so the same person can be recognised across visits without being named.
         Someone who already holds the key linking codes to people could still connect them — which
