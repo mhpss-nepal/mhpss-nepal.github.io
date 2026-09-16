@@ -102,6 +102,15 @@ def unescape(s):
 
 
 # ------------------------------------------------------------------ pages
+def meta_list(name):
+    """Read a string array out of _meta without running the JS."""
+    src = open(STRINGS, encoding="utf-8").read()
+    m = re.search(r"\n    " + name + r":\s*\[(.*?)\]", src, re.S)
+    if not m:
+        return []
+    return [unescape(x) for x in re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1))]
+
+
 def load_pages():
     """{relpath: 'enforced'|'pending'}; anything unlisted counts as pending."""
     state = {}
@@ -185,10 +194,16 @@ def scan(path):
 # ------------------------------------------------------------- worksheet
 def write_worksheet(d):
     rows = []
+    skip = meta_list("noTranslationNeeded")
+    pro = meta_list("professionalOnly")
     for k in sorted(d["en"]):
-        rows.append({"key": k, "english": d["en"][k], "nepali": d["ne"].get(k, "")})
+        if any(k.startswith(p) for p in skip):
+            continue                      # already language-specific
+        note = "PROFESSIONAL TRANSLATOR ONLY" if any(k.startswith(p) for p in pro) else ""
+        rows.append({"key": k, "english": d["en"][k],
+                     "nepali": d["ne"].get(k, ""), "note": note})
     with open(WORKSHEET, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=["key", "english", "nepali"])
+        w = csv.DictWriter(f, fieldnames=["key", "english", "nepali", "note"])
         w.writeheader()
         w.writerows(rows)
     done = sum(1 for r in rows if r["nepali"].strip())
@@ -242,6 +257,7 @@ def main(argv):
             return 2
         return import_worksheet(argv[i + 1], d)
 
+    skip_prefixes = meta_list("noTranslationNeeded") + meta_list("professionalOnly")
     pages = load_pages()
     fail = []
     print("MHPSS Nepal — bilingual gate")
@@ -255,7 +271,10 @@ def main(argv):
     def check(p, require_nepali):
         keys, loose, words = scan(p)
         no_en = [k for k in keys if k not in d["en"]]
-        no_ne = [k for k in keys if k in d["en"] and not d["ne"].get(k, "").strip()]
+        no_ne = [k for k in keys
+                 if k in d["en"]
+                 and not d["ne"].get(k, "").strip()
+                 and not any(k.startswith(pfx) for pfx in skip_prefixes)]
         bad = bool(no_en) or bool(loose) or (require_nepali and bool(no_ne))
         note = ""
         if no_ne and not require_nepali:

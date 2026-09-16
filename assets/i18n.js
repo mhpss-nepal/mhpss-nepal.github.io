@@ -41,6 +41,23 @@
 
   var S = window.I18N_STRINGS || { _meta: { langs: [] }, en: {}, ne: {} };
   var LANGS = (S._meta && S._meta.langs) || [];
+  var PRO = (S._meta && S._meta.professionalOnly) || [];
+  var SRC = (S._meta && S._meta.source) || { machine: [], human: [] };
+
+  /* A key whose clinical meaning lives in its exact wording. It is shown in
+     English even on the Nepali page: a machine-rendered PHQ-9 is not the
+     PHQ-9, and consent given to different words is not consent. */
+  function isProtected(key) {
+    for (var i = 0; i < PRO.length; i++) {
+      if (key.indexOf(PRO[i]) === 0) return true;
+    }
+    return false;
+  }
+  function provenance(key) {
+    if ((SRC.human || []).indexOf(key) > -1) return "human";
+    if ((SRC.machine || []).indexOf(key) > -1) return "machine";
+    return null;
+  }
   var KEY = "mhpss-np-lang";
   var DEFAULT = "en";
 
@@ -71,9 +88,16 @@
   function look(key) {
     var en = (S.en || {})[key];
     var tr = (S[lang] || {})[key];
-    if (lang === "en") return { text: en, translated: en != null, missing: en == null };
-    if (tr != null && String(tr).trim() !== "") return { text: tr, translated: true, missing: false };
-    return { text: en, translated: false, missing: en == null };
+    if (lang === "en") return { text: en, translated: en != null, missing: en == null, kept: false };
+    /* Protected keys stay English whatever the dictionary holds, so a
+       machine draft cannot reach a clinical instrument even by accident. */
+    if (isProtected(key)) {
+      return { text: en, translated: true, missing: en == null, kept: true, prov: "en" };
+    }
+    if (tr != null && String(tr).trim() !== "") {
+      return { text: tr, translated: true, missing: false, kept: false, prov: provenance(key) };
+    }
+    return { text: en, translated: false, missing: en == null, kept: false };
   }
 
   function t(key, vars) {
@@ -115,7 +139,12 @@
       if (el.hasAttribute("data-i18n-html")) el.innerHTML = r.text;
       else el.textContent = r.text;
       el.classList.toggle("i18n-todo", !r.translated && lang !== "en");
-      if (!r.translated && lang !== "en") el.setAttribute("title", t("i18n.todoTitle"));
+      el.classList.toggle("i18n-kept", !!r.kept && lang !== "en");
+      el.classList.toggle("i18n-machine", r.prov === "machine" && lang !== "en");
+      if (lang !== "en") {
+        if (r.kept) el.setAttribute("title", t("i18n.keptTitle"));
+        else if (!r.translated) el.setAttribute("title", t("i18n.todoTitle"));
+      }
     });
 
     ATTRS.forEach(function (pair) {
@@ -132,8 +161,16 @@
     document.documentElement.setAttribute("lang", (L && L.html) || lang);
     document.documentElement.setAttribute("data-lang", lang);
 
+    var kept = 0, machine = 0, human = 0;
+    root.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var r = look(el.getAttribute("data-i18n"));
+      if (r.kept) kept++;
+      else if (r.prov === "machine") machine++;
+      else if (r.prov === "human") human++;
+    });
     return { total: total, missing: missing, untranslated: untranslated,
-             translated: total - untranslated.length };
+             translated: total - untranslated.length,
+             kept: kept, machine: machine, human: human };
   }
 
   function setLang(next) {
@@ -147,6 +184,8 @@
     } catch (e) { /* ignore */ }
     var r = apply(document);
     paintToggle(r);
+    if (lang === "en") { var nn = document.getElementById("mtnote"); if (nn) nn.remove(); }
+    else mountNotice(r);
     document.dispatchEvent(new CustomEvent("i18n:changed", { detail: { lang: lang, coverage: r } }));
   }
 
@@ -184,6 +223,10 @@
       /* Untranslated text is shown, not hidden -- with a mark, so a
          half-done page is never mistaken for a finished one. */
       ".i18n-todo{border-bottom:1px dotted currentColor;opacity:.92}" +
+      /* kept in English on purpose -- a solid rule, not the dotted "missing"
+         one, because it is a decision rather than a gap */
+      ".i18n-kept{border-bottom:1px solid rgba(180,84,31,.45)}" +
+      ".i18n-machine{border-bottom:1px dashed rgba(0,126,180,.5)}" +
       ".i18n-missing{background:#fdeeee;color:#9b2c2c;font-family:ui-monospace,monospace;font-size:.9em}" +
       "#i18nprog{font:600 10.5px/1.3 'Noto Sans',system-ui,sans-serif;color:#a9bcc7;" +
       "margin-left:8px;flex:0 0 auto}" +
@@ -243,14 +286,91 @@
     /* The count is shown only where it means something: on the Nepali
        view, where a gap is a gap. */
     if (lang === "en" || !cov || !cov.total) { prog.textContent = ""; return; }
-    prog.textContent = cov.untranslated.length
-      ? t("i18n.progress", { done: cov.translated, total: cov.total })
-      : "";
+    /* Strings kept in English on purpose are not gaps, so they are not
+       counted as missing. A machine draft is counted separately from text a
+       person has checked -- "38 machine" and "38 reviewed" are very
+       different states and the page should not blur them. */
+    var parts = [];
+    if (cov.human) parts.push(cov.human + " reviewed");
+    if (cov.machine) parts.push(cov.machine + " machine");
+    if (cov.untranslated.length) parts.push(cov.untranslated.length + " to do");
+    if (cov.kept) parts.push(cov.kept + " kept in English");
+    prog.textContent = parts.join(" · ");
+  }
+
+
+  /* ---------- the machine-translation notice --------------------------
+     Modelled on the browser's own offer -- a thin bar, not a modal, and
+     dismissible. Two differences that matter here:
+
+       it is bilingual, because a notice about translation quality cannot
+       be allowed to depend on translation quality; and
+
+       it says which version is authoritative, because a Ministry reader
+       needs to know how much weight to give the page in front of them.
+
+     Dismissal is remembered per revision: change the English and the
+     notice returns, because the Nepali is now a draft of something older. */
+  function mountNotice(cov) {
+    if (lang === "en" || document.getElementById("mtnote")) return;
+    var rev = (S._meta && S._meta.revision) || "0";
+    var dkey = "mhpss-np-mtnote-" + rev;
+    try { if (localStorage.getItem(dkey) === "1") return; } catch (e) { /* ignore */ }
+
+    var css = document.createElement("style");
+    css.textContent =
+      "#mtnote{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;" +
+      "padding:9px 14px;padding-top:calc(9px + env(safe-area-inset-top,0px));" +
+      "background:#fdf6e9;border-bottom:1px solid #e6d5ae;color:#6b4d16;" +
+      "font:400 12.5px/1.5 'Noto Sans Devanagari','Noto Sans',system-ui,sans-serif}" +
+      "#mtnote .m{flex:1 1 300px;min-width:0}" +
+      "#mtnote .np{display:block;font-weight:600}" +
+      "#mtnote .en{display:block;opacity:.85;font-family:'Noto Sans',system-ui,sans-serif}" +
+      "#mtnote .acts{display:flex;gap:7px;flex:0 0 auto;align-items:center}" +
+      "#mtnote button,#mtnote a{font:700 11.5px/1.2 'Noto Sans',system-ui,sans-serif;" +
+      "border:1px solid #c9a94f;background:#fff;color:#6b4d16;border-radius:5px;" +
+      "padding:6px 10px;cursor:pointer;text-decoration:none}" +
+      "@media print{#mtnote{display:none}}";
+    document.head.appendChild(css);
+
+    var n = document.createElement("div");
+    n.id = "mtnote";
+    n.setAttribute("role", "status");
+    n.innerHTML =
+      '<span class="m">' +
+        '<span class="np" lang="ne">' + esc(t("mt.notice.ne")) + " " +
+          esc(t("mt.authoritative.ne")) + " " + esc(t("mt.clinicalKept.ne")) + "</span>" +
+        '<span class="en" lang="en">' + esc(t("mt.notice.en")) + " " +
+          esc(t("mt.authoritative.en")) + " " + esc(t("mt.clinicalKept.en")) + "</span>" +
+      "</span>";
+    var acts = document.createElement("span");
+    acts.className = "acts";
+    var en = document.createElement("button");
+    en.type = "button";
+    en.textContent = t("mt.readEnglish");
+    en.addEventListener("click", function () { setLang("en"); });
+    var x = document.createElement("button");
+    x.type = "button";
+    x.textContent = t("mt.dismiss");
+    x.addEventListener("click", function () {
+      try { localStorage.setItem(dkey, "1"); } catch (e) { /* ignore */ }
+      n.remove();
+    });
+    acts.appendChild(en); acts.appendChild(x);
+    n.appendChild(acts);
+    document.body.insertBefore(n, document.body.firstChild);
+  }
+
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
   }
 
   function start() {
     var cov = apply(document);
     mountToggle(cov);
+    mountNotice(cov);
     if (cov.missing.length) {
       console.warn("[i18n] keys used on this page with no English string:", cov.missing);
     }

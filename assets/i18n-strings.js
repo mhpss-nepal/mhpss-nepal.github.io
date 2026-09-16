@@ -32,7 +32,86 @@ window.I18N_STRINGS = {
       { code: "ne", label: "NEP", name: "नेपाली",   html: "ne" }
     ],
     // Bumped whenever the English changes, so a stale translation is visible.
-    revision: "2026-09-16"
+    revision: "2026-09-16",
+
+    /* ---- strings that NO machine may translate --------------------------
+       Matched as prefixes, so a PHQ-9 item added next month is protected
+       without anyone remembering to add it here.
+
+       These are not excluded because a machine translates them clumsily.
+       They are excluded because translating them changes what they ARE:
+
+       phq9.item*    The Nepali PHQ-9 is validated as a specific culturally
+                     adapted wording (Kohrt et al., BMC Psychiatry 2016:
+                     cut-off >=10, sensitivity 0.94, specificity 0.80,
+                     PPV 0.42). That cut-off belongs to those words. Re-word
+                     the items and the threshold measures nothing -- you are
+                     scoring people against a line validated for a different
+                     questionnaire.
+       phq9.item9*   The suicide item and the instruction that follows it.
+                     Someone acts on this in a real crisis.
+       consent.*     Consent given in Nepali to something the English did
+                     not say is not consent. Modal verbs are exactly where
+                     machine translation drifts.
+       safeguard.*   The referral form's GBV / child-protection /
+                     immediate-risk gate. A worker ticks it believing what
+                     it says.
+       clinical.*    Terms with an established equivalent in Ministry usage.
+                     A machine will invent a different one, and then our
+                     forms stop matching the national vocabulary -- which is
+                     the whole reason the code lists exist.
+
+       A string matching these renders in ENGLISH on the Nepali page, with
+       its own note saying why. That is more honest than a machine-rendered
+       clinical instrument, and safer than hiding the gap. */
+    professionalOnly: [
+      "phq9.item", "phq9.scale", "phq9.cutoff",
+      "consent.", "safeguard.", "clinical."
+    ],
+
+    /* Keys that need no Nepali entry: they are already language-specific
+       (the bilingual notice holds its own Nepali and its own English) or
+       invariant in every language. Declared, not assumed. */
+    noTranslationNeeded: ["mt."],
+
+    /* Where each Nepali string came from, so the page can say so and the
+       gate can tell a machine draft from reviewed text.
+         machine = drafted automatically, English remains authoritative
+         human   = written or checked by a person
+       A key absent from both is simply not translated yet. */
+    source: { machine: [
+      "hub.d1.go",
+      "hub.d1.layer",
+      "hub.d1.title",
+      "hub.d2.go",
+      "hub.d2.layer",
+      "hub.d2.title",
+      "hub.d3.layer",
+      "hub.d3.soon",
+      "hub.d3.title",
+      "hub.d4.go",
+      "hub.d4.title",
+      "hub.d5.go",
+      "hub.d5.title",
+      "hub.d6.go",
+      "hub.d6.title",
+      "hub.flow.title",
+      "hub.org",
+      "hub.ref",
+      "hub.title",
+      "i18n.keptTitle",
+      "i18n.todoTitle",
+      "lang.select",
+      "mt.dismiss",
+      "mt.readEnglish",
+      "nav.access",
+      "nav.coordination",
+      "nav.forms",
+      "nav.hub",
+      "nav.inbox",
+      "nav.method",
+      "nav.whoSees"
+    ], human: [] }
   },
 
   en: {
@@ -92,6 +171,27 @@ window.I18N_STRINGS = {
     "hub.meta.title": "MHPSS Nepal — Integrated Hub",
     "hub.meta.desc": "One door to the mental health and psychosocial support information system for the Rasuwa–Bhote Koshi flood response. Demonstration build; all figures synthetic.",
 
+    /* ---- the machine-translation notice ----
+       Shown in BOTH languages at once, on purpose. A notice that says "this
+       was machine translated" must not itself depend on machine translation
+       to be readable -- that fails at the one point where it matters. So the
+       Nepali and the English sit side by side and the reader gets whichever
+       they can read.
+
+       The Nepali below was drafted by Claude, not a translator. It is the
+       FIRST string that should go to a human, ahead of any page content:
+       it is the sentence that tells a Ministry reader how much to trust
+       everything else on the page. */
+    "mt.notice.ne":       "यो पृष्ठ स्वचालित रूपमा अनुवाद गरिएको हो।",
+    "mt.authoritative.ne": "अंग्रेजी संस्करण आधिकारिक हो।",
+    "mt.clinicalKept.ne": "चिकित्सकीय शब्दावली अंग्रेजीमै राखिएको छ।",
+    "mt.notice.en":       "This page was translated automatically.",
+    "mt.authoritative.en": "The English version is the authoritative one.",
+    "mt.clinicalKept.en": "Clinical wording is kept in English.",
+    "mt.readEnglish":     "Read in English",
+    "mt.dismiss":         "Dismiss",
+    "i18n.keptTitle":     "Kept in English on purpose — clinical wording awaiting professional translation",
+
     /* ---- the untranslated marker ---- */
     "i18n.todoTitle":     "Not yet translated — shown in English",
     "i18n.progress":      "{done} of {total} translated"
@@ -100,6 +200,49 @@ window.I18N_STRINGS = {
   /* Filled by the translator, imported from the worksheet. Empty is not a
      bug: an empty value renders the English with a visible marker so that
      a half-translated page cannot be mistaken for a finished one. */
+  /* AI-DRAFTED, NOT REVIEWED BY A TRANSLATOR.
+     Short strings only -- navigation, titles, layer labels, buttons. The
+     long descriptive paragraphs are deliberately absent: at 60 words a
+     draft reads awkwardly in a way a reader notices, and an awkward
+     Ministry-facing page costs more than a visibly untranslated one. Those
+     show as "to do" until a person writes them.
+
+     Terms are taken from the response's own documents where it has one --
+     होल्डिङ सेन्टर from the roster sheet's own title, समन्वय from
+     जिल्ला समन्वय समिति, प्रतिवेदन from the daily reporting sheet. A
+     general translation engine cannot do that, and would invent its own
+     vocabulary that then fails to match the national one. */
   ne: {
+    "hub.d1.go": "फारम सूची खोल्नुहोस् →",
+    "hub.d1.layer": "तह १ · क्षेत्र",
+    "hub.d1.title": "क्षेत्रीय फारमहरू",
+    "hub.d2.go": "समन्वय दृश्य खोल्नुहोस् →",
+    "hub.d2.layer": "तह २ · समन्वय",
+    "hub.d2.title": "समन्वय दृश्य",
+    "hub.d3.layer": "तह ३ · सार्वजनिक",
+    "hub.d3.soon": "योजनामा · हस्तान्तरणको अवस्था पढ्नुहोस्",
+    "hub.d3.title": "सार्वजनिक तह",
+    "hub.d4.go": "अवधारणा पढ्नुहोस् →",
+    "hub.d4.title": "संरचनाको अवधारणा",
+    "hub.d5.go": "विधि पढ्नुहोस् →",
+    "hub.d5.title": "डेटा ढाँचा र विधि",
+    "hub.d6.go": "पहुँच ढाँचा पढ्नुहोस् →",
+    "hub.d6.title": "कसले के देख्न सक्छ",
+    "hub.flow.title": "दिशा किन महत्त्वपूर्ण छ",
+    "hub.org": "विश्व स्वास्थ्य संगठन · नेपाल &nbsp;·&nbsp; स्वास्थ्य तथा खाद्य सुरक्षा मन्त्रालय",
+    "hub.ref": "सन्दर्भ",
+    "hub.title": "एकीकृत केन्द्र",
+    "i18n.keptTitle": "जानाजानी अंग्रेजीमा राखिएको — चिकित्सकीय शब्दावली व्यावसायिक अनुवाद कुर्दै",
+    "i18n.todoTitle": "अझै अनुवाद भएको छैन — अंग्रेजीमा देखाइएको",
+    "lang.select": "भाषा छान्नुहोस्",
+    "mt.dismiss": "बन्द गर्नुहोस्",
+    "mt.readEnglish": "अंग्रेजीमा पढ्नुहोस्",
+    "nav.access": "पहुँच",
+    "nav.coordination": "समन्वय दृश्य",
+    "nav.forms": "क्षेत्रीय फारमहरू",
+    "nav.hub": "केन्द्र",
+    "nav.inbox": "क्षेत्रीय इनबक्स",
+    "nav.method": "विधि",
+    "nav.whoSees": "कसले के देख्न सक्छ",
   }
 };
