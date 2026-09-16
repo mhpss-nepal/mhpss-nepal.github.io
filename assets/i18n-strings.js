@@ -311,6 +311,24 @@ window.I18N_STRINGS = {
     "ml.p078": "Printable card sheet",
     "ml.p079": "One A4 sheet, six cut-out cards, every form's QR on it — asked for by the data system review on 16 September.",
 
+    /* ---- 4Ws form: what the total counts ----
+       The single field that decides whether any figure here can enter the
+       5W. The cleaned backlog is 11,973 service contacts; the form used to
+       instruct "people, count them once", so the two could not be joined.
+       R-U1 (NDRRMA / EDCD) still rules on what the 5W takes. */
+    "f4.h4":            "How many",
+    "f4.h4hint":        "counts only, never a list",
+    "f4.reachLab":      "Total reached",
+    "f4.reachHelp":     "Enter the figure your organisation already records. The next question asks what it counts, so nothing has to be converted first.",
+    "f4.basisLab":      "What does that number count?",
+    "f4.basisPick":     "\u2014 choose \u2014",
+    "f4.basisContacts": "Service contacts \u2014 each time someone was seen",
+    "f4.basisPeople":   "Distinct people \u2014 this organisation, this period",
+    "f4.basisUnsure":   "Not sure",
+    "f4.basisHelp":     "Both are legitimate and they are not the same figure, so the system keeps them apart instead of adding them together. Neither answer deduplicates across organisations.",
+    "f4.distLab":       "Distinct people, if you know it <span class=\"opt\">\u2014 optional</span>",
+    "f4.distHelp":      "If your organisation has already removed its own repeat visits, put that figure here. It is kept beside the contact count, never in place of it.",
+
     /* ---- 4Ws form: age and sex disaggregation ----
        Four bands, chosen so 0-4 + 5-17 is the official "under 18" and
        18-59 + 60+ is the official "18 and over". The team asked for an

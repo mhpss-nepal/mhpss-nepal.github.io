@@ -215,7 +215,16 @@ function validate(r) {
   if (!(r.targetGroups || []).length) p.push("Select at least one target group");
 
   const t = num(r.reachedTotal);
-  if (t === null) p.push("Total people reached is required (enter 0 if none)");
+  if (t === null) p.push("Total reached is required (enter 0 if none)");
+  /* The counting basis is required because without it the figure cannot be
+     used: the cleaned backlog is in service contacts, the form once said
+     "people", and a series that mixes the two is not a series. R-U1
+     (NDRRMA / EDCD) rules on what goes into the 5W; this field only records
+     what the reporter actually counted. */
+  if (!r.countBasis) p.push("Say what the total counts — service contacts, distinct people, or not sure");
+  const dp = num(r.distinctPeople);
+  if (dp !== null && r.countBasis !== "CONTACTS") p.push("Distinct people applies only when the total is a contact count");
+  if (dp !== null && t !== null && dp > t) p.push(`Distinct people (${dp}) cannot exceed the contact count of ${t}`);
   const sum = disaggTotal(r);
   if (t !== null && sum > t) p.push(`Disaggregated figures add to ${sum}, more than the total of ${t}`);
   if (t !== null && sum > 0 && sum < t) p.push(`Disaggregated figures add to ${sum} of ${t} — ${t - sum} unaccounted. Leave all blank, or account for all.`);
@@ -245,7 +254,7 @@ const CSV_COLUMNS = [
   "id", "createdAt", "revision", "dateAD", "dateBS", "district", "site", "siteOther", "siteSource",
   "org", "orgOther", "donor", "focalName", "focalPhone", "focalEmail", "cadre",
   "activity", "modality", "status", "targetGroups", "description",
-  "reachedTotal",
+  "reachedTotal", "countBasis", "distinctPeople",
   /* four bands as collected */
   "f04", "m04", "o04", "f517", "m517", "o517", "f1859", "m1859", "o1859", "f60", "m60", "o60",
   /* the official two, folded, so a 5Ws submission needs no arithmetic and
