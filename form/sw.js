@@ -19,7 +19,7 @@
    old validation, and (16 Sep 2026) a version of store.js that did not sync
    to the register at all. The fix was deployed and had no effect on any
    device until this line changed. */
-const CACHE = "mhpss-np-field-v3";
+const CACHE = "mhpss-np-field-v4";
 
 const PRECACHE = [
   "./",
@@ -41,6 +41,18 @@ const PRECACHE = [
   "../assets/store.js",
   "../assets/fb-config.js",
   "../assets/fb.js",
+  /* The bilingual engine and the dictionary. These MUST be precached: the
+     form's own HTML now holds keys, not sentences, so a phone that has the
+     page but not these two files renders a form with no words on it -- in
+     exactly the no-signal setting the form exists for. The audit that
+     found this is in tools/sw-precache-check.py, and it runs in the
+     deploy guard so the next page we key up cannot reintroduce it. */
+  "../assets/i18n-strings.js",
+  "../assets/i18n.js",
+  /* the attribution band: the ministry and WHO marks at the foot of every
+     form, and the rule that lays them out */
+  "../assets/brand.css",
+  "../assets/brand.js",
   "pwa.js"
 ];
 
