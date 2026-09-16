@@ -677,6 +677,14 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 .rail .railtoggle #i18nbar{border-color:var(--wh-3)}
 @media (max-width:999px){ .rail .railtoggle{padding:8px 15px 10px} }
 
+/* A card's "read the argument" link. It is a SENTENCE, so it justifies like
+   any other paragraph -- I first set it text-align:left calling it
+   "navigation, not running text", and the sweep caught it wrapping to two
+   lines at 390px within minutes. Adib's rule is explicit that the line count
+   does not matter; a two-line sentence is the case he corrected. */
+.more{margin:10px 0 0;font-size:13px}
+.more a{font-weight:700}
+
 /* =====================================================================
    TEXT SETTING -- claude/text-setting-rules.md
    ---------------------------------------------------------------------

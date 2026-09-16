@@ -211,13 +211,13 @@ window.I18N_STRINGS = {
     "hub.flow.title": "Why the direction matters",
     "hub.flow.body": "Layer 1 writes. Layer 2 reads Layer 1 and writes nothing back. Layer 3 receives aggregates and <strong>cannot read the layer below it</strong>. No layer can reach down. That is what makes it safe to hand the public layer to the Ministry without handing over anything that identifies a person — and it is why the boundary is a design rule, not a setting someone can change later.",
     "hub.foot.line1": "Rasuwa–Bhote Koshi flood response · mental health and psychosocial support · draft, September 2026",
-    "hub.foot.line2": "Prepared for the WHO Nepal mental health team, the Ministry of Health and Food Safety and EDCD. Not agreed with EDCD or the MHPSS sub-cluster.",
+    "hub.foot.line2": "Prepared for the WHO Nepal mental health team, the Ministry of Health and Food Safety and EDCD. Not agreed with EDCD or the MHPSS Technical Working Group.",
     "hub.foot.source": "Source and method on GitHub",
     "hub.foot.emblem": "No WHO or Government of Nepal emblem is used: WHO emblem use requires express written permission and the Nepal national emblem belongs to the Ministry. Prepared with AI assistance.",
     "hub.meta.title": "MHPSS Nepal — Integrated Hub",
     "hub.meta.desc": "One door to the mental health and psychosocial support information system for the Rasuwa–Bhote Koshi flood response. Demonstration build; all figures synthetic.",
 
-    "banner.trialSub": "· drafts for the MHPSS sub-cluster to approve · nothing you enter is sent anywhere",
+    "banner.trialSub": "· drafts for the MHPSS Technical Working Group to approve · nothing you enter is sent anywhere",
 
 
 
@@ -241,7 +241,7 @@ window.I18N_STRINGS = {
     "ml.p008": "Clinical follow-up · PHQ-9",
     "ml.p009": "Daily contact · new vs returning",
     "ml.p010": "Service delivery · 4Ws / 5W",
-    "ml.p011": "<b>None of these forms submits anywhere.</b> This site is a static site with no server behind it, so there is nothing for a form to send data to. Each form validates what you type, calculates what it should calculate, saves it in your own browser, and lets you export a file. They are here so the sub-cluster can see and agree the questions <i>before</i> anything is collected for real. Do not use them to record a real service and assume it was captured — it was not.",
+    "ml.p011": "<b>None of these forms submits anywhere.</b> This site is a static site with no server behind it, so there is nothing for a form to send data to. Each form validates what you type, calculates what it should calculate, saves it in your own browser, and lets you export a file. They are here so the Technical Working Group can see and agree the questions <i>before</i> anything is collected for real. Do not use them to record a real service and assume it was captured — it was not.",
     "ml.p012": "Layer 1 · Field · Form master list",
     "ml.p013": "So that anyone can check a question against the meeting that asked for it, rather than taking it on trust.",
     "ml.p014": "Problem described 14 Sep 2026. Belongs in the backend, not here.",
@@ -398,7 +398,7 @@ window.I18N_STRINGS = {
     "sr.p030": "Roughly how old are you?",
     "sr.p031": "Which site are you at?",
     "sr.p032": "This form is for the people living at a site, not for staff. It does not ask your name, your phone number, or anything that could point back to you — and because of that, <b>nobody can follow up with you afterwards</b>. If you want someone to contact you, tell a worker instead of using this form. What you write here is used to see how a whole site is doing, and what is missing there.",
-    "sr.p033": "TO BE FILLED IN BY THE MHPSS SUB-CLUSTER: the helpline number for this response. No number has been confirmed, so none is printed here. This page must not be printed or put on a wall until a real, answered number is in this box.",
+    "sr.p033": "TO BE FILLED IN BY THE MHPSS TECHNICAL WORKING GROUP: the helpline number for this response. No number has been confirmed, so none is printed here. This page must not be printed or put on a wall until a real, answered number is in this box.",
     "sr.p034": "You do not have to fill anything in first. Speak to any counsellor or health worker at this site — you can ask for them by name at the help desk, and it is free.",
     "sr.p035": "Four questions, and nobody will know it was you",
     "sr.p036": "Notes for whoever fields this",

@@ -15,13 +15,13 @@
      - DISTRICTS / TARGET GROUPS / CADRES : standard operational categories.
 
    Anything unverified is marked. Nothing here should be treated as an
-   agreed list until the MHPSS sub-cluster and EDCD have signed it off.
+   agreed list until the MHPSS Technical Working Group and EDCD have signed it off.
    ===================================================================== */
 
 const META = {
   version: "0.1.0-draft",
   compiled: "2026-09-15",
-  status: "DRAFT — not agreed with EDCD or the MHPSS sub-cluster",
+  status: "DRAFT — not agreed with EDCD or the MHPSS Technical Working Group",
 };
 
 /* ---------------------------------------------------------------------

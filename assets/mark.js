@@ -18,7 +18,7 @@
                             = Rasuwa / Bhote Koshi. Also, read the other
                               way, two shapes meeting at one line: the
                               health and protection tracks at one table,
-                              which is the whole point of the sub-cluster
+                              which is the whole point of the Technical Working Group
 
    Drawn as inline SVG, not an image file: it renders with no signal, it
    stays sharp at any size, it costs one HTTP request of nothing, and it

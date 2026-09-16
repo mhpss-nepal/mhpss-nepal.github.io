@@ -36,8 +36,15 @@ NAV = [
     ("method",       "Method",                "विधि",            "method.html"),
     ("architecture", "Architecture",          "संरचना",          "architecture.html"),
     ("access",       "Who sees what",         "पहुँच",            "access-explained.html"),
-    ("layer3",       "Public layer",          "सार्वजनिक तह",     "layer3.html"),
 ]
+# layer3.html is deliberately NOT in this table, as of 16 September 2026.
+# The whole site is the public-facing thing, so a nav item labelled "Public
+# layer" read as a contradiction -- a reader could not tell what was public and
+# what was not. The page itself is a HANDOVER argument: what may be published,
+# what blocks submission into the national 5W, and who owns the permanent
+# public page after this deployment ends. It is linked from architecture.html,
+# where that argument belongs, and its own marker points at `architecture` so
+# the nav shows a reader where they are rather than highlighting nothing.
 
 # the sections of the Layer 3 page, offered as a jump strip under the band
 SECTIONS = [
@@ -52,7 +59,7 @@ MAST = '''<header class="gov">
       <span data-mark="44"></span>
       <span style="min-width:0">
         <span class="who-line">Health Cluster &middot; Nepal</span>
-        <b>MHPSS Sub-Cluster</b>
+        <b>MHPSS Technical Working Group</b>
         <span class="place">Rasuwa &middot; Nuwakot &middot; flood response</span>
       </span>
     </a>

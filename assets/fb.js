@@ -212,7 +212,7 @@
 
      The security rules reject these keys as well. Two ends, because a
      form can be edited by anyone with repo access and the rules cannot.
-     If the sub-cluster later decides the hosted copy should carry a focal
+     If the Technical Working Group later decides the hosted copy should carry a focal
      point, this list and the rules change together -- deliberately, not
      by an edit to one form. */
   var NEVER_SENT = ["focalName", "focalPhone", "focalEmail",
