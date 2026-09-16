@@ -336,7 +336,12 @@
     DATA = rows; SRC = src;
     $("loader").hidden = true; $("app").hidden = false;
 
-    var empty = live && !rows.length;
+    /* !! is load-bearing. `live` is undefined on the file paths, so `empty`
+       was undefined, and classList.toggle(token, undefined) does NOT force
+       false -- WebIDL treats an undefined optional boolean as "not supplied",
+       so it plain-toggles. The tabs therefore switched off on one file load
+       and back on the next. Coerce to a real boolean. */
+    var empty = !!(live && !rows.length);
     $("emptyReg").hidden = !empty;
     ["stats", "srcNote"].forEach(function (id) { $(id).classList.toggle("hideblk", empty); });
     document.querySelector(".tabs").classList.toggle("hideblk", empty);
