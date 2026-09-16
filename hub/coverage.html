@@ -55,6 +55,31 @@
   .bar{height:9px; background:var(--line-s); border-radius:5px; overflow:hidden; min-width:70px}
   .bar i{display:block; height:100%; background:var(--who)}
   .bar.zero i{background:var(--warn)}
+
+  /* Filters: nine dimensions, applied to every visual at once. Each list
+     offers only the values that survive the OTHER eight -- cascading in every
+     direction, which is what the reference report does and what separates a
+     dashboard from a page of charts. */
+  .filters{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 14px 8px;margin:0 0 14px}
+  .filters .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px 10px}
+  .filters label{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);margin-bottom:3px}
+  .filters select,.filters input{padding:6px 8px;font-size:13px}
+  .filters .sum{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:9px 0 2px;font-size:12.5px;color:var(--slate)}
+  .filters .sum b{color:var(--ink)}
+  /* The 4Ws proper: who (rows) is where (palika columns, grouped by district)
+     doing what (activity chips, with report counts). */
+  .mx th.dist{background:var(--who-t);color:var(--who-d);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;text-align:center;border-left:1px solid var(--line)}
+  .mx th.pal{font-weight:600;white-space:normal;min-width:118px;vertical-align:bottom;border-left:1px solid var(--line);text-transform:none;letter-spacing:0;font-size:12px}
+  .mx th.pal .xs{display:block;font-weight:400}
+  .mx td.cell{vertical-align:top;font-size:12px;line-height:1.5;border-left:1px solid var(--line)}
+  .mx td.cell.empty{color:#c9c9c7;text-align:center}
+  .mx .ac{display:inline-block;border:1px solid var(--line);border-radius:10px;padding:0 6px;margin:1px 2px 1px 0;font-size:11px;font-weight:700;color:var(--who-d);background:#fff;white-space:nowrap}
+  .mx .ac i{font-style:normal;font-weight:400;color:var(--slate);margin-left:3px}
+  .mx .rch{display:block;font-size:11px;color:var(--slate);margin-top:2px;white-space:nowrap}
+  .mx td.tot{background:#fafaf9;font-variant-numeric:tabular-nums}
+  /* an organisation name is a label, not a paragraph: keep it on one line so it never justifies */
+  .mx td:first-child{white-space:nowrap}
+  .mx th.tot{vertical-align:bottom}
 </style>
 </head>
 <body class="hub">
@@ -80,7 +105,7 @@
 </aside>
 <!--/NAV-->
 
-<div style="background:#d03b3b;color:#fff;font:700 12.5px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:.02em;text-align:center;padding:7px 16px;padding-top:calc(7px + env(safe-area-inset-top,0px))">DEMONSTRATION — FIGURES SHOWN HERE COME FROM WHATEVER FILE YOU LOAD <span style="font-weight:400;opacity:.92">· draft, not agreed with EDCD or the MHPSS Technical Working Group · nothing is uploaded and this page fetches nothing</span></div>
+<div style="background:#d03b3b;color:#fff;font:700 12.5px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:.02em;text-align:center;padding:7px 16px;padding-top:calc(7px + env(safe-area-inset-top,0px))">DEMONSTRATION — FIGURES SHOWN HERE COME FROM WHATEVER FILE YOU LOAD <span style="font-weight:400;opacity:.92">· draft, not agreed with EDCD or the MHPSS Technical Working Group · a file is read in the page and never uploaded; the live path reads the register and writes nothing</span></div>
 
 
 <div class="top">
@@ -135,6 +160,27 @@
       <div class="btns" style="margin-top:12px"><button type="button" class="btn grey sm" id="emptyOff">Change source</button></div>
     </div>
 
+    <div class="filters" id="filters">
+      <div class="grid">
+        <div><label for="fProv">Province</label><select id="fProv" data-dim="province"></select></div>
+        <div><label for="fDist">District</label><select id="fDist" data-dim="district"></select></div>
+        <div><label for="fPal">Palika</label><select id="fPal" data-dim="palika"></select></div>
+        <div><label for="fOrg">Organisation</label><select id="fOrg" data-dim="org"></select></div>
+        <div><label for="fDon">Funding source</label><select id="fDon" data-dim="donor"></select></div>
+        <div><label for="fGrp">Activity group</label><select id="fGrp" data-dim="group"></select></div>
+        <div><label for="fAct">Activity</label><select id="fAct" data-dim="activity"></select></div>
+        <div><label for="fMod">Modality</label><select id="fMod" data-dim="modality"></select></div>
+        <div><label for="fSta">Status</label><select id="fSta" data-dim="status"></select></div>
+        <div><label for="fFrom">From</label><input type="date" id="fFrom"></div>
+        <div><label for="fTo">To</label><input type="date" id="fTo"></div>
+      </div>
+      <div class="sum">
+        <span id="fSum"></span>
+        <button type="button" class="btn grey sm" id="fClear">Clear filters</button>
+        <span class="xs">Every figure and table on this page follows the filters. Each list offers only the values that survive the other filters.</span>
+      </div>
+    </div>
+
     <div class="stats" id="stats"></div>
 
     <div class="tabs">
@@ -181,6 +227,18 @@
 
     <!-- MATRIX -->
     <div class="panel" id="p-mx">
+      <div class="banner" id="pxLede"></div>
+      <div class="btns" style="margin-bottom:12px">
+        <button type="button" class="btn ghost sm" id="expMx">Export the matrix as CSV</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="data mx" id="pxTable">
+          <thead id="pxHead"></thead>
+          <tbody id="pxBody"></tbody>
+        </table>
+      </div>
+      <p class="xs" style="margin-top:10px">Who is present where, doing what — the 4Ws proper, at palika level. A cell lists the activity codes an organisation has reported in that palika, with the number of reports per code and the people reached underneath. A site's palika comes from the site list; a palika-level report carries its own. Reports whose palika is not established sit in the last column rather than being dropped.</p>
+      <h2>By organisation</h2>
       <div class="tbl-wrap">
         <table class="data">
           <thead><tr><th>Organisation</th><th>District</th><th>Sites</th><th>Activities</th><th>Reports</th><th>People reached</th><th>First</th><th>Last</th></tr></thead>
@@ -247,7 +305,7 @@
 (function () {
   var C = window.CODES, S = window.STORE;
   var $ = function (id) { return document.getElementById(id); };
-  var DATA = [], SRC = "";
+  var ALL = [], DATA = [], SRC = "";
 
   function toast(m, w) { var t = $("toast"); t.textContent = m; t.className = w ? "show warn" : "show"; clearTimeout(t._h); t._h = setTimeout(function () { t.className = ""; }, 3200); }
   function n(v) { var x = parseInt(v, 10); return isFinite(x) ? x : 0; }
@@ -346,7 +404,7 @@
   function load(rows, src, live) {
     if (!live && (!rows || !rows.length)) return toast("That file has no records in it", true);
     rows = rows || [];
-    DATA = rows; SRC = src;
+    ALL = rows; SRC = src;
     $("loader").hidden = true; $("app").hidden = false;
 
     /* !! is load-bearing. `live` is undefined on the file paths, so `empty`
@@ -356,7 +414,7 @@
        and back on the next. Coerce to a real boolean. */
     var empty = !!(live && !rows.length);
     $("emptyReg").hidden = !empty;
-    ["stats", "srcNote"].forEach(function (id) { $(id).classList.toggle("hideblk", empty); });
+    ["stats", "srcNote", "filters"].forEach(function (id) { $(id).classList.toggle("hideblk", empty); });
     document.querySelector(".tabs").classList.toggle("hideblk", empty);
     document.querySelectorAll(".panel").forEach(function (el) { el.classList.toggle("noshow", empty); });
     if (empty) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
@@ -365,9 +423,97 @@
     $("srcNote").innerHTML = "<b>" + rows.length + " records loaded</b> from " + esc(src) +
       (dates.length ? " · reporting period " + dates[0] + " to " + dates[dates.length - 1] : "") +
       (src.indexOf("Synthetic") === 0 ? " · <b>this is not real data</b>" : "");
-    render();
+    applyFilters();
     if (!live) { window.scrollTo({ top: 0, behavior: "smooth" }); }
   }
+
+  /* ---------- filters ---------------------------------------------------
+     Nine dimensions, the reference report's set mapped onto this data:
+       province, district, palika            where
+       organisation, funding source          who   (the 5Ws has lead agency
+                                                    and implementing partner;
+                                                    this data has one
+                                                    organisation and a funding
+                                                    tag -- not the same thing,
+                                                    and labelled as what it is)
+       activity group, activity              what  (the group stands in for
+                                                    the 5Ws cluster: every
+                                                    record here is MHPSS)
+       modality, status
+     plus a date range. A record's palika is its own (palika-level reports and
+     unlisted sites) or its site's. The options of each list are computed from
+     the records that pass every OTHER filter, so the lists cascade in every
+     direction and never offer a choice that would empty the page. */
+  var DIMS = ["province", "district", "palika", "org", "donor", "group", "activity", "modality", "status"];
+  var FSEL = {};
+  DIMS.forEach(function (d) { FSEL[d] = document.querySelector('#filters select[data-dim="' + d + '"]'); });
+  var FILT = { province: "", district: "", palika: "", org: "", donor: "", group: "", activity: "", modality: "", status: "", from: "", to: "" };
+
+  function palikaOf(r) {
+    if (r.palika) return r.palika;
+    var s = C.siteByCode[r.site];
+    return (s && s.palika) || "";
+  }
+  /* each dimension: the record's value(s) as codes, and a label for a code */
+  var DIM = {
+    province: { of: function (r) { var p = C.palikaByCode[palikaOf(r)]; if (p) return [p.province]; var d = C.districtByCode[r.district]; return [d && d.province ? d.province : ""]; }, label: function (v) { return v || "not stated"; } },
+    district: { of: function (r) { return [r.district || ""]; }, label: function (v) { return v ? distName(v) : "not stated"; } },
+    palika:   { of: function (r) { return [palikaOf(r)]; }, label: function (v) { return v ? (C.palikaName(v) || v) : "not established"; } },
+    org:      { of: function (r) { return [orgName(r)]; }, label: function (v) { return v; } },
+    donor:    { of: function (r) { var d = S.donorsOf(r); return d.length ? d : [""]; }, label: function (v) { return v || "not specified"; } },
+    group:    { of: function (r) { var a = C.activityByCode[r.activity]; return [a ? a.group : ""]; }, label: function (v) { return v || "not stated"; } },
+    activity: { of: function (r) { return [r.activity || ""]; }, label: function (v) { return v ? actName(v) : "not stated"; } },
+    modality: { of: function (r) { return [r.modality || ""]; }, label: function (v) { return v ? C.labelOf(C.MODALITIES, v) : "not stated"; } },
+    status:   { of: function (r) { return [r.status || ""]; }, label: function (v) { return v ? C.labelOf(C.STATUS, v) : "not stated"; } }
+  };
+  function passes(r, skip) {
+    for (var i = 0; i < DIMS.length; i++) {
+      var d = DIMS[i], want = FILT[d];
+      if (!want || d === skip) continue;
+      if (DIM[d].of(r).indexOf(want === "\u2205" ? "" : want) < 0) return false;
+    }
+    if (FILT.from && (r.dateAD || "") < FILT.from) return false;
+    if (FILT.to && (r.dateAD || "") > FILT.to) return false;
+    return true;
+  }
+  function fillFilter(d) {
+    var sel = FSEL[d], counts = {};
+    ALL.forEach(function (r) {
+      if (!passes(r, d)) return;
+      DIM[d].of(r).forEach(function (v) { counts[v] = (counts[v] || 0) + 1; });
+    });
+    var vals = Object.keys(counts).sort(function (a, b) {
+      if (a === "") return 1; if (b === "") return -1;
+      return DIM[d].label(a).localeCompare(DIM[d].label(b));
+    });
+    var keep = FILT[d];
+    sel.innerHTML = '<option value="">All (' + vals.length + ")</option>" + vals.map(function (v) {
+      /* an empty value cannot be an <option> value, so "not stated" travels as a sentinel */
+      var val = v === "" ? "\u2205" : v;
+      return '<option value="' + esc(val).replace(/"/g, "&quot;") + '">' + esc(DIM[d].label(v)) + " (" + counts[v] + ")</option>";
+    }).join("");
+    if (keep && vals.indexOf(keep === "\u2205" ? "" : keep) >= 0) sel.value = keep; else { sel.value = ""; FILT[d] = ""; }
+  }
+  function applyFilters() {
+    DIMS.forEach(fillFilter);
+    DATA = ALL.filter(function (r) { return passes(r, null); });
+    var active = DIMS.filter(function (d) { return FILT[d]; }).length + (FILT.from ? 1 : 0) + (FILT.to ? 1 : 0);
+    $("fSum").innerHTML = active
+      ? "Showing <b>" + DATA.length.toLocaleString() + "</b> of " + ALL.length.toLocaleString() + " reports · <b>" + active + "</b> filter" + (active === 1 ? "" : "s") + " active"
+      : "Showing <b>all " + ALL.length.toLocaleString() + "</b> reports";
+    $("fClear").hidden = !active;
+    render();
+  }
+  DIMS.forEach(function (d) {
+    FSEL[d].addEventListener("change", function () { FILT[d] = this.value; applyFilters(); });
+  });
+  $("fFrom").addEventListener("change", function () { FILT.from = this.value; applyFilters(); });
+  $("fTo").addEventListener("change", function () { FILT.to = this.value; applyFilters(); });
+  $("fClear").addEventListener("click", function () {
+    Object.keys(FILT).forEach(function (k) { FILT[k] = ""; });
+    $("fFrom").value = ""; $("fTo").value = "";
+    applyFilters();
+  });
 
   /* ---------- the live register -----------------------------------------
      FB.watch is a Firestore onSnapshot listener. That is the whole point of
@@ -621,26 +767,40 @@
   });
 
   /* ---------- render ---------- */
-  var GAPS = [];
+  var GAPS = [], MX_LONG = [];
+  /* The denominator follows the WHERE filters and nothing else: filtered to
+     Rasuwa, the question is "which Rasuwa roster sites are at zero", not
+     "which of all 23". Filtered to one organisation or one activity, the
+     denominator stays whole -- a site with no PFA report is still a site with
+     no PFA report. */
+  function rosterScope() {
+    return C.ROSTER_SITES.filter(function (s) {
+      if (FILT.district && s.district !== FILT.district) return false;
+      if (FILT.palika && (s.palika || "") !== (FILT.palika === "\u2205" ? "" : FILT.palika)) return false;
+      if (FILT.province) { var p = C.palikaByCode[s.palika]; var d = C.districtByCode[s.district]; var pv = p ? p.province : (d && d.province) || ""; if (pv !== (FILT.province === "\u2205" ? "" : FILT.province)) return false; }
+      return true;
+    });
+  }
   function render() {
+    var ROSTER = rosterScope();
     var reach = DATA.reduce(function (a, r) { return a + n(r.reachedTotal); }, 0);
     var orgs = new Set(DATA.map(orgName));
     var sitesSeen = new Set(DATA.map(function (r) { return r.site; }));
-    var covered = C.ROSTER_SITES.filter(function (s) { return sitesSeen.has(s.code); });
-    GAPS = C.ROSTER_SITES.filter(function (s) { return !sitesSeen.has(s.code); });
+    var covered = ROSTER.filter(function (s) { return sitesSeen.has(s.code); });
+    GAPS = ROSTER.filter(function (s) { return !sitesSeen.has(s.code); });
     var gapPop = GAPS.reduce(function (a, s) { return a + (s.pop || 0); }, 0);
 
     $("stats").innerHTML = [
       stat(DATA.length, "Reports loaded", "one row per activity, site and day"),
       stat(reach.toLocaleString(), "People reached", "sum of detail rows only — no subtotals"),
       stat(orgs.size, "Organisations reporting", ""),
-      stat(covered.length + " / " + C.ROSTER_SITES.length, "Roster sites reached", "", covered.length === C.ROSTER_SITES.length ? "good" : ""),
+      stat(covered.length + " / " + ROSTER.length, "Roster sites reached", "", covered.length === ROSTER.length ? "good" : ""),
       stat(GAPS.length, "Roster sites with no report", gapPop ? "≈" + gapPop.toLocaleString() + " people recorded there" : "", GAPS.length ? "alert" : "good")
     ].join("");
 
     /* --- coverage --- */
     $("covLede").innerHTML = GAPS.length
-      ? "<b>" + GAPS.length + " of " + C.ROSTER_SITES.length + " roster sites have no report in this period" + (gapPop ? ", covering roughly " + gapPop.toLocaleString() + " recorded people" : "") + ".</b> This is the question a 4Ws is for: not who is present, but which sites are at zero."
+      ? "<b>" + GAPS.length + " of " + ROSTER.length + " roster sites have no report in this period" + (gapPop ? ", covering roughly " + gapPop.toLocaleString() + " recorded people" : "") + ".</b> This is the question a 4Ws is for: not who is present, but which sites are at zero."
       : "<b>Every roster site has at least one report in this period.</b> Coverage is not the same as adequacy — the volume per site is in the table below.";
 
     var bySite = {};
@@ -651,8 +811,8 @@
       b.reports++; b.reach += n(r.reachedTotal); b.orgs.add(orgName(r));
       if ((r.dateAD || "") > b.last) b.last = r.dateAD || "";
     });
-    var maxReach = Math.max(1, ...C.ROSTER_SITES.map(function (s) { return bySite[s.code] ? bySite[s.code].reach : 0; }));
-    $("covBody").innerHTML = C.ROSTER_SITES.map(function (s) {
+    var maxReach = Math.max(1, ...ROSTER.map(function (s) { return bySite[s.code] ? bySite[s.code].reach : 0; }));
+    $("covBody").innerHTML = ROSTER.map(function (s) {
       var b = bySite[s.code];
       var w = b ? Math.max(3, Math.round((b.reach / maxReach) * 100)) : 0;
       return "<tr>" +
@@ -699,7 +859,62 @@
         "<td class='xs'>" + (acts.size > 1 ? "Different activities — likely different people" : sameOrgTwoDonors ? "One organisation, two funding tags — attribution, not duplication" : "Same activity, different organisations — ask them") + "</td></tr>";
     }).join("") : '<tr><td colspan="6" class="xs">Nothing flagged.</td></tr>';
 
-    /* --- 4Ws matrix --- */
+    /* --- the 4Ws proper: organisation x palika x activity --- */
+    var PX = {}, palCols = {}, orgTot = {};
+    DATA.forEach(function (r) {
+      var o = orgName(r), pc = palikaOf(r), a = r.activity || "—";
+      var pinfo = C.palikaByCode[pc];
+      var colKey = pc || "∅";
+      if (!palCols[colKey]) palCols[colKey] = { pcode: pc, district: pinfo ? pinfo.district : (pc ? "" : "zz"), name: pc ? (C.palikaName(pc) || pc) : "Palika not established", reports: 0, reach: 0 };
+      palCols[colKey].reports++; palCols[colKey].reach += n(r.reachedTotal);
+      var row = PX[o] = PX[o] || {};
+      var cell = row[colKey] = row[colKey] || { acts: {}, reports: 0, reach: 0 };
+      cell.acts[a] = (cell.acts[a] || 0) + 1; cell.reports++; cell.reach += n(r.reachedTotal);
+      orgTot[o] = orgTot[o] || { reports: 0, reach: 0 }; orgTot[o].reports++; orgTot[o].reach += n(r.reachedTotal);
+    });
+    var cols = Object.keys(palCols).sort(function (a, b) {
+      var A = palCols[a], B = palCols[b];
+      if (A.district !== B.district) return (distName(A.district) || "zz").localeCompare(distName(B.district) || "zz");
+      return A.name.localeCompare(B.name);
+    });
+    var orgRows = Object.keys(PX).sort(function (a, b) { return orgTot[b].reach - orgTot[a].reach; });
+    /* district group header, then a palika header */
+    var groups = [];
+    cols.forEach(function (k) {
+      var d = palCols[k].district, last = groups[groups.length - 1];
+      if (last && last.d === d) last.n++; else groups.push({ d: d, n: 1 });
+    });
+    $("pxHead").innerHTML =
+      "<tr><th rowspan=\"2\">Organisation</th>" + groups.map(function (g) {
+        return '<th class="dist" colspan="' + g.n + '">' + esc(g.d === "zz" ? "—" : (distName(g.d) || "—")) + "</th>";
+      }).join("") + '<th rowspan="2" class="tot">Reports</th><th rowspan="2" class="tot">People reached</th></tr>' +
+      "<tr>" + cols.map(function (k) {
+        var c = palCols[k];
+        return '<th class="pal">' + esc(c.name) + '<span class="xs">' + c.reports + " report" + (c.reports === 1 ? "" : "s") + " · " + c.reach.toLocaleString() + " reached</span></th>";
+      }).join("") + "</tr>";
+    $("pxBody").innerHTML = orgRows.map(function (o) {
+      return "<tr><td><b>" + esc(o) + "</b></td>" + cols.map(function (k) {
+        var c = PX[o][k];
+        if (!c) return '<td class="cell empty">·</td>';
+        var chips = Object.keys(c.acts).sort().map(function (a) { return '<span class="ac" title="' + esc(actName(a)).replace(/"/g, "&quot;") + '">' + esc(a) + "<i>" + c.acts[a] + "</i></span>"; }).join("");
+        return '<td class="cell">' + chips + '<span class="rch">' + c.reach.toLocaleString() + " reached</span></td>";
+      }).join("") + '<td class="n tot">' + orgTot[o].reports + '</td><td class="n tot">' + orgTot[o].reach.toLocaleString() + "</td></tr>";
+    }).join("") || '<tr><td class="xs">No reports match the filters.</td></tr>';
+    $("pxLede").innerHTML = orgRows.length
+      ? "<b>" + orgRows.length + " organisation" + (orgRows.length === 1 ? "" : "s") + " across " + cols.filter(function (k) { return palCols[k].pcode; }).length + " palika" + (cols.length === 1 ? "" : "s") + ".</b> Codes are the activity list in <code>codes.js</code>; the number beside each is how many reports carry it."
+      : "No reports match the filters.";
+    MX_LONG = [];
+    orgRows.forEach(function (o) {
+      cols.forEach(function (k) {
+        var c = PX[o][k]; if (!c) return;
+        Object.keys(c.acts).forEach(function (a) {
+          MX_LONG.push([o, palCols[k].district === "zz" ? "" : distName(palCols[k].district), palCols[k].pcode ? palCols[k].name : "", palCols[k].pcode, a, actName(a), c.acts[a]]);
+        });
+        MX_LONG[MX_LONG.length - 1].push(c.reach);
+      });
+    });
+
+    /* --- by organisation --- */
     var byOrg = {};
     DATA.forEach(function (r) {
       var k = orgName(r);
@@ -816,6 +1031,17 @@
     S.download("mhpss_np_coverage_gaps_" + S.stamp() + ".csv", "﻿" + head + body + "\n", "text/csv");
   });
   $("expAll").addEventListener("click", function () { S.download("mhpss_np_loaded_" + S.stamp() + ".csv", S.toCSV(DATA), "text/csv"); });
+  /* Long format, one row per organisation x palika x activity: the shape a
+     5Ws submission or a pivot table wants. Reach is on the last activity row
+     of each organisation-palika pair only, so summing the column does not
+     count it once per activity. */
+  $("expMx").addEventListener("click", function () {
+    if (!MX_LONG.length) return toast("Nothing to export — no reports match the filters", true);
+    var q = function (v) { v = v === undefined || v === null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var head = "organisation,district,palika,palika_pcode,activity_code,activity,reports,people_reached_org_palika\n";
+    var body = MX_LONG.map(function (r) { return r.map(q).join(","); }).join("\n");
+    S.download("mhpss_np_4ws_matrix_" + S.stamp() + ".csv", "\ufeff" + head + body + "\n", "text/csv");
+  });
 })();
 </script>
 </body>

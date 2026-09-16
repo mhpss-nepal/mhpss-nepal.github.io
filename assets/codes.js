@@ -40,20 +40,20 @@ const META = {
 
 /* ---------------------------------------------------------------------
    DISTRICTS
-   Bagmati Province unless noted. NAW carries the official name and keeps
+   `province` from the workstream's Districts sheet [S7]: Bagmati except NAW. NAW carries the official name and keeps
    "Nawalpur" as an alias because partners write it [D-S24]. SIN added for
    one KOSHISH record at Chautara Hospital [D-S25] -- whether that record is
    part of the flood response is an open question (D-S23), so the district
    exists but is not treated as a response district.
    ------------------------------------------------------------------- */
 const DISTRICTS = [
-  { code: "RAS", name: "Rasuwa", np: "रसुवा", np_src: "draft" },
-  { code: "NUW", name: "Nuwakot", np: "नुवाकोट", np_src: "draft" },
-  { code: "DHA", name: "Dhading", np: "धादिङ", np_src: "draft" },
-  { code: "KTM", name: "Kathmandu", np: "काठमाडौं", np_src: "draft" },
-  { code: "CHT", name: "Chitwan", np: "चितवन", np_src: "draft" },
-  { code: "NAW", name: "Nawalparasi (Bardaghat Susta East)", alias: "Nawalpur", note: "Gandaki Province", np: "नवलपरासी (बर्दघाट सुस्ता पूर्व)", np_src: "draft" },
-  { code: "SIN", name: "Sindhupalchok", np: "सिन्धुपाल्चोक", np_src: "draft", question: "D-S23" },
+  { code: "RAS", name: "Rasuwa", province: "Bagmati", np: "रसुवा", np_src: "draft" },
+  { code: "NUW", name: "Nuwakot", province: "Bagmati", np: "नुवाकोट", np_src: "draft" },
+  { code: "DHA", name: "Dhading", province: "Bagmati", np: "धादिङ", np_src: "draft" },
+  { code: "KTM", name: "Kathmandu", province: "Bagmati", np: "काठमाडौं", np_src: "draft" },
+  { code: "CHT", name: "Chitwan", province: "Bagmati", np: "चितवन", np_src: "draft" },
+  { code: "NAW", name: "Nawalparasi (Bardaghat Susta East)", alias: "Nawalpur", province: "Gandaki", np: "नवलपरासी (बर्दघाट सुस्ता पूर्व)", np_src: "draft" },
+  { code: "SIN", name: "Sindhupalchok", province: "Bagmati", np: "सिन्धुपाल्चोक", np_src: "draft", question: "D-S23" },
   { code: "OTH", name: "Other — specify", np: "अन्य — उल्लेख गर्नुहोस्", np_src: "draft" },
 ];
 
