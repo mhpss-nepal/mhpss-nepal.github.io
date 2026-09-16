@@ -82,6 +82,7 @@
   <div class="in">
     <a class="on" href="./"><b>Overview</b><i>समग्र विवरण</i></a>
     <a href="#coverage"><b>Coverage</b><i>कभरेज</i></a>
+    <a href="#pyramid"><b>Where it sits</b><i>चार तह</i></a>
     <a href="#members"><b>Who takes part</b><i>सहभागी</i></a>
     <a href="#work"><b>What the group does</b><i>कार्यक्षेत्र</i></a>
     <a href="#tools"><b>Forms &amp; dashboard</b><i>फारम र ड्यासबोर्ड</i></a>
@@ -130,37 +131,92 @@
         </div>
       </div>
 
-      <div class="ringwrap">
-        <h4>What the coverage figure will be built from</h4>
-        <p class="note">Each slice is a reporting input the sub-cluster has still to agree.
-        None of them is in place, so the figure above is empty rather than estimated.</p>
-        <div class="ringrow">
-          <svg width="132" height="132" viewBox="0 0 42 42" role="img"
-               aria-label="Four reporting inputs, none yet in place">
-            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#eef1f6" stroke-width="5.4"/>
-            <!-- four equal segments, all shown as not-yet (grey outline), because
-                 showing them filled would imply progress that does not exist -->
-            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#dce1ea" stroke-width="5.4"
-                    stroke-dasharray="24 76" stroke-dashoffset="25" stroke-linecap="butt"/>
-            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#c6d3f2" stroke-width="5.4"
-                    stroke-dasharray="24 76" stroke-dashoffset="0" stroke-linecap="butt"/>
-            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#dce1ea" stroke-width="5.4"
-                    stroke-dasharray="24 76" stroke-dashoffset="-25" stroke-linecap="butt"/>
-            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#c6d3f2" stroke-width="5.4"
-                    stroke-dasharray="24 76" stroke-dashoffset="-50" stroke-linecap="butt"/>
-            <text x="21" y="20.3" text-anchor="middle" font-size="5.4" font-weight="800"
-                  fill="#5b6478" font-family="Mukta,sans-serif">0 of 4</text>
-            <text x="21" y="25.4" text-anchor="middle" font-size="2.9" fill="#5b6478"
-                  font-family="Mukta,sans-serif">inputs agreed</text>
-          </svg>
-          <div class="leg">
-            <div><i style="background:#c6d3f2"></i><span>Holding-centre roster</span><b>pending</b></div>
-            <div><i style="background:#dce1ea"></i><span>Activity code list</span><b>pending</b></div>
-            <div><i style="background:#c6d3f2"></i><span>Reporting calendar</span><b>pending</b></div>
-            <div><i style="background:#dce1ea"></i><span>Partner submissions</span><b>none</b></div>
-          </div>
-        </div>
+      <!-- The ring that used to sit here showed four equal slices, none of
+           them filled. It was a shape, not a figure: three of these four
+           things have to be agreed before the fourth can happen at all, and
+           a circle cut in four says the opposite. -->
+      <div class="gates">
+        <h4>What a coverage figure requires</h4>
+        <div class="count"><b>0 of 4</b><span>in place</span></div>
+        <ol>
+          <li>
+            <span class="box"></span>
+            <span class="txt"><b>Holding-centre roster</b>
+              <i>The list of sites, and the population at each. Agreed with EDCD and
+              the district health offices in Rasuwa and Nuwakot.</i></span>
+            <span class="st">not agreed</span>
+          </li>
+          <li>
+            <span class="box"></span>
+            <span class="txt"><b>Activity code list</b>
+              <i>The official IASC 4Ws activity codes have not been obtained, so the
+              codes in use are this response's own consolidation of what partners
+              submitted.</i></span>
+            <span class="st">not agreed</span>
+          </li>
+          <li>
+            <span class="box"></span>
+            <span class="txt"><b>Reporting calendar</b>
+              <i>Who submits, against which roster, and how often.</i></span>
+            <span class="st">not set</span>
+          </li>
+          <li class="needs">
+            <span class="box"></span>
+            <span class="txt"><b>One cycle of partner submissions</b>
+              <i>Needs all three above. Until it happens, every figure on this page
+              is empty rather than estimated.</i></span>
+            <span class="st grey">none yet</span>
+          </li>
+        </ol>
       </div>
+    </div>
+
+    <!-- Placed here because it answers the question the figures above raise:
+         why is everything empty? -->
+    <div class="fig">
+      <h4>Where the response is now</h4>
+      <p class="lede">Three stations, not an axis: the third has no date yet, so drawing a
+      length for it would be inventing one.</p>
+      <div class="fscroll">
+      <svg viewBox="0 0 860 150" role="img"
+           aria-label="Three stations. The Bhotekoshi flood on 26 August 2026, Bhadra 10 2083. Today. And the first reporting cycle, which is not yet scheduled.">
+       <g font-family="Mukta,sans-serif">
+        <!-- Three dated stations, deliberately NOT drawn to scale: the third
+             has no date, so an axis with a length would be inventing one. -->
+        <line x1="102" y1="70" x2="416" y2="70" stroke="#c8102e" stroke-width="3"/>
+        <line x1="444" y1="70" x2="756" y2="70" stroke="#c3cada" stroke-width="2"
+              stroke-dasharray="6 5"/>
+        <rect x="84" y="64" width="12" height="12" fill="#c8102e"/>
+        <circle cx="430" cy="70" r="7" fill="#003893"/>
+        <circle cx="770" cy="70" r="7" fill="#fff" stroke="#9aa3b4" stroke-width="1.6"
+                stroke-dasharray="3 3"/>
+
+        <g text-anchor="middle">
+          <text x="259" y="52" font-size="15" font-weight="800" fill="#c8102e"
+                id="tlSpan">21 days</text>
+          <text x="259" y="36" font-size="11" fill="#5b6478">elapsed</text>
+          <text x="600" y="52" font-size="13" font-weight="700" fill="#5b6478">date not set</text>
+          <text x="600" y="36" font-size="11" fill="#5b6478">the reporting calendar has still to be agreed</text>
+
+          <text x="90" y="95" font-size="13" font-weight="700" fill="#14213d">Bhotekoshi flood</text>
+          <text x="90" y="111" font-size="11.5" fill="#5b6478">26 August 2026</text>
+          <text x="90" y="125" font-size="11" fill="#5b6478">Bhadra 10, 2083</text>
+
+          <text x="430" y="95" font-size="13" font-weight="700" fill="#003893">Today</text>
+          <text x="430" y="111" font-size="11.5" fill="#5b6478" id="tlToday">16 September 2026</text>
+          <text x="430" y="125" font-size="11" fill="#5b6478">nothing reported into this system yet</text>
+
+          <text x="770" y="95" font-size="13" font-weight="700" fill="#14213d">First reporting cycle</text>
+          <text x="770" y="111" font-size="11.5" fill="#5b6478">not yet scheduled</text>
+          <text x="770" y="125" font-size="11" fill="#5b6478">needs the roster and the code list</text>
+        </g>
+       </g>
+      </svg>
+      </div>
+      <p class="figsrc"><b>Calendars</b> — dates in Bikram Sambat appear only where the
+      response has supplied them. No conversion between the two calendars is computed on this
+      page or in the forms, because no verified conversion table is held. <b>Elapsed time</b>
+      is counted from the flood date and updates itself.</p>
     </div>
 
     <div class="rowcards">
@@ -176,7 +232,7 @@
         <h3>People reached</h3>
         <p class="desc">Unique individuals. A contact is a session; the two are never added.</p>
         <span class="num sm">Not yet reporting</span>
-        <span class="foot">see the counting rules in §5</span>
+        <span class="foot">see the counting rules in §1</span>
       </div>
       <div class="rc tint">
         <span class="ico" data-icon="grid" data-icon-size="22"></span>
@@ -209,6 +265,41 @@
     <p class="intro">A total can look healthy while a whole holding centre has nobody. So the
     measure is not the total reached — it is coverage against the official roster, and the
     gap is the point.</p>
+
+    <!-- The figure is generated from assets/codes.js by tools/roster-fig.py and
+         checked by the deploy guard, so the number of squares drawn cannot
+         drift from the number of site codes the forms actually offer. -->
+    <div class="fig" data-sitefig="23,11,8">
+      <h4>Every site in the response, one square each</h4>
+      <p class="lede">A square is one site code in the response's site list. A square is
+      filled when at least one organisation has reported an MHPSS activity there. None is
+      filled, because no organisation has reported yet — so this figure is, for now, the
+      gap itself.</p>
+      <div class="urow">
+        <p class="ulab"><b>23</b> On the proposed holding-centre roster <span>the denominator every coverage figure is measured against</span></p>
+        <div class="units"><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i></div>
+      </div>
+      <div class="urow">
+        <p class="ulab"><b>11</b> Reported by partners, not on that roster <span>shown apart, and never counted as a gap</span></p>
+        <div class="units"><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i></div>
+      </div>
+      <div class="urow">
+        <p class="ulab"><b>8</b> Reported outside Rasuwa and Nuwakot <span>Dhading, Kathmandu, Chitwan, Nawalpur</span></p>
+        <div class="units"><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i></div>
+      </div>
+      <div class="ukey">
+        <span><i class="roster"></i>On the proposed roster · no service reported</span>
+        <span><i class="served"></i>On the roster · at least one service reported</span>
+        <span><i class="offroster"></i>Reported off the roster</span>
+        <span><i class="outside"></i>Outside the two districts</span>
+      </div>
+      <p class="figsrc"><b>Source</b> — the site list in
+      <code>assets/codes.js</code>, built from the holding-centre roster held by the district
+      health offices and from the site names appearing in partner reports. The roster has not
+      been agreed with EDCD, so the denominator may still change. Eight further sites sit in
+      Dhading, Kathmandu, Chitwan and Nawalpur: the response reached beyond the two flood
+      districts, which is why a district column exists on every form.</p>
+    </div>
 
     <div class="tscroll">
       <table class="t2">
@@ -244,9 +335,116 @@
     than invented.</p>
   </section>
 
-  <!-- ============ 2 · membership ============ -->
+  <!-- ============ 2 · the pyramid ============ -->
+  <section class="sec2" id="pyramid">
+    <h2><span class="no">§2</span> Where this sits in the MHPSS response</h2>
+    <p class="intro">MHPSS is not one service. The IASC Guidelines describe a layered system of
+    complementary supports, and a response is read on whether all four layers are present — not
+    on the total number of people seen. The activity codes on the field form are grouped to
+    these layers, so coverage can be read layer by layer rather than as a single number.</p>
+
+    <div class="fig">
+      <h4>The IASC intervention pyramid</h4>
+      <p class="lede">All layers are important and should ideally be implemented concurrently.
+      The pyramid is wide at the bottom because that is where most people are reached, not
+      because the bottom layer matters more.</p>
+      <div class="pyrgrid">
+      <svg viewBox="0 0 400 320" role="img"
+           aria-label="A four-layer pyramid. The layers are named beside it, from the top down.">
+       <g font-family="Mukta,sans-serif">
+        <polygon points="61.25,232.5 338.75,232.5 385,306 15,306"     fill="#e7edfb" stroke="#c6d3f2"/>
+        <polygon points="107.5,159 292.5,159 338.75,232.5 61.25,232.5" fill="#c6d3f2" stroke="#9db3e3"/>
+        <polygon points="153.75,85.5 246.25,85.5 292.5,159 107.5,159"  fill="#3a62b8" stroke="#3a62b8"/>
+        <polygon points="200,12 246.25,85.5 153.75,85.5"               fill="#003893" stroke="#003893"/>
+        <g font-size="17" font-weight="800" text-anchor="middle">
+          <text x="200" y="283" fill="#003893">1</text>
+          <text x="200" y="209" fill="#0d2a5c">2</text>
+          <text x="200" y="136" fill="#ffffff">3</text>
+          <text x="200" y="71"  fill="#ffffff">4</text>
+        </g>
+       </g>
+      </svg>
+      <!-- The layer names are HTML, not text inside the drawing: on a phone
+           the grid stacks and they stay readable, which text set inside a
+           fixed viewBox does not. -->
+      <ol class="playerlist">
+        <li><span class="sw l4">4</span>
+          <div><b>Specialised services</b>
+          <p>The small percentage whose suffering is intolerable and who may have significant
+          difficulty in basic daily functioning. A small share of the population &#8212; but in a
+          large emergency, still thousands of people.</p></div></li>
+        <li><span class="sw l3">3</span>
+          <div><b>Focused, non-specialised supports</b>
+          <p>More focused individual, family or group interventions by trained and supervised
+          workers: psychological first aid, and basic mental health care by primary health care
+          workers.</p></div></li>
+        <li><span class="sw l2">2</span>
+          <div><b>Community and family supports</b>
+          <p>Family tracing and reunification, assisted mourning and communal healing ceremonies,
+          mass communication on constructive coping, supportive parenting, formal and non-formal
+          education, livelihoods, and the activation of social networks.</p></div></li>
+        <li><span class="sw l1">1</span>
+          <div><b>Basic services and security</b>
+          <p>Security, adequate governance and services that address basic physical needs &#8212;
+          food, shelter, water, basic health care, control of communicable diseases &#8212; through
+          which the well-being of all people is protected.</p></div></li>
+      </ol>
+      </div>
+      <p class="figsrc"><b>Source</b> — IASC, <i>Guidelines on Mental Health and Psychosocial
+      Support in Emergency Settings</i>, 2007: the intervention pyramid figure and the
+      description of each layer. The four layer names are as printed there. Later renderings of
+      the figure label the layers differently; this page keeps the 2007 wording.</p>
+    </div>
+
+    <div class="tscroll">
+      <table class="t2">
+        <caption>What this response records at each layer, and the state of it.</caption>
+        <thead><tr>
+          <th>Layer</th><th>Activity codes on the field form</th><th class="n">Codes</th><th>State</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="k">4 · Specialised services</td>
+              <td>Specialised mental health service; psychotropic medication provision</td>
+              <td class="n">2</td>
+              <td class="pend">code list not agreed</td></tr>
+          <tr><td class="k">3 · Focused, non-specialised supports</td>
+              <td>Psychological first aid; individual and group psychosocial counselling;
+              support to responders and staff care</td>
+              <td class="n">4</td>
+              <td class="pend">code list not agreed</td></tr>
+          <tr><td class="k">2 · Community and family supports</td>
+              <td>Psychoeducation and awareness sessions; recreational and structured activity;
+              child-friendly space activity; IEC material distribution</td>
+              <td class="n">4</td>
+              <td class="pend">code list not agreed</td></tr>
+          <tr><td class="k">1 · Basic services and security</td>
+              <td>No activity code. This layer is delivered by the other clusters; what the
+              sub-cluster reports is whether MHPSS is present within it</td>
+              <td class="n">—</td>
+              <td class="pend">outside this system</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="src"><b>Five codes sit across the layers rather than in one.</b> Referral is a
+    pathway between layers, not a layer; a helpline contact is a channel, and the support given
+    over it belongs to whichever layer it came from; rapid assessment, coordination meetings and
+    training are system functions. The published mapping of the MHPSS Minimum Service Package
+    onto the pyramid marks coordination and assessment as not applicable to a single layer for
+    the same reason. <b>The grouping is this response's own.</b> The official IASC 4Ws activity
+    code list has not been obtained, so no code on the form carries an official IASC number —
+    the field is present and left empty rather than filled with a guess.</p>
+
+    <div class="defquote">
+      <p>MHPSS describes any type of local or outside support that aims to protect or promote
+      psychosocial well-being, or prevent or treat mental disorders.
+      <cite>IASC Guidelines on Mental Health and Psychosocial Support in Emergency Settings, 2007</cite></p>
+    </div>
+  </section>
+
+  <!-- ============ 3 · membership ============ -->
   <section class="sec2" id="members">
-    <h2><span class="no">§2</span> Who takes part</h2>
+    <h2><span class="no">§3</span> Who takes part</h2>
     <p class="intro">The sub-cluster is open to government bodies, UN agencies, international
     and national NGOs, professional associations, academic departments, and any organisation
     or individual active in mental health and psychosocial support in this response.</p>
@@ -289,7 +487,7 @@
 
   <!-- ============ 3 · activities ============ -->
   <section class="sec2" id="work">
-    <h2><span class="no">§3</span> What the group does</h2>
+    <h2><span class="no">§4</span> What the group does</h2>
     <div class="tscroll">
       <table class="t2">
         <thead><tr><th style="width:23%">Function</th><th>What it means in this response</th>
@@ -315,9 +513,9 @@
     </div>
   </section>
 
-  <!-- ============ 4 · tools ============ -->
+  <!-- ============ 5 · tools ============ -->
   <section class="sec2" id="tools">
-    <h2><span class="no">§4</span> Forms and dashboard</h2>
+    <h2><span class="no">§5</span> Forms and dashboard</h2>
     <p class="intro">The operational layers. They work today, on a phone, with no signal — and
     they hold synthetic data only until the roster, the activity codes and the reporting
     calendar are agreed.</p>
@@ -347,14 +545,15 @@
     </div>
   </section>
 
-  <!-- ============ 5 · method ============ -->
+  <!-- ============ 6 · method ============ -->
   <section class="sec2" id="method">
-    <h2><span class="no">§5</span> Three layers, one direction</h2>
+    <h2><span class="no">§6</span> Three layers, one direction</h2>
     <p class="intro">Data moves one way. It is entered once in the field, interpreted at
     coordination level, and published only as aggregates. Nothing on the public layer can
     reach back down into a record about a person.</p>
 
     <div class="flowfig">
+      <div class="fscroll wide">
       <svg viewBox="0 0 820 210" role="img"
            aria-label="Three layers. Layer 1, field entry: a record with a code, never a name. Layer 2, coordination: counts by site and week. Layer 3, public: gaps against the roster. Data flows upward only.">
         <g font-family="Mukta,sans-serif">
@@ -399,6 +598,7 @@
           </g>
         </g>
       </svg>
+      </div>
     </div>
 
     <div class="twocol" style="margin-top:18px">
@@ -421,11 +621,6 @@
       </div>
     </div>
 
-    <div class="defquote">
-      <p>MHPSS describes any type of local or outside support that aims to protect or promote
-      psychosocial well-being, or prevent or treat mental disorders.
-      <cite>IASC Guidelines on Mental Health and Psychosocial Support in Emergency Settings, 2007</cite></p>
-    </div>
   </section>
 
 </div>
@@ -460,11 +655,25 @@
   </div>
 </footer>
 
+<script src="assets/codes.js"></script>
 <script src="assets/mark.js"></script>
 <script src="assets/icons.js"></script>
 <script src="assets/i18n-strings.js"></script>
 <script src="assets/i18n.js"></script>
 <script>
+(function () {
+  /* The timeline's middle station. The flood date is fixed; "today" and the
+     days elapsed are not, so they are filled here rather than typed into the
+     markup and left to go quietly wrong. The typed values are correct on the
+     day this was written, so a browser with scripting off is not misled. */
+  var flood = new Date(Date.UTC(2026, 7, 26)), now = new Date();
+  var days = Math.floor((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+                         - flood.getTime()) / 86400000);
+  var sp = document.getElementById("tlSpan"), td = document.getElementById("tlToday");
+  if (sp && days >= 0) sp.textContent = days === 1 ? "1 day" : days + " days";
+  if (td) td.textContent = now.toLocaleDateString("en-GB",
+          { day: "numeric", month: "long", year: "numeric" });
+})();
 (function () {
   var h = location.host, host = document.getElementById("siteHost");
   if (host) host.textContent = h ? "· " + h : "";

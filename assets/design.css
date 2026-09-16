@@ -355,3 +355,139 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 .bar .in{display:flex;align-items:center;gap:9px}
 .bar .barmark{flex:0 0 auto;line-height:0;display:block}
 .bar .barmark svg{display:block;border-radius:5px}
+
+/* =====================================================================
+   FIGURES
+   ---------------------------------------------------------------------
+   Added 16 September 2026, after WHO's second note on the review draft:
+   "improve tampilan infografisnya, jgn kayak buatan AI."
+
+   The first note was about the page's grammar and was answered above.
+   This one is about the figures themselves, and it was a different
+   fault. The figures were decoration: a ring at nought per cent, a row
+   of cards, three stacked bars. A ring at nought is a shape that could
+   sit on any page about anything -- which is precisely what makes it
+   read as machine-made.
+
+   What a figure has to do here instead is carry something that could
+   only have been drawn by someone who knows this response:
+
+     · the UNIT CHART draws one square per site code that actually
+       exists in assets/codes.js, so the count cannot drift from the
+       list the forms use, and an empty square is an honest empty -- a
+       site with nothing reported against it
+     · the IASC PYRAMID is the sector's own figure, from the 2007
+       Guidelines, with the four layers named exactly as printed there,
+       and this response's own activity groups set against them
+     · the READINESS CHECKLIST replaces the ring: three prerequisites
+       and the one outcome that needs all three, which is the real
+       shape of the dependency and not a circle cut in four
+     · the TIMELINE is dated, in AD, with the one Bikram Sambat date
+       the response has supplied and no conversion computed here
+
+   Hard edges, hairlines, tabular figures, no gradient, no shadow on a
+   figure. Crimson is reserved for the thing that is missing.
+   ===================================================================== */
+.fig{background:#fff;border:1px solid var(--grey-3);border-radius:var(--r-md);
+     padding:17px 19px 14px;margin:16px 0 0}
+.fig > h4{margin:0 0 3px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;
+          color:var(--slate-2);font-weight:700}
+.fig > .lede{margin:0 0 14px;font-size:13px;line-height:1.6;color:var(--slate-2);max-width:86ch}
+.fig svg{display:block;width:100%;height:auto}
+.fig .figsrc{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--grey-2);
+             font-size:11.5px;line-height:1.55;color:var(--slate-2)}
+.fig .figsrc b{color:var(--ink-d);font-weight:700}
+.fig .figsrc a{color:var(--np-blue)}
+
+/* the unit chart's own legend, under the squares */
+.ukey{display:flex;gap:7px 20px;flex-wrap:wrap;margin:13px 0 0;font-size:12px;
+      color:var(--slate-2)}
+.ukey span{display:inline-flex;align-items:center;gap:7px}
+.ukey i{width:13px;height:13px;flex:0 0 auto;display:block;background:#fff}
+.ukey i.roster{border:1.6px solid var(--np-blue-2)}
+.ukey i.offroster{border:1.6px solid var(--np-crimson)}
+.ukey i.outside{border:1.6px solid var(--grey-3)}
+.ukey i.served{border:1.6px solid var(--np-blue-2);background:var(--np-blue)}
+
+/* ---------- the readiness checklist (replaces the ring) -------------- */
+.gates{background:#fff;border:1px solid var(--grey-3);border-radius:var(--r-md);
+       padding:17px 19px}
+.gates h4{margin:0 0 3px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;
+          color:var(--slate-2);font-weight:700}
+.gates .count{display:flex;align-items:baseline;gap:9px;margin:6px 0 13px}
+.gates .count b{font-size:27px;font-weight:800;color:var(--np-crimson);letter-spacing:-.7px;
+                line-height:1}
+.gates .count span{font-size:12.5px;color:var(--slate-2)}
+.gates ol{list-style:none;margin:0;padding:0}
+.gates li{display:flex;align-items:flex-start;gap:11px;padding:9px 0;
+          border-bottom:1px solid var(--grey-2)}
+.gates li:last-child{border-bottom:0;padding-bottom:0}
+.gates li.needs{border-top:2px solid var(--ink-d);margin-top:4px;padding-top:11px}
+.gates .box{flex:0 0 auto;width:15px;height:15px;border:1.6px solid var(--slate-2);
+            border-radius:2px;background:#fff;margin-top:2px}
+.gates li.done .box{background:var(--np-blue);border-color:var(--np-blue)}
+.gates .txt{flex:1 1 auto;min-width:0}
+.gates .txt b{display:block;font-size:13.5px;font-weight:700;color:var(--ink-d);line-height:1.35}
+.gates .txt i{display:block;font-style:normal;font-size:11.5px;line-height:1.5;
+              color:var(--slate-2);margin-top:1px}
+.gates .st{flex:0 0 auto;font-size:11px;font-weight:700;letter-spacing:.4px;
+           text-transform:uppercase;color:var(--np-crimson-d);background:var(--np-crimson-t);
+           border:1px solid var(--np-crimson-b);border-radius:3px;padding:2px 7px;
+           margin-top:2px;white-space:nowrap}
+.gates .st.grey{color:var(--slate-2);background:var(--grey-2);border-color:var(--grey-3)}
+@media (max-width:420px){
+  .gates li{flex-wrap:wrap}
+  .gates .st{margin-left:26px}
+}
+
+
+/* ---------- the unit chart: elements, not a drawing ------------------ */
+/* Deliberately HTML. An SVG with a fixed viewBox shrinks its own labels
+   with the container, so a 12px label on an 860-wide drawing lands at
+   5px on a phone -- and the phone is the one screen the field uses.
+   Squares that are elements reflow, and the words stay the size set. */
+.urow{margin-top:15px}
+.urow:first-child{margin-top:2px}
+.ulab{margin:0 0 7px;font-size:13.5px;font-weight:700;color:var(--ink-d);line-height:1.45}
+.ulab b{font-size:16.5px;font-weight:800;margin-right:4px;font-variant-numeric:tabular-nums}
+.ulab span{font-weight:400;font-size:12px;color:var(--slate-2);margin-left:5px}
+.units{display:flex;flex-wrap:wrap;gap:5px}
+.u{width:18px;height:18px;display:block;background:#fff;border-radius:2px}
+.u.roster{border:1.6px solid var(--np-blue-2)}
+.u.offlist{border:1.6px solid var(--np-crimson)}
+.u.outside{border:1.6px solid var(--grey-3)}
+.u.served{border:1.6px solid var(--np-blue-2);background:var(--np-blue)}
+
+/* ---------- the pyramid: drawing left, names right, stacking on a phone */
+.pyrgrid{display:grid;gap:24px;grid-template-columns:minmax(0,290px) minmax(0,1fr);
+         align-items:center;margin-top:4px}
+@media (max-width:760px){ .pyrgrid{grid-template-columns:1fr;gap:14px} }
+.pyrgrid > svg{width:100%;height:auto;max-width:330px;margin:0 auto}
+.playerlist{list-style:none;margin:0;padding:0}
+.playerlist li{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--grey-2)}
+.playerlist li:last-child{border-bottom:0;padding-bottom:0}
+.playerlist .sw{flex:0 0 auto;width:22px;height:22px;border-radius:3px;
+                font:800 12px/22px var(--sans);text-align:center;color:#fff}
+.playerlist .sw.l4{background:var(--np-blue)}
+.playerlist .sw.l3{background:var(--np-blue-2)}
+.playerlist .sw.l2{background:var(--np-blue-b);color:#0d2a5c}
+.playerlist .sw.l1{background:var(--np-blue-t);color:var(--np-blue);
+                   border:1px solid var(--np-blue-b);line-height:20px}
+.playerlist b{display:block;font-size:14px;color:var(--np-blue);line-height:1.3}
+.playerlist p{margin:2px 0 0;font-size:12.5px;line-height:1.56;color:var(--slate-2);
+              max-width:80ch}
+
+/* ---------- figures that cannot reflow: swipe them, as the tables do -- */
+.fscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.fscroll > svg{min-width:640px}
+.fscroll.wide > svg{min-width:700px}
+
+/* A note set beside a label has to become its own line on a narrow screen,
+   or it wraps one word onto the row below and reads as a typo. */
+@media (max-width:640px){
+  .ulab span{display:block;margin-left:0;margin-top:2px}
+}
+/* file and field names, in prose */
+.fig code,.src code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.92em;background:var(--grey-1);border:1px solid var(--grey-2);
+  border-radius:3px;padding:0 4px}
