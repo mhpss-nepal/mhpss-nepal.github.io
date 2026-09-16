@@ -4,7 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MHPSS Coordination Dashboard — Nepal Flood Response</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Lora + Manrope. design.css declares Georgia / system fallbacks, so a
+     failed font request costs typography and never legibility -- which
+     matters on the field forms, where there may be no signal at all. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Manrope:wght@400;600;700;800&display=swap">
 <link rel="stylesheet" href="../assets/app.css">
+<link rel="stylesheet" href="../assets/design.css">
 <style>
   .tabs{display:flex; gap:4px; border-bottom:2px solid var(--line); margin:22px 0 16px; flex-wrap:wrap}
   .tab{font:inherit; font-size:13px; font-weight:700; background:none; border:0; border-bottom:3px solid transparent;
@@ -150,6 +157,8 @@
 <!-- The bilingual engine: mounts the ENG/NEP toggle so it does not
      vanish when a reader navigates here from the hub, and states
      plainly that this page is not in Nepali yet. -->
+<script src="../assets/mark.js"></script>
+<script src="../assets/icons.js"></script>
 <script src="../assets/i18n-strings.js"></script>
 <script src="../assets/i18n.js"></script>
 <script>

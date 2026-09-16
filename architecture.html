@@ -3,10 +3,19 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Architecture concept — MHPSS Nepal</title>
 <meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#005C85">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Lora + Manrope. design.css declares Georgia / system fallbacks, so a
+     failed font request costs typography and never legibility -- which
+     matters on the field forms, where there may be no signal at all. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Manrope:wght@400;600;700;800&display=swap">
 <link rel="stylesheet" href="assets/page.css">
+<link rel="stylesheet" href="assets/design.css">
 </head><body>
 <div class="synth">DEMONSTRATION BUILD · draft for discussion <span>· not agreed with EDCD or the MHPSS sub-cluster</span></div>
-<div class="bar"><div class="in"><a href="hub/">← Hub</a><span class="sep">·</span><span class="here">Architecture concept</span></div></div>
+<!-- the mark, so a reference page is recognisably part of the same product
+     rather than a loose document. The bar keeps its breadcrumb. -->
+<div class="bar"><div class="in"><span class="barmark" data-mark="22"></span><a href="hub/">← Hub</a><span class="sep">·</span><span class="here">Architecture concept</span></div></div>
 <main>
   <div class="eyebrow">Reference</div>
   <h1>Three layers, one direction</h1>
@@ -88,6 +97,8 @@
 </main><!-- The bilingual engine: mounts the ENG/NEP toggle so it does not
      vanish when a reader navigates here from the hub, and states
      plainly that this page is not in Nepali yet. -->
+<script src="assets/mark.js"></script>
+<script src="assets/icons.js"></script>
 <script src="assets/i18n-strings.js"></script>
 <script src="assets/i18n.js"></script>
 </body></html>

@@ -4,7 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Access — MHPSS Nepal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Lora + Manrope. design.css declares Georgia / system fallbacks, so a
+     failed font request costs typography and never legibility -- which
+     matters on the field forms, where there may be no signal at all. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Manrope:wght@400;600;700;800&display=swap">
 <link rel="stylesheet" href="../assets/app.css">
+<link rel="stylesheet" href="../assets/design.css">
 <link rel="stylesheet" href="../assets/brand.css">
 <style>
   .who-needs{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin:0 0 22px}
@@ -111,6 +118,8 @@
 <!-- The bilingual engine. This page was missed when the engine went onto the
      others, so it was the one page on the site with no language switch --
      found by sweeping every page in both languages rather than by reading. -->
+<script src="../assets/mark.js"></script>
+<script src="../assets/icons.js"></script>
 <script src="../assets/i18n-strings.js"></script>
 <script src="../assets/i18n.js"></script>
 <script>

@@ -19,7 +19,7 @@
    old validation, and (16 Sep 2026) a version of store.js that did not sync
    to the register at all. The fix was deployed and had no effect on any
    device until this line changed. */
-const CACHE = "mhpss-np-field-v10";
+const CACHE = "mhpss-np-field-v11";
 
 const PRECACHE = [
   "./",
@@ -53,6 +53,19 @@ const PRECACHE = [
      form, and the rule that lays them out */
   "../assets/brand.css",
   "../assets/brand.js",
+  /* The design system, the mark and the icon set. These are precached for
+     the same reason as the i18n files: without design.css the form loads
+     unstyled, and an unstyled form in a holding centre does not read as a
+     Ministry instrument. mark.js and icons.js draw inline SVG, so they are
+     the reason the form has a logo and icons AT ALL with no signal -- an
+     image file or an icon font would simply fail there.
+     The webfont is deliberately NOT here: it is cross-origin, so the
+     cached response would be opaque and unusable. design.css declares
+     Georgia and the system sans as fallbacks, so offline the form is set
+     in those. Typography degrades; legibility does not. */
+  "../assets/design.css",
+  "../assets/mark.js",
+  "../assets/icons.js",
   "pwa.js"
 ];
 

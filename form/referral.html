@@ -4,7 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Referral record — MHPSS Nepal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Lora + Manrope. design.css declares Georgia / system fallbacks, so a
+     failed font request costs typography and never legibility -- which
+     matters on the field forms, where there may be no signal at all. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Manrope:wght@400;600;700;800&display=swap">
 <link rel="stylesheet" href="../assets/app.css">
+<link rel="stylesheet" href="../assets/design.css">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#20313b">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -359,6 +366,8 @@
      its place: it sets data-lang, which is what makes the Nepali words in
      the code lists appear in the dropdowns, and it mounts the ENG/NEP
      toggle and an honest notice saying the prose is still English. -->
+<script src="../assets/mark.js"></script>
+<script src="../assets/icons.js"></script>
 <script src="../assets/i18n-strings.js"></script>
 <script src="../assets/i18n.js"></script>
 </body>

@@ -37,10 +37,13 @@ img{max-width:100%} [hidden]{display:none!important}
 main{max-width:860px;margin:0 auto;padding:36px 24px 64px}
 @media(max-width:600px){ main{padding:26px 16px 48px} body{font-size:15px} }
 .eyebrow{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--brand-d)}
-h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(26px,4.6vw,36px);
+/* Georgia removed 16 Sep 2026: the whole system is Mukta now, one family
+   carrying Devanagari and Latin, so a serif here made these pages read as
+   a different site from the rest. */
+h1{font-weight:700;font-size:clamp(26px,4.6vw,36px);
   line-height:1.2;margin:9px 0 14px;letter-spacing:.1px}
 .lede{font-size:17px;line-height:1.62;color:var(--slate);margin-bottom:30px}
-h2{font-family:Georgia,serif;font-weight:400;font-size:22px;margin:36px 0 12px;line-height:1.25;
+h2{font-weight:700;font-size:22px;margin:36px 0 12px;line-height:1.25;
   padding-top:18px;border-top:1px solid var(--line)}
 h3{font-size:15.5px;font-weight:700;margin:22px 0 7px}
 p{margin-bottom:13px}

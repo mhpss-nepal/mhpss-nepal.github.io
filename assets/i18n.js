@@ -282,7 +282,12 @@
          the baseline, so the same line-height that looks right in English
          crowds it. The face is switched here too, so no page has to remember. */
       ':root[data-lang="ne"] body{line-height:1.74;' +
-      "font-family:'Noto Sans Devanagari','Noto Sans',system-ui,sans-serif}" +
+      /* Mukta FIRST: it carries Devanagari and Latin in one family, which is
+         the whole reason it was chosen. Naming another face here made the
+         Nepali view a different typeface from the English one -- two
+         typefaces on one site, which is exactly what Mukta avoids. The
+         others stay as fallbacks in case Mukta has not loaded. */
+      "font-family:'Mukta','Noto Sans Devanagari','Noto Sans',system-ui,sans-serif}" +
       ':root[data-lang="ne"] h1,:root[data-lang="ne"] h2,:root[data-lang="ne"] h3{line-height:1.35}' +
       "@media print{#i18nbar,#i18nprog{display:none}}";
     document.head.appendChild(css);
@@ -370,7 +375,7 @@
       "#mtnote{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;" +
       "padding:9px 14px;padding-top:calc(9px + env(safe-area-inset-top,0px));" +
       "background:#fdf6e9;border-bottom:1px solid #e6d5ae;color:#6b4d16;" +
-      "font:400 12.5px/1.5 'Noto Sans Devanagari','Noto Sans',system-ui,sans-serif}" +
+      "font:400 12.5px/1.5 'Mukta','Noto Sans Devanagari','Noto Sans',system-ui,sans-serif}" +
       "#mtnote .m{flex:1 1 300px;min-width:0}" +
       "#mtnote .np{display:block;font-weight:600}" +
       "#mtnote .en{display:block;opacity:.85;font-family:'Noto Sans',system-ui,sans-serif}" +
