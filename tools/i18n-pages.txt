@@ -8,3 +8,4 @@
 
 index.html keyed
 form/index.html keyed
+form/selfreport.html keyed

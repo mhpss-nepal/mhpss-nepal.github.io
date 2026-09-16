@@ -78,10 +78,27 @@ def sweep(path, prefix):
             # translatable unit: Nepali word order moves the link, so the
             # sentence cannot be keyed in fragments around it.
             PROSE = ("p", "li", "td", "th", "h1", "h2", "h3", "h4", "b", "summary")
-            if tag in ("div", "span") and \
-               re.search(r"<(a|button|input|select|textarea)\b", inner):
+
+            # RULE 1, and it applies to EVERY tag, not a list of them.
+            # An element that contains a form control can never become one
+            # string: the engine fills the element, which destroys the
+            # control inside it.
+            #   This was written as two tag-specific rules and <label> was
+            # in neither. The result: seventeen radio labels on the
+            # self-report form were swept WITH their <input>, which would
+            # have shipped a form for displaced people showing the markup
+            # as text and with no radio buttons to press. Caught by filling
+            # the form, not by reading the code. The gate now refuses it
+            # too (see i18n-check.py), so there are two nets, and this is
+            # the one that stops it being created.
+            if re.search(r"<(input|select|textarea|button)\b", inner):
                 continue
-            if tag in PROSE and re.search(r"<(button|input|select|textarea)\b", inner):
+
+            # RULE 2: a link is different. A row of links is furniture and
+            # must stay in fragments; a SENTENCE containing a link is one
+            # translatable unit, because Nepali word order moves the link
+            # and the sentence cannot be keyed in pieces around it.
+            if tag not in PROSE and re.search(r"<a\b", inner):
                 continue
             text = re.sub(r"<[^>]+>", "", inner).strip()
             if len(text) < 4 or not re.search(r"[A-Za-z]{3}", text):

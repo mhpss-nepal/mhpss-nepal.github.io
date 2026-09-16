@@ -138,9 +138,12 @@ class Scan(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.keys = []
         self.loose = []
+        self.html_keys = set()   # keys whose element declared data-i18n-html
+        self.control_keys = []   # keyed elements that WRAP a form control
         self._skip = 0
         self._covered = 0
         self._stack = []
+        self._open_keys = []     # keys of elements currently open
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
@@ -148,6 +151,13 @@ class Scan(HTMLParser):
         for k in KEY_ATTRS:
             if k in a and a[k]:
                 self.keys.append(a[k])
+        own_key = a.get("data-i18n")
+        if own_key and "data-i18n-html" in a:
+            self.html_keys.add(own_key)
+        if tag in ("input", "select", "textarea", "button") and self._open_keys:
+            # A keyed element containing a form control: whatever the
+            # dictionary holds for that key will REPLACE the control.
+            self.control_keys.append(self._open_keys[-1])
         void = tag in ("br", "img", "input", "hr", "meta", "link", "source", "area")
         if not void:
             self._stack.append((tag, has_key, tag in self.SKIP))
@@ -155,11 +165,14 @@ class Scan(HTMLParser):
                 self._skip += 1
             if has_key:
                 self._covered += 1
+            self._open_keys.append(own_key or (self._open_keys[-1] if self._open_keys else None))
 
     def handle_endtag(self, tag):
         for i in range(len(self._stack) - 1, -1, -1):
             if self._stack[i][0] == tag:
                 _, has_key, skipped = self._stack.pop(i)
+                if self._open_keys:
+                    self._open_keys.pop()
                 if skipped:
                     self._skip = max(0, self._skip - 1)
                 if has_key:
@@ -188,7 +201,7 @@ def scan(path):
     words = len(re.sub(r"\s+", " ", re.sub(
         r"<[^>]+>", " ",
         re.sub(r"<(script|style)[^>]*>.*?</\1>", "", s, flags=re.S))).split())
-    return p.keys, p.loose, words
+    return p.keys, p.loose, words, p.html_keys, p.control_keys
 
 
 # ------------------------------------------------------------- worksheet
@@ -329,13 +342,32 @@ def main(argv):
     pending = [p for p, st in pages.items() if st not in ("enforced", "keyed")]
 
     def check(p, require_nepali):
-        keys, loose, words = scan(p)
+        keys, loose, words, html_keys, control_keys = scan(p)
         no_en = [k for k in keys if k not in d["en"]]
         no_ne = [k for k in keys
                  if k in d["en"]
                  and not d["ne"].get(k, "").strip()
                  and not any(k.startswith(pfx) for pfx in skip_prefixes)]
-        bad = bool(no_en) or bool(loose) or (require_nepali and bool(no_ne))
+
+        # ---- markup in a string that the page will insert as plain text.
+        # The engine uses textContent unless the element declares
+        # data-i18n-html, so a string containing a tag renders as visible
+        # source code. This was not hypothetical: the migration tool swept
+        # seventeen radio labels on the self-report form INCLUDING their
+        # <input>, which would have shipped a form for displaced people
+        # with the markup printed on screen and no working radio buttons
+        # at all. Nothing caught it -- the text was keyed, so the gate was
+        # satisfied. It is caught here now.
+        markup = [k for k in set(keys)
+                  if k in d["en"] and k not in html_keys
+                  and re.search(r"<[a-zA-Z/][^>]*>", d["en"][k])]
+
+        # ---- a keyed element that WRAPS a form control. Filling it, by
+        # textContent or innerHTML, destroys the control.
+        wraps = [k for k in set(control_keys) if k and k in d["en"]]
+
+        bad = (bool(no_en) or bool(loose) or bool(markup) or bool(wraps)
+               or (require_nepali and bool(no_ne)))
         note = ""
         if no_ne and not require_nepali:
             note = "  (%d awaiting Nepali)" % len(set(no_ne))
@@ -346,6 +378,14 @@ def main(argv):
         if loose:
             fail.append((p, "visible text carrying no key -- add one or the two "
                             "versions will drift", loose[:8]))
+        if markup:
+            fail.append((p, "string contains markup but the element has no "
+                            "data-i18n-html -- it would render as visible "
+                            "source code", sorted(markup)[:8]))
+        if wraps:
+            fail.append((p, "keyed element wraps a form control -- filling it "
+                            "destroys the input; key the label text in a "
+                            "<span> instead", sorted(wraps)[:8]))
         if require_nepali and no_ne:
             fail.append((p, "keys with no Nepali string", sorted(set(no_ne))[:8]))
 
@@ -366,7 +406,7 @@ def main(argv):
     print("  NOT YET MIGRATED")
     tot = 0
     for p in pending:
-        _, _, words = scan(p)
+        words = scan(p)[2]
         tot += words
         print("    %-34s %5d words" % (p, words))
     print("    %-34s %5d words to key up" % ("TOTAL", tot))
