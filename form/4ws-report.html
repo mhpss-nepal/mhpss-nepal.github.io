@@ -237,9 +237,13 @@
     items.forEach(function (it) {
       var o = document.createElement("option");
       o.value = typeof it === "string" ? it : it[valueKey];
-      o.textContent = labelFn ? labelFn(it) : (typeof it === "string" ? it : it.name);
+      /* CODES.label, not it.name, so a list with a Nepali label shows it on
+         the Nepali page rather than staying in English. */
+      o.textContent = labelFn ? labelFn(it)
+        : (typeof it === "string" ? it : C.label(it));
       sel.appendChild(o);
     });
+    sel._refill = function () { fill(sel, items, valueKey, labelFn, placeholder); };
   }
 
   function toast(msg, warn) {
@@ -257,19 +261,41 @@
   fill($("district"), C.DISTRICTS, "code", null, "All districts");
   fill($("modality"), C.MODALITIES, "code", null, "Select…");
   fill($("status"), C.STATUS, "code", null, "Ongoing");
-  fill($("activity"), C.ACTIVITIES, "code", function (a) { return a.name + "  ·  " + a.group; }, "Select…");
+  fill($("activity"), C.ACTIVITIES, "code",
+       function (a) { return C.label(a) + "  ·  " + C.label({ name: a.group, np: a.groupNp }); },
+       "Select…");
 
-  C.TARGET_GROUPS.forEach(function (g) {
-    var l = document.createElement("label");
-    l.className = "chk";
-    l.innerHTML = '<input type="checkbox" value="' + g.code + '"><span>' + g.name + "</span>";
-    $("tgs").appendChild(l);
+  function fillTargetGroups() {
+    var picked = [];
+    $("tgs").querySelectorAll("input:checked").forEach(function (i) { picked.push(i.value); });
+    $("tgs").innerHTML = "";
+    C.TARGET_GROUPS.forEach(function (g) {
+      var l = document.createElement("label");
+      l.className = "chk";
+      l.innerHTML = '<input type="checkbox" value="' + g.code + '"><span>' + C.label(g) + "</span>";
+      $("tgs").appendChild(l);
+    });
+    /* put the ticks back -- a half-filled form has to survive a language switch */
+    picked.forEach(function (v) {
+      var i = $("tgs").querySelector('input[value="' + v + '"]');
+      if (i) i.checked = true;
+    });
+  }
+  fillTargetGroups();
+  document.addEventListener("i18n:changed", function () {
+    var sels = document.querySelectorAll("select");
+    for (var i = 0; i < sels.length; i++) {
+      var el = sels[i];
+      if (typeof el._refill !== "function") continue;
+      var had = el.value; el._refill(); if (had) el.value = had;
+    }
+    fillTargetGroups();
   });
 
   function siteLabel(s) {
     var pop = s.pop === null || s.pop === undefined ? "" : "  ·  " + s.pop + " people";
     var tag = s.source === "roster" ? "" : s.source === "reported" ? "  ·  not on roster" : "";
-    return s.name + pop + tag;
+    return C.label(s) + pop + tag;
   }
   function refreshSites() {
     var d = $("district").value;
@@ -451,5 +477,11 @@
 })();
 </script>
 <script src="pwa.js"></script>
+<!-- The bilingual engine. On a page that is not yet keyed up it still earns
+     its place: it sets data-lang, which is what makes the Nepali words in
+     the code lists appear in the dropdowns, and it mounts the ENG/NEP
+     toggle and an honest notice saying the prose is still English. -->
+<script src="../assets/i18n-strings.js"></script>
+<script src="../assets/i18n.js"></script>
 </body>
 </html>

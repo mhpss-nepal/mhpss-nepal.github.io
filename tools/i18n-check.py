@@ -246,6 +246,45 @@ def import_worksheet(path, d):
 
 
 # ------------------------------------------------------------------- main
+
+CODE_LISTS = ["SITES", "DISTRICTS", "ACTIVITIES", "CADRES",
+              "TARGET_GROUPS", "MODALITIES", "STATUS"]
+
+
+def code_list_coverage():
+    """How much of assets/codes.js exists in Nepali.
+
+    The prose and the code lists are two separate bodies of text, and for a
+    field worker the code lists matter MORE: they are the words tapped to
+    make a choice, not the words read once. Counting only the prose made
+    them invisible -- five whole lists sat at zero Nepali without appearing
+    anywhere in this report. So they are counted here, next to the prose.
+
+    Parsed by regex rather than by running the file: it is a browser script
+    with no module export, and a regex that gets it wrong reports a wrong
+    number, while importing it would need a JS runtime in the deploy guard.
+    """
+    f = os.path.join(ROOT, "assets", "codes.js")
+    if not os.path.isfile(f):
+        return {}
+    src = open(f, encoding="utf-8").read()
+    out = {}
+    for name in CODE_LISTS:
+        m = re.search(r"const\s+%s\s*=\s*\[(.*?)\n\];" % name, src, re.S)
+        if not m:
+            continue
+        body = m.group(1)
+        items = re.findall(r"\{[^{}]*\}", body)
+        total = len(items)
+        np = sum(1 for it in items if re.search(r'\bnp:\s*"', it))
+        draft = sum(1 for it in items
+                    if re.search(r'\bnp:\s*"', it)
+                    and not re.search(r'np_src:\s*"confirmed"', it))
+        flagged = sum(1 for it in items if re.search(r'\bnp_note:\s*"', it))
+        out[name] = dict(total=total, np=np, draft=draft, flagged=flagged)
+    return out
+
+
 def main(argv):
     d = load_strings()
     if "--worksheet" in argv:
@@ -262,6 +301,27 @@ def main(argv):
     fail = []
     print("MHPSS Nepal — bilingual gate")
     print("  English strings: %d   Nepali strings: %d" % (len(d["en"]), len(d["ne"])))
+
+    cl = code_list_coverage()
+    if cl:
+        tot = sum(v["total"] for v in cl.values())
+        npc = sum(v["np"] for v in cl.values())
+        dft = sum(v["draft"] for v in cl.values())
+        flg = sum(v["flagged"] for v in cl.values())
+        print()
+        print("  CODE LISTS — the words a field worker taps, not reads")
+        for name in CODE_LISTS:
+            v = cl.get(name)
+            if not v:
+                continue
+            gap = v["total"] - v["np"]
+            note = "" if not gap else "   %d still English" % gap
+            print("    %-16s %3d of %3d in Nepali%s" % (name, v["np"], v["total"], note))
+        print("    %-16s %3d of %3d   (%d still a draft, %d flagged for a named source)"
+              % ("TOTAL", npc, tot, dft, flg))
+        if dft:
+            print("    Every draft is shown to users as machine-translated. Run")
+            print("    --worksheet to get the list a Nepali speaker should check.")
     print()
 
     enforced = [p for p, st in pages.items() if st == "enforced"]

@@ -381,22 +381,35 @@
       "@media print{#mtnote{display:none}}";
     document.head.appendChild(css);
 
+    /* Two honest wordings, chosen by what is actually translated on THIS
+       page. A page with no keys is one we have not keyed up yet: its prose
+       is still English and only the dropdown choices are Nepali, so saying
+       "this page was translated automatically" would be false. A false
+       notice is worse than none -- it is the kind of thing a Ministry
+       reader checks once and then stops trusting the rest. */
+    var partial = !cov || !cov.total;
+    var ne = partial
+      ? [t("mt.partial.ne"), t("mt.partial.auth.ne")]
+      : [t("mt.notice.ne"), t("mt.authoritative.ne"), t("mt.clinicalKept.ne")];
+    var en = partial
+      ? [t("mt.partial.en"), t("mt.partial.auth.en")]
+      : [t("mt.notice.en"), t("mt.authoritative.en"), t("mt.clinicalKept.en")];
+
     var n = document.createElement("div");
     n.id = "mtnote";
     n.setAttribute("role", "status");
+    n.setAttribute("data-mt", partial ? "partial" : "full");
     n.innerHTML =
       '<span class="m">' +
-        '<span class="np" lang="ne">' + esc(t("mt.notice.ne")) + " " +
-          esc(t("mt.authoritative.ne")) + " " + esc(t("mt.clinicalKept.ne")) + "</span>" +
-        '<span class="en" lang="en">' + esc(t("mt.notice.en")) + " " +
-          esc(t("mt.authoritative.en")) + " " + esc(t("mt.clinicalKept.en")) + "</span>" +
+        '<span class="np" lang="ne">' + esc(ne.join(" ")) + "</span>" +
+        '<span class="en" lang="en">' + esc(en.join(" ")) + "</span>" +
       "</span>";
     var acts = document.createElement("span");
     acts.className = "acts";
-    var en = document.createElement("button");
-    en.type = "button";
-    en.textContent = t("mt.readEnglish");
-    en.addEventListener("click", function () { setLang("en"); });
+    var enBtn = document.createElement("button");
+    enBtn.type = "button";
+    enBtn.textContent = t("mt.readEnglish");
+    enBtn.addEventListener("click", function () { setLang("en"); });
     var x = document.createElement("button");
     x.type = "button";
     x.textContent = t("mt.dismiss");
@@ -404,7 +417,7 @@
       try { localStorage.setItem(dkey, "1"); } catch (e) { /* ignore */ }
       n.remove();
     });
-    acts.appendChild(en); acts.appendChild(x);
+    acts.appendChild(enBtn); acts.appendChild(x);
     n.appendChild(acts);
     document.body.insertBefore(n, document.body.firstChild);
   }
@@ -423,6 +436,19 @@
       console.warn("[i18n] keys used on this page with no English string:", cov.missing);
     }
     window.I18N.coverage = cov;
+    /* Announce the language on FIRST LOAD too, not only when the toggle is
+       pressed.
+       The forms fill their dropdowns from the code lists in a script that
+       runs before this one -- so on a page opened directly at ?lang=ne the
+       options were already built, in English, by the time the language was
+       known. Pressing NEP fixed them, which meant the Nepali words only
+       appeared for someone who happened to toggle. A field worker opening
+       a Nepali link saw an English form and no reason to think otherwise.
+       Firing the same event here lets every listener rebuild once, before
+       anyone has typed anything. */
+    document.dispatchEvent(new CustomEvent("i18n:changed", {
+      detail: { lang: lang, coverage: cov, initial: true }
+    }));
   }
 
   window.I18N = {

@@ -303,6 +303,15 @@ window.I18N_STRINGS = {
     "mt.notice.ne":       "यो पृष्ठ स्वचालित रूपमा अनुवाद गरिएको हो।",
     "mt.authoritative.ne": "अंग्रेजी संस्करण आधिकारिक हो।",
     "mt.clinicalKept.ne": "चिकित्सकीय शब्दावली अंग्रेजीमै राखिएको छ।",
+    /* The wording for a page that is NOT yet keyed up: its prose is still
+       English, but the choices in its dropdowns come from the code lists,
+       which now have Nepali. Saying "this page was translated
+       automatically" there would be false, and a false notice is worse
+       than no notice. */
+    "mt.partial.ne":      "यो फारमका सूचीका विकल्पहरू नेपालीमा स्वचालित रूपमा अनुवाद गरिएका छन्। बाँकी पृष्ठ अझै अंग्रेजीमा छ।",
+    "mt.partial.auth.ne": "अंग्रेजी संस्करण आधिकारिक हो।",
+    "mt.partial.en":      "The choices in this form's lists have been translated automatically into Nepali. The rest of this page is still in English.",
+    "mt.partial.auth.en": "The English version is the authoritative one.",
     "mt.notice.en":       "This page was translated automatically.",
     "mt.authoritative.en": "The English version is the authoritative one.",
     "mt.clinicalKept.en": "Clinical wording is kept in English.",

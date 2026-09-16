@@ -29,13 +29,13 @@ const META = {
    Districts appearing in submitted reports. Bagmati Province unless noted.
    ------------------------------------------------------------------- */
 const DISTRICTS = [
-  { code: "RAS", name: "Rasuwa" },
-  { code: "NUW", name: "Nuwakot" },
-  { code: "DHA", name: "Dhading" },
-  { code: "KTM", name: "Kathmandu" },
-  { code: "CHT", name: "Chitwan" },
-  { code: "NAW", name: "Nawalpur", note: "Gandaki Province" },
-  { code: "OTH", name: "Other — specify" },
+  { code: "RAS", name: "Rasuwa", np: "रसुवा", np_src: "draft" },
+  { code: "NUW", name: "Nuwakot", np: "नुवाकोट", np_src: "draft" },
+  { code: "DHA", name: "Dhading", np: "धादिङ", np_src: "draft" },
+  { code: "KTM", name: "Kathmandu", np: "काठमाडौं", np_src: "draft" },
+  { code: "CHT", name: "Chitwan", np: "चितवन", np_src: "draft" },
+  { code: "NAW", name: "Nawalpur", note: "Gandaki Province", np: "नवलपुर", np_src: "draft" },
+  { code: "OTH", name: "Other — specify", np: "अन्य — उल्लेख गर्नुहोस्", np_src: "draft" },
 ];
 
 /* ---------------------------------------------------------------------
@@ -102,7 +102,7 @@ const SITES = [
   { code: "CHT-R1", district: "CHT", name: "Bharatpur", palika: "Bharatpur Mun.", pop: null, source: "reported" },
   { code: "NAW-R1", district: "NAW", name: "Madhyabindu Provincial Hospital", palika: "Madhyabindu Mun.", pop: null, source: "reported" },
 
-  { code: "OTHER", district: "OTH", name: "Other — not on this list (specify below)", pop: null, source: "escape" },
+  { code: "OTHER", district: "OTH", name: "Other — not on this list (specify below)", pop: null, source: "escape", np: "अन्य", np_src: "draft" },
 ];
 
 /* ---------------------------------------------------------------------
@@ -112,21 +112,21 @@ const SITES = [
    been obtained. Populate it from the manual — do not guess.
    ------------------------------------------------------------------- */
 const ACTIVITIES = [
-  { code: "PFA",   iasc: null, name: "Psychological first aid",                group: "Focused support" },
-  { code: "CNS-I", iasc: null, name: "Individual psychosocial counselling",    group: "Focused support" },
-  { code: "CNS-G", iasc: null, name: "Group psychosocial counselling",         group: "Focused support" },
-  { code: "PSED",  iasc: null, name: "Psychoeducation / awareness session",    group: "Community support" },
-  { code: "RECR",  iasc: null, name: "Recreational / structured activity",     group: "Community support" },
-  { code: "CFS",   iasc: null, name: "Child-friendly space activity",          group: "Community support" },
-  { code: "SPEC",  iasc: null, name: "Specialised mental health service",      group: "Specialised" },
-  { code: "MEDS",  iasc: null, name: "Psychotropic medication provision",      group: "Specialised" },
-  { code: "REF",   iasc: null, name: "Referral made to another service",       group: "Referral" },
-  { code: "HELP",  iasc: null, name: "Helpline contact",                       group: "Remote support" },
-  { code: "IEC",   iasc: null, name: "IEC material distribution",              group: "Community support" },
-  { code: "ASMT",  iasc: null, name: "Rapid assessment / identification",      group: "Assessment" },
-  { code: "COORD", iasc: null, name: "Coordination meeting",                   group: "Coordination" },
-  { code: "TRAIN", iasc: null, name: "Training / orientation delivered",       group: "Capacity" },
-  { code: "STAFF", iasc: null, name: "Support to responders / staff care",     group: "Focused support" },
+  { code: "PFA",   iasc: null, name: "Psychological first aid",                group: "Focused support", groupNp: "केन्द्रित सहयोग", np: "मनोवैज्ञानिक प्राथमिक उपचार", np_src: "draft", np_note: "PFA has an official WHO Nepali translation -- adopt ITS term, do not keep ours" },
+  { code: "CNS-I", iasc: null, name: "Individual psychosocial counselling",    group: "Focused support", groupNp: "केन्द्रित सहयोग", np: "व्यक्तिगत मनोसामाजिक परामर्श", np_src: "draft" },
+  { code: "CNS-G", iasc: null, name: "Group psychosocial counselling",         group: "Focused support", groupNp: "केन्द्रित सहयोग", np: "सामूहिक मनोसामाजिक परामर्श", np_src: "draft" },
+  { code: "PSED",  iasc: null, name: "Psychoeducation / awareness session",    group: "Community support", groupNp: "समुदायस्तरीय सहयोग", np: "मनोशिक्षा / जनचेतना सत्र", np_src: "draft" },
+  { code: "RECR",  iasc: null, name: "Recreational / structured activity",     group: "Community support", groupNp: "समुदायस्तरीय सहयोग", np: "मनोरञ्जनात्मक / संरचित क्रियाकलाप", np_src: "draft" },
+  { code: "CFS",   iasc: null, name: "Child-friendly space activity",          group: "Community support", groupNp: "समुदायस्तरीय सहयोग", np: "बालमैत्री क्षेत्रको क्रियाकलाप", np_src: "draft" },
+  { code: "SPEC",  iasc: null, name: "Specialised mental health service",      group: "Specialised", groupNp: "विशेषज्ञ सेवा", np: "विशेषज्ञ मानसिक स्वास्थ्य सेवा", np_src: "draft" },
+  { code: "MEDS",  iasc: null, name: "Psychotropic medication provision",      group: "Specialised", groupNp: "विशेषज्ञ सेवा", np: "मनोरोग औषधि उपलब्ध गराइएको", np_src: "draft" },
+  { code: "REF",   iasc: null, name: "Referral made to another service",       group: "Referral", groupNp: "प्रेषण", np: "अन्य सेवामा प्रेषण (रेफर)", np_src: "draft" },
+  { code: "HELP",  iasc: null, name: "Helpline contact",                       group: "Remote support", groupNp: "दूरस्थ सहयोग", np: "हेल्पलाइन सम्पर्क", np_src: "draft" },
+  { code: "IEC",   iasc: null, name: "IEC material distribution",              group: "Community support", groupNp: "समुदायस्तरीय सहयोग", np: "सूचना-शिक्षा-सञ्चार सामग्री वितरण", np_src: "draft" },
+  { code: "ASMT",  iasc: null, name: "Rapid assessment / identification",      group: "Assessment", groupNp: "आकलन", np: "द्रुत आकलन / पहिचान", np_src: "draft" },
+  { code: "COORD", iasc: null, name: "Coordination meeting",                   group: "Coordination", groupNp: "समन्वय", np: "समन्वय बैठक", np_src: "draft" },
+  { code: "TRAIN", iasc: null, name: "Training / orientation delivered",       group: "Capacity", groupNp: "क्षमता विकास", np: "तालिम / अभिमुखीकरण सञ्चालन", np_src: "draft" },
+  { code: "STAFF", iasc: null, name: "Support to responders / staff care",     group: "Focused support", groupNp: "केन्द्रित सहयोग", np: "कार्यकर्तालाई सहयोग / स्टाफ केयर", np_src: "draft" },
 ];
 
 /* ---------------------------------------------------------------------
@@ -145,7 +145,7 @@ const ORGS = [
   { code: "SAMI",   name: "SaMi (via RM psychosocial counsellors)", donors: [] },
   { code: "VID",    name: "Vidushi Psychological Support Centre",   donors: [] },
   { code: "GOVPSC", name: "Government-deployed counsellor (EDCD)",  donors: [] },
-  { code: "OTHER",  name: "Other — not on this list (specify)",     donors: [] },
+  { code: "OTHER",  name: "Other — not on this list (specify)",     donors: [], np: "अन्य", np_src: "draft" },
 ];
 
 const DONORS = ["UNICEF", "SDC", "UNFPA", "AWO", "Own funds", "Other", "Not specified"];
@@ -153,40 +153,40 @@ const DONORS = ["UNICEF", "SDC", "UNFPA", "AWO", "Own funds", "Other", "Not spec
 /* Cadre of the person delivering — absent from the current form, which is
    why counsellor, psychologist and psychiatrist cannot be counted apart. */
 const CADRES = [
-  { code: "PSC",  name: "Psychosocial counsellor" },
-  { code: "SPSC", name: "Senior psychosocial counsellor" },
-  { code: "PSY",  name: "Psychologist" },
-  { code: "PSYT", name: "Psychiatrist" },
-  { code: "SW",   name: "Social worker" },
-  { code: "HW",   name: "Health worker (non-specialist)" },
-  { code: "VOL",  name: "Trained volunteer" },
-  { code: "OTH",  name: "Other" },
+  { code: "PSC",  name: "Psychosocial counsellor", np: "मनोसामाजिक परामर्शकर्ता", np_src: "draft", np_note: "cadre title -- check against the EDCD/IOM psychosocial counsellor training curriculum" },
+  { code: "SPSC", name: "Senior psychosocial counsellor", np: "वरिष्ठ मनोसामाजिक परामर्शकर्ता", np_src: "draft" },
+  { code: "PSY",  name: "Psychologist", np: "मनोविद्", np_src: "draft", np_note: "मनोवैज्ञानिक is also current -- one has to be chosen and used consistently" },
+  { code: "PSYT", name: "Psychiatrist", np: "मनोचिकित्सक", np_src: "draft" },
+  { code: "SW",   name: "Social worker", np: "सामाजिक कार्यकर्ता", np_src: "draft" },
+  { code: "HW",   name: "Health worker (non-specialist)", np: "स्वास्थ्यकर्मी (विशेषज्ञ नभएको)", np_src: "draft" },
+  { code: "VOL",  name: "Trained volunteer", np: "तालिम प्राप्त स्वयंसेवक", np_src: "draft" },
+  { code: "OTH",  name: "Other", np: "अन्य", np_src: "draft" },
 ];
 
 /* Target groups — category codes only. Never a description of a person. */
 const TARGET_GROUPS = [
-  { code: "TG-BER", name: "Families of missing or deceased persons" },
-  { code: "TG-DIS", name: "Displaced households at a holding centre or shelter" },
-  { code: "TG-COM", name: "Affected community, general" },
-  { code: "TG-CHI", name: "Children and adolescents" },
-  { code: "TG-OLD", name: "Older people" },
-  { code: "TG-PWD", name: "People with disabilities" },
-  { code: "TG-PEX", name: "People with a pre-existing mental health condition" },
-  { code: "TG-RES", name: "Frontline responders (SAR, army, police, volunteers, forensic, health)" },
-  { code: "TG-PRG", name: "Pregnant and postpartum women" },
+  { code: "TG-BER", name: "Families of missing or deceased persons", np: "बेपत्ता वा मृतकका परिवार", np_src: "draft" },
+  { code: "TG-DIS", name: "Displaced households at a holding centre or shelter", np: "आश्रयस्थल वा अस्थायी शिविरमा रहेका विस्थापित परिवार", np_src: "draft" },
+  { code: "TG-COM", name: "Affected community, general", np: "प्रभावित समुदाय, सामान्य", np_src: "draft" },
+  { code: "TG-CHI", name: "Children and adolescents", np: "बालबालिका र किशोरकिशोरी", np_src: "draft" },
+  { code: "TG-OLD", name: "Older people", np: "ज्येष्ठ नागरिक", np_src: "draft", np_note: "the statutory term in Nepal -- confirm it is what MoH wants on a form" },
+  { code: "TG-PWD", name: "People with disabilities", np: "अपाङ्गता भएका व्यक्ति", np_src: "draft", np_note: "check against the Act Relating to Rights of Persons with Disabilities 2017 wording" },
+  { code: "TG-PEX", name: "People with a pre-existing mental health condition", np: "पहिलेदेखि मानसिक स्वास्थ्य समस्या भएका व्यक्ति", np_src: "draft" },
+  { code: "TG-RES", name: "Frontline responders (SAR, army, police, volunteers, forensic, health)", np: "अग्रपङ्क्तिका कार्यकर्ता (खोज-उद्धार, सेना, प्रहरी, स्वयंसेवक, फोरेन्सिक, स्वास्थ्य)", np_src: "draft" },
+  { code: "TG-PRG", name: "Pregnant and postpartum women", np: "गर्भवती र सुत्केरी महिला", np_src: "draft" },
 ];
 
 const MODALITIES = [
-  { code: "INP", name: "In person, at a site" },
-  { code: "OUT", name: "In person, outreach / mobile" },
-  { code: "TEL", name: "Telephone / helpline" },
-  { code: "OTH", name: "Other" },
+  { code: "INP", name: "In person, at a site", np: "प्रत्यक्ष, सेवा स्थलमा", np_src: "draft" },
+  { code: "OUT", name: "In person, outreach / mobile", np: "प्रत्यक्ष, घुम्ती / पहुँच सेवा", np_src: "draft" },
+  { code: "TEL", name: "Telephone / helpline", np: "टेलिफोन / हेल्पलाइन", np_src: "draft" },
+  { code: "OTH", name: "Other", np: "अन्य", np_src: "draft" },
 ];
 
 const STATUS = [
-  { code: "ONG", name: "Ongoing" },
-  { code: "CMP", name: "Completed" },
-  { code: "PLN", name: "Planned" },
+  { code: "ONG", name: "Ongoing", np: "चालु", np_src: "draft" },
+  { code: "CMP", name: "Completed", np: "सम्पन्न", np_src: "draft" },
+  { code: "PLN", name: "Planned", np: "योजनामा", np_src: "draft" },
 ];
 
 /* Convenience lookups */
@@ -206,8 +206,69 @@ const ROSTER_SITES = SITES.filter((s) => s.source === "roster");
    refuse ES module imports over file://. Offline-from-a-USB-stick is a
    requirement here, not a convenience.
    ------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------
+   THE LABEL RESOLVER — one place that decides which language a code list
+   shows in.
+   ---------------------------------------------------------------------
+   Every dropdown in every form was built from `it.name`, which is always
+   English. So the Nepali site names already in this file -- 23 of them,
+   written by someone who knows the places -- never appeared anywhere: the
+   Nepali page still showed the English name. Adding `np` to the other
+   lists would have been dead weight for the same reason.
+
+   Now a list item carries `np` and this function picks it when the page
+   is in Nepali, so adding a Nepali label to any list makes it appear in
+   every form at once. Same principle as the string dictionary: one copy,
+   one place, and no page has to remember.
+
+   `np_src` records where the Nepali came from:
+     "confirmed"  checked against a Nepali-language source, named in the
+                  comment above the list
+     "draft"      our rendering, NOT yet confirmed against an official
+                  Nepali term -- the page says so, and these are what the
+                  worksheet asks a Nepali speaker to check first
+   Absent `np` falls back to English rather than showing a blank, because
+   a field worker facing an empty dropdown cannot report at all.
+   ------------------------------------------------------------------- */
+function isNepali() {
+  try { return document.documentElement.getAttribute("data-lang") === "ne"; }
+  catch (e) { return false; }
+}
+function label(it) {
+  if (it == null) return "";
+  if (typeof it === "string") return it;
+  if (isNepali() && it.np) return it.np;
+  return it.name || "";
+}
+/* the lookup form: a code, and the list it belongs to */
+function labelOf(list, code) {
+  if (!list || !code) return code || "";
+  for (var i = 0; i < list.length; i++) {
+    if (list[i] && list[i].code === code) return label(list[i]);
+  }
+  return code;
+}
+/* How much of each list exists in Nepali, and how much of that is still a
+   draft. Reported by tools/i18n-check.py so the code lists are counted
+   next to the prose rather than being invisible to it. */
+function npCoverage() {
+  var out = {};
+  [["SITES", SITES], ["DISTRICTS", DISTRICTS], ["ACTIVITIES", ACTIVITIES],
+   ["CADRES", CADRES], ["TARGET_GROUPS", TARGET_GROUPS],
+   ["MODALITIES", MODALITIES], ["STATUS", STATUS], ["ORGS", ORGS]
+  ].forEach(function (pair) {
+    var list = pair[1], np = 0, draft = 0;
+    list.forEach(function (it) {
+      if (it && it.np) { np++; if (it.np_src !== "confirmed") draft++; }
+    });
+    out[pair[0]] = { total: list.length, np: np, draft: draft };
+  });
+  return out;
+}
+
 window.CODES = {
   META, DISTRICTS, SITES, ACTIVITIES, ORGS, DONORS, CADRES,
   TARGET_GROUPS, MODALITIES, STATUS,
-  siteByCode, orgByCode, districtByCode, activityByCode, ROSTER_SITES
+  siteByCode, orgByCode, districtByCode, activityByCode, ROSTER_SITES,
+  label, labelOf, npCoverage
 };

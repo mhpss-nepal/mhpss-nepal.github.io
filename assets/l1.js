@@ -161,12 +161,39 @@
     items.forEach(function (it) {
       var v, l;
       if (typeof it === "string") { v = it; l = it; }
-      else { v = it[opts.value || "code"]; l = it[opts.label || "name"]; }
+      else {
+        v = it[opts.value || "code"];
+        /* Through CODES.label, so a list item that has a Nepali label shows
+           it on the Nepali page. An explicit opts.label still wins, for the
+           few places that want a specific field. */
+        l = opts.label ? it[opts.label]
+          : (window.CODES && window.CODES.label ? window.CODES.label(it) : it.name);
+      }
       out.push('<option value="' + String(v).replace(/"/g, "&quot;") + '">' +
                String(l).replace(/</g, "&lt;") + "</option>");
     });
     el.innerHTML = out.join("");
+    /* Remember how this select was filled, so switching language can refill
+       it. Without this the dropdowns keep the language they were built in
+       and the toggle appears to half-work. */
+    el._refill = function () { fillSelect(el, items, opts); };
   }
+
+  /* One listener per page: when the language changes, refill every select
+     that fillSelect built, and put back whatever the user had chosen. A
+     half-filled form must survive someone pressing NEP mid-entry. */
+  document.addEventListener("i18n:changed", function () {
+    var sels = document.querySelectorAll("select");
+    for (var i = 0; i < sels.length; i++) {
+      var el = sels[i];
+      if (typeof el._refill !== "function") continue;
+      var had = el.value;
+      el._refill();
+      if (had) el.value = had;
+    }
+    /* checkbox lists are rebuilt by the page that owns them */
+    document.dispatchEvent(new CustomEvent("codes:relabel"));
+  });
   function today() {
     var d = new Date(), p = function (n) { return String(n).padStart(2, "0"); };
     return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
