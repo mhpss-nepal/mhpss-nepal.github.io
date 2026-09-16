@@ -311,6 +311,28 @@ window.I18N_STRINGS = {
     "ml.p078": "Printable card sheet",
     "ml.p079": "One A4 sheet, six cut-out cards, every form's QR on it — asked for by the data system review on 16 September.",
 
+    /* ---- 4Ws form: age and sex disaggregation ----
+       Four bands, chosen so 0-4 + 5-17 is the official "under 18" and
+       18-59 + 60+ is the official "18 and over". The team asked for an
+       under-5 figure and the official 5Ws has only the two bands; this
+       grid answers both, so nothing has to be collected twice. */
+    "f4.disLabel": "Disaggregation <span class=\"opt\">— optional, but leave a row blank rather than partly filled</span>",
+    "f4.hAge":     "Age",
+    "f4.hFemale":  "Female",
+    "f4.hMale":    "Male",
+    "f4.hOther":   "Not recorded",
+    "f4.hRow":     "Total",
+    "f4.colTotal": "All ages",
+    "f4.tally":    "Disaggregated sum",
+    "f4.rollLabel": "Rolls up to the official 5Ws bands",
+    "f4.rollU18":  "under 18",
+    "f4.roll18":   "18 and over",
+    "f4.ofwHead":  "Of whom <span>— already counted above, <b>never added to it</b></span>",
+    "f4.ofPwd":    "Persons with disabilities",
+    "f4.ofPreg":   "Pregnant or postpartum",
+    "f4.ofwNote":  "One person can be in both, and is in a band above as well. These two are checked against the total but are never summed with it or with each other.",
+    "f4.disHelp":  "Reports in the current workbook carry breakdowns like \u201cWomen (18+) = 19, Men (18+) = 28\u201d typed into the provider column, because the form has nowhere else to put them. Here they have somewhere, the parts are checked against the total, and the four bands fold to the two the official 5Ws asks for.",
+
     "sr.age.choose": "— choose —",
     "sr.age.u18": "Under 18",
     "sr.age.18to24": "18 to 24",

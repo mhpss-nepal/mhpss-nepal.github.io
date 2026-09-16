@@ -76,7 +76,11 @@
   var days = Object.keys(byDay).sort();
   var gaps = roster.filter(function (s) { return !bySite[s.code]; });
   var thin = roster.filter(function (s) { return bySite[s.code] && Object.keys(bySite[s.code].days).length <= 3; });
-  var disagg = recs.filter(function (r) { return r.f18 != null; });
+  /* A record counts as disaggregated in either shape: the four bands as
+     collected since 16 Sep 2026, or the two the form carried before it.
+     store.js owns the fold; this page owns no copy of the band list. */
+  var SS = window.STORE;
+  var disagg = recs.filter(function (r) { return SS ? SS.disaggTotal(r) > 0 : r.f18 != null; });
   var disReach = disagg.reduce(function (a, r) { return a + r.reachedTotal; }, 0);
 
   /* ── hero + KPIs ────────────────────────────────────────────────── */

@@ -22,6 +22,7 @@ v-*.png
 verify_l1.py
 proto-*.png
 pwa_test.py
+final_check.py
 icon-sheet.png
 
 # ---- credentials: never, under any circumstances, in a public repo ----

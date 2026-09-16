@@ -82,11 +82,44 @@ textarea{min-height:64px; resize:vertical}
 .dis table{width:100%; border-collapse:collapse}
 .dis th,.dis td{padding:7px 9px; border-bottom:1px solid var(--line-s); font-size:13px; text-align:left}
 .dis th{background:#f7fafb; font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--slate)}
-.dis td:first-child{font-weight:600}
-.dis input{padding:6px 8px; font-size:13px; text-align:right}
+.dis td:first-child{font-weight:600; white-space:nowrap}
+.dis input{padding:6px 8px; font-size:13px; text-align:right; width:100%; min-width:0}
+.dis td.rt,.dis th.rt{text-align:right; font-variant-numeric:tabular-nums}
+.dis tfoot td{background:#f7fafb; font-weight:700; border-bottom:none}
+.dis tfoot td:first-child{font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--slate); font-weight:700}
+.dis th{white-space:normal}
+/* A twelve-box grid still has to work on the one screen the field
+   actually uses. At 390px the four headers plus the row column need every
+   pixel, so the padding and the header type come down rather than the
+   table scrolling sideways -- a number you have to scroll to see is a
+   number that gets left blank. */
+@media (max-width:460px){
+  .dis th,.dis td{padding:6px 4px; font-size:12.5px}
+  .dis th{font-size:9.5px; letter-spacing:.01em}
+  .dis input{padding:5px 3px; font-size:13px}
+  .dis td:first-child{font-size:12.5px}
+}
 .tally{padding:9px 12px; background:#f7fafb; font-size:12.5px; display:flex; justify-content:space-between; gap:12px}
 .tally.bad{background:var(--warn-t); color:var(--warn); font-weight:700}
 .tally.good{background:var(--ok-t); color:var(--ok); font-weight:700}
+
+/* ---- the official fold, shown on the form ---- */
+.rollup{margin-top:7px; padding:8px 12px; border:1px dashed var(--line); border-radius:var(--r);
+  background:var(--who-t); font-size:12.5px; display:flex; flex-wrap:wrap; gap:4px 14px; justify-content:space-between}
+.rollup .rollv{font-variant-numeric:tabular-nums; color:var(--who-dd)}
+.rollup b{font-size:14px}
+
+/* ---- "of whom": inside the figures above, never added to them ----
+   Given its own box, not another row in the table, because a row in the
+   table reads as a row you add up. The whole point is that these two are
+   not. */
+.ofwhom{margin-top:10px; border:1px solid var(--line); border-left:3px solid var(--warn); border-radius:var(--r); padding:10px 12px}
+.ofw-h{margin:0 0 8px; font-size:13px; font-weight:700}
+.ofw-h span{font-weight:400; color:var(--slate)}
+.ofw-g{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px 14px}
+.ofw-g label{display:block; font-size:12.5px; font-weight:600; margin-bottom:3px}
+.ofw-g input{width:100%; max-width:120px; padding:6px 8px; font-size:13px; text-align:right}
+.ofw-n{margin:9px 0 0; font-size:11.5px; color:var(--slate); line-height:1.5}
 
 /* ---- buttons ---- */
 .btn{font:inherit; font-size:14px; font-weight:700; border:1px solid var(--who-d); background:var(--who-d); color:#fff;
@@ -107,6 +140,11 @@ table.data th{background:var(--ink); color:#fff; text-align:left; padding:8px 10
   text-transform:uppercase; letter-spacing:.05em; position:sticky; top:0}
 table.data td{padding:7px 10px; border-bottom:1px solid var(--line-s); vertical-align:top}
 table.data tr:nth-child(even) td{background:#fafcfd}
+/* The folded rows carry the OFFICIAL 5Ws figures, so they must read as a
+   subtotal, not as two more bands to add to the four above. Placed after
+   the zebra rule on purpose: equal specificity, so source order decides. */
+table.data tr.fold td{background:var(--who-t); border-top:2px solid var(--who-d); font-weight:600}
+table.data tr.ofw td{background:#fff; color:var(--slate)}
 table.data td.n{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
 
 /* ---- stats ---- */

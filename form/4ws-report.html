@@ -170,28 +170,82 @@
         <div class="help">People, not contacts. If the same person was seen twice in the day, count them once.</div>
       </div>
 
-      <label style="margin-top:6px">Disaggregation <span class="opt">— optional, but leave all blank rather than partly filled</span></label>
+      <label style="margin-top:6px" data-i18n="f4.disLabel" data-i18n-html>Disaggregation <span class="opt">— optional, but leave a row blank rather than partly filled</span></label>
       <div class="dis">
         <table>
-          <thead><tr><th>Age group</th><th>Female</th><th>Male</th><th>Other / not recorded</th></tr></thead>
+          <thead><tr>
+            <th data-i18n="f4.hAge">Age</th>
+            <th data-i18n="f4.hFemale">Female</th>
+            <th data-i18n="f4.hMale">Male</th>
+            <th data-i18n="f4.hOther">Not recorded</th>
+            <th class="rt" data-i18n="f4.hRow">Total</th>
+          </tr></thead>
           <tbody>
             <tr>
-              <td>Under 18</td>
-              <td><input type="number" id="fU18" min="0" step="1" inputmode="numeric" placeholder="—"></td>
-              <td><input type="number" id="mU18" min="0" step="1" inputmode="numeric" placeholder="—"></td>
-              <td><input type="number" id="oU18" min="0" step="1" inputmode="numeric" placeholder="—"></td>
+              <td><b>0–4</b></td>
+              <td><input type="number" id="f04" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Female, age 0 to 4"></td>
+              <td><input type="number" id="m04" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Male, age 0 to 4"></td>
+              <td><input type="number" id="o04" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Sex not recorded, age 0 to 4"></td>
+              <td class="rt"><span id="r04">—</span></td>
             </tr>
             <tr>
-              <td>18 and over</td>
-              <td><input type="number" id="f18" min="0" step="1" inputmode="numeric" placeholder="—"></td>
-              <td><input type="number" id="m18" min="0" step="1" inputmode="numeric" placeholder="—"></td>
-              <td><input type="number" id="o18" min="0" step="1" inputmode="numeric" placeholder="—"></td>
+              <td><b>5–17</b></td>
+              <td><input type="number" id="f517" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Female, age 5 to 17"></td>
+              <td><input type="number" id="m517" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Male, age 5 to 17"></td>
+              <td><input type="number" id="o517" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Sex not recorded, age 5 to 17"></td>
+              <td class="rt"><span id="r517">—</span></td>
+            </tr>
+            <tr>
+              <td><b>18–59</b></td>
+              <td><input type="number" id="f1859" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Female, age 18 to 59"></td>
+              <td><input type="number" id="m1859" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Male, age 18 to 59"></td>
+              <td><input type="number" id="o1859" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Sex not recorded, age 18 to 59"></td>
+              <td class="rt"><span id="r1859">—</span></td>
+            </tr>
+            <tr>
+              <td><b>60+</b></td>
+              <td><input type="number" id="f60" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Female, age 60 and over"></td>
+              <td><input type="number" id="m60" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Male, age 60 and over"></td>
+              <td><input type="number" id="o60" min="0" step="1" inputmode="numeric" placeholder="—" aria-label="Sex not recorded, age 60 and over"></td>
+              <td class="rt"><span id="r60">—</span></td>
             </tr>
           </tbody>
+          <tfoot><tr>
+            <td data-i18n="f4.colTotal">All ages</td>
+            <td class="rt"><span id="cF">—</span></td>
+            <td class="rt"><span id="cM">—</span></td>
+            <td class="rt"><span id="cO">—</span></td>
+            <td class="rt"><span id="cAll">—</span></td>
+          </tr></tfoot>
         </table>
-        <div class="tally" id="tally"><span>Disaggregated sum</span><span id="tallyVal">0</span></div>
+        <div class="tally" id="tally"><span data-i18n="f4.tally">Disaggregated sum</span><span id="tallyVal">0</span></div>
       </div>
-      <div class="help" style="margin-top:6px">Reports in the current workbook carry breakdowns like “Women (18+) = 19, Men (18+) = 28” typed into the provider column, because the form has nowhere else to put them. Here they have somewhere, and the parts are checked against the total.</div>
+
+      <!-- The rollup is shown on the form on purpose. The team asked for an
+           under-5 figure; the official 5Ws has only <18 / 18+. Putting the
+           fold on screen is how a reporter can see that filling four bands
+           answers both, so nobody has to collect this twice. -->
+      <div class="rollup">
+        <span data-i18n="f4.rollLabel">Rolls up to the official 5Ws bands</span>
+        <span class="rollv"><b id="rollU18">—</b> <span data-i18n="f4.rollU18">under 18</span> &nbsp;·&nbsp; <b id="roll18">—</b> <span data-i18n="f4.roll18">18 and over</span></span>
+      </div>
+
+      <div class="ofwhom">
+        <p class="ofw-h" data-i18n="f4.ofwHead" data-i18n-html>Of whom <span>— already counted above, <b>never added to it</b></span></p>
+        <div class="ofw-g">
+          <div>
+            <label for="ofPwd" data-i18n="f4.ofPwd">Persons with disabilities</label>
+            <input type="number" id="ofPwd" min="0" step="1" inputmode="numeric" placeholder="—">
+          </div>
+          <div>
+            <label for="ofPreg" data-i18n="f4.ofPreg">Pregnant or postpartum</label>
+            <input type="number" id="ofPreg" min="0" step="1" inputmode="numeric" placeholder="—">
+          </div>
+        </div>
+        <p class="ofw-n" data-i18n="f4.ofwNote">One person can be in both, and is in a band above as well. These two are checked against the total but are never summed with it or with each other.</p>
+      </div>
+
+      <div class="help" style="margin-top:8px" data-i18n="f4.disHelp">Reports in the current workbook carry breakdowns like “Women (18+) = 19, Men (18+) = 28” typed into the provider column, because the form has nowhere else to put them. Here they have somewhere, the parts are checked against the total, and the four bands fold to the two the official 5Ws asks for.</div>
     </div>
 
     <!-- 5 · SUBMIT -->
@@ -327,21 +381,53 @@
   $("ver").textContent = C.META.version;
   $("description").addEventListener("input", function () { $("descCount").textContent = this.value.length; });
 
-  /* ---------- live tally ---------- */
-  var partIds = ["fU18", "mU18", "oU18", "f18", "m18", "o18"];
+  /* ---------- live tally ----------
+     The band table comes from store.js, not from a second list here. A
+     copy of the band definition in the page is how the form and the
+     export drift apart, which is the defect the whole form exists to
+     stop. */
+  var BANDS = S.BANDS;
+  var partIds = S.PART_IDS;
+  var v = function (id) { var n = parseInt($(id).value, 10); return isFinite(n) && n >= 0 ? n : 0; };
+  var filled = function (id) { return $(id).value !== ""; };
+  var show = function (id, n, any) { $(id).textContent = any ? n.toLocaleString() : "—"; };
+
   function tally() {
-    var sum = partIds.reduce(function (a, id) { return a + (parseInt($(id).value, 10) || 0); }, 0);
+    var any = partIds.some(filled);
+
+    /* row totals */
+    BANDS.forEach(function (b) {
+      var rowAny = filled(b.f) || filled(b.m) || filled(b.o);
+      show("r" + b.key, v(b.f) + v(b.m) + v(b.o), rowAny);
+    });
+
+    /* column totals */
+    var cF = 0, cM = 0, cO = 0;
+    BANDS.forEach(function (b) { cF += v(b.f); cM += v(b.m); cO += v(b.o); });
+    show("cF", cF, any); show("cM", cM, any); show("cO", cO, any);
+    show("cAll", cF + cM + cO, any);
+
+    /* the official fold, on screen */
+    var u18 = 0, o18 = 0;
+    BANDS.forEach(function (b) {
+      var t = v(b.f) + v(b.m) + v(b.o);
+      if (b.child) { u18 += t; } else { o18 += t; }
+    });
+    show("rollU18", u18, any); show("roll18", o18, any);
+
+    /* the sum check */
+    var sum = cF + cM + cO;
     var total = parseInt($("reachedTotal").value, 10);
     var box = $("tally");
-    $("tallyVal").textContent = sum;
     box.className = "tally";
-    if (sum === 0) return;
-    if (!isFinite(total)) { box.className = "tally"; return; }
+    $("tallyVal").textContent = sum;
+    if (sum === 0) { $("tallyVal").textContent = any ? "0" : "—"; return; }
+    if (!isFinite(total)) { return; }
     if (sum > total) { box.className = "tally bad"; $("tallyVal").textContent = sum + " — more than the total of " + total; }
     else if (sum < total) { box.className = "tally bad"; $("tallyVal").textContent = sum + " of " + total + " — " + (total - sum) + " unaccounted"; }
     else { box.className = "tally good"; $("tallyVal").textContent = sum + " — matches the total"; }
   }
-  partIds.concat(["reachedTotal"]).forEach(function (id) { $(id).addEventListener("input", tally); });
+  partIds.concat(S.OF_WHOM, ["reachedTotal"]).forEach(function (id) { $(id).addEventListener("input", tally); });
 
   /* ---------- remember the reporter, not the report ---------- */
   var RK = "mhpss-np-reporter";
@@ -366,7 +452,7 @@
   /* ---------- collect ---------- */
   function collect() {
     var site = C.siteByCode[$("site").value];
-    return {
+    var rec = {
       dateAD: $("dateAD").value,
       dateBS: $("dateBS").value.trim(),
       district: $("district").value,
@@ -385,10 +471,14 @@
       status: $("status").value || "ONG",
       targetGroups: [].slice.call(document.querySelectorAll("#tgs input:checked")).map(function (i) { return i.value; }),
       description: $("description").value.trim(),
-      reachedTotal: $("reachedTotal").value,
-      fU18: $("fU18").value, mU18: $("mU18").value, oU18: $("oU18").value,
-      f18: $("f18").value, m18: $("m18").value, o18: $("o18").value
+      reachedTotal: $("reachedTotal").value
     };
+    /* The four bands as collected. The official two are NOT stored: they
+       are folded at export and at read, so there is one figure, not two
+       that can disagree. */
+    S.PART_IDS.forEach(function (id) { rec[id] = $(id).value; });
+    S.OF_WHOM.forEach(function (id) { rec[id] = $(id).value; });
+    return rec;
   }
 
   /* ---------- submit ---------- */

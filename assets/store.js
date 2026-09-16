@@ -12,7 +12,7 @@
    ===================================================================== */
 
 const KEY = "mhpss-np-4ws-v1";
-const SCHEMA_VERSION = "4ws-np-0.1.0";
+const SCHEMA_VERSION = "4ws-np-0.2.0";  /* 0.2.0: four age bands, 16 Sep 2026 */
 
 /* ---------------------------------------------------------------------
    Deterministic record id.
@@ -140,6 +140,61 @@ function active() {
 }
 
 /* ---------------------------------------------------------------------
+   AGE BANDS — the one place they are defined.
+   The form collects four; the official Nepal 5Ws asks for two. The four
+   were chosen so that no second collection is ever needed:
+       0-4  +  5-17   = the official "under 18"
+       18-59 + 60+    = the official "18 and over"
+   so one grid satisfies the team's ask for an under-5 figure and the
+   5Ws rollup at the same time. Any page that needs the official two
+   bands calls fold(); nothing else knows both shapes.
+   ------------------------------------------------------------------- */
+const BANDS = [
+  { key: "04",   lo: 0,  hi: 4,    label: "0–4",   f: "f04",   m: "m04",   o: "o04",   child: true  },
+  { key: "517",  lo: 5,  hi: 17,   label: "5–17",  f: "f517",  m: "m517",  o: "o517",  child: true  },
+  { key: "1859", lo: 18, hi: 59,   label: "18–59", f: "f1859", m: "m1859", o: "o1859", child: false },
+  { key: "60",   lo: 60, hi: null, label: "60+",   f: "f60",   m: "m60",   o: "o60",   child: false },
+];
+const PART_IDS = BANDS.reduce((a, b) => a.concat([b.f, b.m, b.o]), []);
+
+/* The two "of whom" counts. NOT additive: a person already counted in a
+   band above can appear in either or both of these. They never enter the
+   sum check -- a pregnant woman counted once as 18-59 female and once
+   here is one person, not two. */
+const OF_WHOM = ["ofPwd", "ofPreg"];
+
+/* Fold a record to the official two bands.
+   A record filed before 16 Sep 2026 carries only fU18/f18 and no band
+   fields at all, so the fold reads the legacy pair when no band is
+   filled. Both shapes therefore count in the same total, which is what
+   lets the coordination view read the whole file rather than the part
+   filed since the change. */
+function fold(r) {
+  const any = PART_IDS.some((k) => num(r[k]) !== null);
+  if (!any) {
+    return {
+      fU18: num(r.fU18) || 0, mU18: num(r.mU18) || 0, oU18: num(r.oU18) || 0,
+      f18:  num(r.f18)  || 0, m18:  num(r.m18)  || 0, o18:  num(r.o18)  || 0,
+      banded: false,
+    };
+  }
+  const g = (k) => num(r[k]) || 0;
+  const kids = BANDS.filter((b) => b.child), adults = BANDS.filter((b) => !b.child);
+  const s = (set, sex) => set.reduce((a, b) => a + g(b[sex]), 0);
+  return {
+    fU18: s(kids, "f"),   mU18: s(kids, "m"),   oU18: s(kids, "o"),
+    f18:  s(adults, "f"), m18:  s(adults, "m"), o18:  s(adults, "o"),
+    banded: true,
+  };
+}
+
+/* Total disaggregated people in a record, either shape. */
+function disaggTotal(r) {
+  const d = fold(r);
+  return d.fU18 + d.mU18 + d.oU18 + d.f18 + d.m18 + d.o18;
+}
+
+/* ---------------------------------------------------------------------
    Validation. Returns a list of problems; an empty list means valid.
    The disaggregation rule matters: in the current workbook several rows
    have sex and age breakdowns typed into the provider column because the
@@ -161,10 +216,17 @@ function validate(r) {
 
   const t = num(r.reachedTotal);
   if (t === null) p.push("Total people reached is required (enter 0 if none)");
-  const parts = ["fU18", "mU18", "oU18", "f18", "m18", "o18"].map((k) => num(r[k]) || 0);
-  const sum = parts.reduce((a, b) => a + b, 0);
+  const sum = disaggTotal(r);
   if (t !== null && sum > t) p.push(`Disaggregated figures add to ${sum}, more than the total of ${t}`);
   if (t !== null && sum > 0 && sum < t) p.push(`Disaggregated figures add to ${sum} of ${t} — ${t - sum} unaccounted. Leave all blank, or account for all.`);
+  /* The "of whom" counts sit INSIDE the total, so each one can be at most
+     the total -- but they are not added to it and not added to each other,
+     because one person can be in both. */
+  const ofLabel = { ofPwd: "Persons with disabilities", ofPreg: "Pregnant or postpartum" };
+  for (const k of OF_WHOM) {
+    const v = num(r[k]);
+    if (v !== null && t !== null && v > t) p.push(`${ofLabel[k]} (${v}) is more than the total of ${t}`);
+  }
   return p;
 }
 function num(v) {
@@ -183,7 +245,14 @@ const CSV_COLUMNS = [
   "id", "createdAt", "revision", "dateAD", "dateBS", "district", "site", "siteOther", "siteSource",
   "org", "orgOther", "donor", "focalName", "focalPhone", "focalEmail", "cadre",
   "activity", "modality", "status", "targetGroups", "description",
-  "reachedTotal", "fU18", "mU18", "oU18", "f18", "m18", "o18",
+  "reachedTotal",
+  /* four bands as collected */
+  "f04", "m04", "o04", "f517", "m517", "o517", "f1859", "m1859", "o1859", "f60", "m60", "o60",
+  /* the official two, folded, so a 5Ws submission needs no arithmetic and
+     a legacy record exports in the same columns as a new one */
+  "fU18", "mU18", "oU18", "f18", "m18", "o18",
+  /* counted inside the figures above, never added to them */
+  "ofPwd", "ofPreg",
   "schemaVersion",
 ];
 
@@ -193,7 +262,12 @@ function toCSV(rows) {
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   const head = CSV_COLUMNS.join(",");
-  const body = rows.map((r) => CSV_COLUMNS.map((c) => esc(r[c])).join(",")).join("\n");
+  /* The folded columns are computed at export, not stored on the record:
+     one figure in two places is one figure that can disagree with itself. */
+  const body = rows.map((r) => {
+    const row = { ...r, ...fold(r) };
+    return CSV_COLUMNS.map((c) => esc(row[c])).join(",");
+  }).join("\n");
   return "﻿" + head + "\n" + body + "\n"; // BOM so Excel reads UTF-8
 }
 
@@ -222,6 +296,7 @@ function clearAll() {
 
 /* Global for the same reason as codes.js — see the note there. */
 window.STORE = {
-  SCHEMA_VERSION, CSV_COLUMNS, recordId, all, active, save, archive,
+  SCHEMA_VERSION, CSV_COLUMNS, BANDS, PART_IDS, OF_WHOM, fold, disaggTotal,
+  recordId, all, active, save, archive,
   validate, toCSV, download, stamp, clearAll
 };

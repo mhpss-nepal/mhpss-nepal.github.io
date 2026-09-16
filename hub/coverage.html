@@ -145,7 +145,7 @@
       <h2>Disaggregation completeness</h2>
       <div class="tbl-wrap">
         <table class="data">
-          <thead><tr><th>Group</th><th>Female</th><th>Male</th><th>Other / not recorded</th><th>Total</th></tr></thead>
+          <thead><tr><th>Age band</th><th>Female</th><th>Male</th><th>Not recorded</th><th>Total</th></tr></thead>
           <tbody id="disBody"></tbody>
         </table>
       </div>
@@ -250,7 +250,18 @@
           modality: "INP", status: "CMP",
           targetGroups: [tgs[Math.floor(rand() * tgs.length)]],
           description: "Synthetic record — not real data",
-          reachedTotal: tot, fU18: fu, mU18: mu, oU18: 0, f18: f, m18: tot - fu - mu - f, o18: 0,
+          reachedTotal: tot,
+          /* four bands, so the synthetic file exercises the shape the form
+             now files. The under-18 split is arbitrary but plausible: a
+             third of the children in the 0-4 band. */
+          f04: Math.floor(fu / 3), m04: Math.floor(mu / 3), o04: 0,
+          f517: fu - Math.floor(fu / 3), m517: mu - Math.floor(mu / 3), o517: 0,
+          /* a 60+ share too, so the oldest band is exercised rather than
+             rendering as an all-zero row that reads like a bug */
+          f1859: f - Math.floor(f * 0.12), m1859: (tot - fu - mu - f) - Math.floor((tot - fu - mu - f) * 0.1), o1859: 0,
+          f60: Math.floor(f * 0.12), m60: Math.floor((tot - fu - mu - f) * 0.1), o60: 0,
+          ofPwd: rand() > 0.75 ? 1 + Math.floor(rand() * 3) : 0,
+          ofPreg: rand() > 0.85 ? 1 + Math.floor(rand() * 2) : 0,
           schemaVersion: S.SCHEMA_VERSION
         });
       }
@@ -426,18 +437,70 @@
         '</td><td class="n">' + b.reach.toLocaleString() + '</td><td class="n">' + pct.toFixed(1) + '%<div class="bar"><i style="width:' + Math.max(2, pct) + '%"></i></div></td><td class="n">' + b.orgs.size + "</td></tr>";
     }).join("");
 
-    var dg = { fU18: 0, mU18: 0, oU18: 0, f18: 0, m18: 0, o18: 0 };
-    DATA.forEach(function (r) { Object.keys(dg).forEach(function (k) { dg[k] += n(r[k]); }); });
-    var dgTotal = Object.values(dg).reduce(function (a, b) { return a + b; }, 0);
-    $("disBody").innerHTML =
-      "<tr><td>Under 18</td>" + ["fU18", "mU18", "oU18"].map(function (k) { return '<td class="n">' + dg[k].toLocaleString() + "</td>"; }).join("") +
-        '<td class="n">' + (dg.fU18 + dg.mU18 + dg.oU18).toLocaleString() + "</td></tr>" +
-      "<tr><td>18 and over</td>" + ["f18", "m18", "o18"].map(function (k) { return '<td class="n">' + dg[k].toLocaleString() + "</td>"; }).join("") +
-        '<td class="n">' + (dg.f18 + dg.m18 + dg.o18).toLocaleString() + "</td></tr>";
+    /* Two shapes in one file. Records filed since 16 Sep 2026 carry four
+       age bands; earlier ones carry only under-18 / 18-and-over. Both are
+       shown, and both fold into the official two rows, so the table never
+       silently drops the half of the file that is in the other shape.
+       The band list comes from store.js -- this page keeps no copy. */
+    var band = {}, legacy = { fU18: 0, mU18: 0, oU18: 0, f18: 0, m18: 0, o18: 0 };
+    S.BANDS.forEach(function (b) { band[b.key] = { f: 0, m: 0, o: 0, any: false }; });
+    var nBanded = 0, nLegacy = 0;
+    DATA.forEach(function (r) {
+      var d = S.fold(r);
+      if (d.banded) {
+        nBanded++;
+        S.BANDS.forEach(function (b) {
+          var c = band[b.key];
+          c.f += n(r[b.f]); c.m += n(r[b.m]); c.o += n(r[b.o]);
+          if (r[b.f] != null || r[b.m] != null || r[b.o] != null) { c.any = true; }
+        });
+      } else if (d.fU18 + d.mU18 + d.oU18 + d.f18 + d.m18 + d.o18 > 0) {
+        nLegacy++;
+        Object.keys(legacy).forEach(function (k) { legacy[k] += d[k]; });
+      }
+    });
+    var ofPwd = 0, ofPreg = 0;
+    DATA.forEach(function (r) { ofPwd += n(r.ofPwd); ofPreg += n(r.ofPreg); });
+
+    var rows = [];
+    var cell = function (x) { return '<td class="n">' + x.toLocaleString() + "</td>"; };
+    S.BANDS.forEach(function (b) {
+      var c = band[b.key];
+      if (!c.any) { return; }
+      rows.push("<tr><td>" + b.label + "</td>" + cell(c.f) + cell(c.m) + cell(c.o) + cell(c.f + c.m + c.o) + "</tr>");
+    });
+    if (nLegacy) {
+      rows.push('<tr><td>Under 18 <span class="xs">· reported before the bands</span></td>' +
+        cell(legacy.fU18) + cell(legacy.mU18) + cell(legacy.oU18) + cell(legacy.fU18 + legacy.mU18 + legacy.oU18) + "</tr>");
+      rows.push('<tr><td>18 and over <span class="xs">· reported before the bands</span></td>' +
+        cell(legacy.f18) + cell(legacy.m18) + cell(legacy.o18) + cell(legacy.f18 + legacy.m18 + legacy.o18) + "</tr>");
+    }
+    /* The official 5Ws view: four bands folded to two, legacy rows added in. */
+    var oF18 = legacy.fU18, oM18 = legacy.mU18, oO18 = legacy.oU18;
+    var aF = legacy.f18, aM = legacy.m18, aO = legacy.o18;
+    S.BANDS.forEach(function (b) {
+      var c = band[b.key];
+      if (b.child) { oF18 += c.f; oM18 += c.m; oO18 += c.o; } else { aF += c.f; aM += c.m; aO += c.o; }
+    });
+    rows.push('<tr class="fold"><td><b>Under 18</b> <span class="xs">· official 5Ws</span></td>' +
+      cell(oF18) + cell(oM18) + cell(oO18) + cell(oF18 + oM18 + oO18) + "</tr>");
+    rows.push('<tr class="fold"><td><b>18 and over</b> <span class="xs">· official 5Ws</span></td>' +
+      cell(aF) + cell(aM) + cell(aO) + cell(aF + aM + aO) + "</tr>");
+    if (ofPwd || ofPreg) {
+      rows.push('<tr class="ofw"><td colspan="5" class="xs">Of whom — inside the figures above, not added to them: <b>' +
+        ofPwd.toLocaleString() + "</b> persons with disabilities, <b>" + ofPreg.toLocaleString() +
+        "</b> pregnant or postpartum.</td></tr>");
+    }
+    var dgTotal = oF18 + oM18 + oO18 + aF + aM + aO;
+    $("disBody").innerHTML = rows.join("");
     $("disNote").innerHTML = dgTotal
       ? "Disaggregated figures account for <b>" + dgTotal.toLocaleString() + " of " + total.toLocaleString() + "</b> people reached (" +
         (total ? (dgTotal / total * 100).toFixed(1) : 0) + "%)." + (dgTotal < total ? " The remaining " + (total - dgTotal).toLocaleString() + " was reported as a total only." : "")
       : "No disaggregation was supplied in this file.";
+    if (nBanded || nLegacy) {
+      $("disNote").innerHTML += " Of the records carrying a breakdown, <b>" + nBanded +
+        "</b> use the four age bands and <b>" + nLegacy + "</b> the earlier two. Both fold into the official rows.";
+    }
 
     /* --- raw --- */
     $("rawBody").innerHTML = DATA.slice(0, 400).map(function (r) {
