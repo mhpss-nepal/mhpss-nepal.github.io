@@ -7,3 +7,4 @@
 # without a key fails the gate -- which is the point.
 
 index.html keyed
+form/index.html keyed

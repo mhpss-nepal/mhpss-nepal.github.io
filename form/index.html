@@ -14,232 +14,180 @@
 <meta name="apple-mobile-web-app-title" content="MHPSS Field">
 </head>
 <body>
-<div style="background:#d03b3b;color:#fff;font:700 12.5px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:.02em;text-align:center;padding:7px 16px;padding-top:calc(7px + env(safe-area-inset-top,0px))">DEMONSTRATION INSTRUMENTS — NOT THE LIVE REPORTING SYSTEM <span style="font-weight:400;opacity:.92">· drafts for the MHPSS sub-cluster to approve · nothing you enter is sent anywhere</span></div>
+<div style="background:#d03b3b;color:#fff;font:700 12.5px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:.02em;text-align:center;padding:7px 16px;padding-top:calc(7px + env(safe-area-inset-top,0px))"><span data-i18n="banner.trial"></span><span data-i18n="banner.trialSub"></span></div>
 
 <div class="top">
   <div>
-    <div class="brand">Field forms</div>
-    <div class="sub">Layer 1 · Rasuwa / Bhote Koshi</div>
+    <div class="brand" data-i18n="nav.forms"></div>
+    <div class="sub" data-i18n="page.index.sub"></div>
   </div>
   <div class="spacer"></div>
-  <a href="../index.html">← Hub</a>
-  <a href="../coordination/index.html">Coordination view</a>
-  <a href="../coordination/inbox.html">Field inbox</a>
-  <a href="../method.html">Method</a>
+  <a href="../index.html">← <span data-i18n="nav.hub"></span></a>
+  <a href="../coordination/index.html"><span data-i18n="nav.coordination"></span></a>
+  <a href="../coordination/inbox.html"><span data-i18n="nav.inbox"></span></a>
+  <a href="../method.html"><span data-i18n="nav.method"></span></a>
 </div>
 
 <div class="wrap">
 
   <div class="ml-hero">
-    <div class="eyebrow">Layer 1 · Field · Form master list</div>
-    <h1>One link, every form a field worker needs</h1>
-    <p class="lede"><b>Open here</b> loads the form in this page. <b>Copy link</b> gives you a link to send
-      a field worker over WhatsApp, so they fill it in on their own phone. <b>QR</b> shows a printable code
-      for a noticeboard at a holding centre. Every form works on a phone, and keeps working with no signal.</p>
+    <div class="eyebrow" data-i18n="ml.p012"></div>
+    <h1 data-i18n="ml.p036"></h1>
+    <p class="lede" data-i18n="ml.p030" data-i18n-html></p>
     <div class="ml-phone">
-      <button class="pb" id="copyAll" data-url="https://mhpss-nepal.github.io/form/">🔗 Copy the link to this page</button>
-      <button class="pb" id="qrAll">📱 QR for this page</button>
-      <span class="pn">Send this one link and a field worker has all the forms — no app to install,
-        nothing to sign in to.</span>
+      <button class="pb" id="copyAll" data-url="https://mhpss-nepal.github.io/form/" data-i18n="ml.p076"></button>
+      <button class="pb" id="qrAll" data-i18n="ml.p075"></button>
+      <span class="pn" data-i18n="ml.p077"></span>
     </div>
     <div class="qrbox" id="qrAllBox" hidden></div>
   </div>
 
-  <div class="banner stop">
-    <b>None of these forms submits anywhere.</b> This site is a static site with no server behind it, so there
-    is nothing for a form to send data to. Each form validates what you type, calculates what it should
-    calculate, saves it in your own browser, and lets you export a file. They are here so the sub-cluster can
-    see and agree the questions <i>before</i> anything is collected for real. Do not use them to record a real
-    service and assume it was captured — it was not.
-  </div>
+  <div class="banner stop" data-i18n="ml.p011" data-i18n-html></div>
 
-  <h2>Forms</h2>
+  <h2 data-i18n="ml.p040"></h2>
 
   <div class="ml-grid">
 
     <div class="ml-card svc">
-      <div class="tag">Service delivery · 4Ws / 5W</div>
-      <h3>Activity report</h3>
-      <p>One row per activity, per site, per day. Coded sites and activities, sex and age disaggregation,
-        both calendars. Records <b>services, not people</b> — there is no field for a name, and none is
-        to be added.</p>
-      <p class="src">Feeds the 4Ws table and the national 5W. Fields follow IASC MHPSS 4Ws (2012)
-        Table 1, plus four marked additions.</p>
+      <div class="tag" data-i18n="ml.p010"></div>
+      <h3 data-i18n="ml.p048"></h3>
+      <p data-i18n="ml.p029" data-i18n-html></p>
+      <p class="src" data-i18n="ml.p028"></p>
       <div class="ml-actions">
-        <a href="4ws-report.html">📝 Open here</a>
-        <button class="sec" data-url="https://mhpss-nepal.github.io/form/4ws-report.html" onclick="COPY(this)">🔗 Copy link</button>
-        <button class="sec" data-qr="4ws" onclick="QRT(this)">📱 QR</button>
+        <a href="4ws-report.html" data-i18n="ml.act.open"></a>
+        <button class="sec" data-url="https://mhpss-nepal.github.io/form/4ws-report.html" onclick="COPY(this)" data-i18n="ml.p074"></button>
+        <button class="sec" data-qr="4ws" onclick="QRT(this)" data-i18n="ml.act.qr"></button>
       </div>
       <div class="qrbox" hidden></div>
     </div>
 
     <div class="ml-card svc">
-      <div class="tag">Daily contact · new vs returning</div>
-      <h3>Service contact record</h3>
-      <p>The daily form. New or returning, municipality and ward, who delivered it, what kind of provider,
-        and a location pin. A <b>contact code</b> is worked out on your own phone so a returning person is
-        recognised without their name or number ever leaving the handset.</p>
-      <p class="src">From the NCD data-system meeting, 15 Sep 2026: new vs returning client,
-        province/subdistrict, focal person, type of service provider, GPS pin, unique-ID anchor.</p>
+      <div class="tag" data-i18n="ml.p009"></div>
+      <h3 data-i18n="ml.p047"></h3>
+      <p data-i18n="ml.p027" data-i18n-html></p>
+      <p class="src" data-i18n="ml.p026"></p>
       <div class="ml-actions">
-        <a href="contact.html">📝 Open here</a>
-        <button class="sec" data-url="https://mhpss-nepal.github.io/form/contact.html" onclick="COPY(this)">🔗 Copy link</button>
-        <button class="sec" data-qr="contact" onclick="QRT(this)">📱 QR</button>
+        <a href="contact.html" data-i18n="ml.act.open"></a>
+        <button class="sec" data-url="https://mhpss-nepal.github.io/form/contact.html" onclick="COPY(this)" data-i18n="ml.p073"></button>
+        <button class="sec" data-qr="contact" onclick="QRT(this)" data-i18n="ml.act.qr"></button>
       </div>
       <div class="qrbox" hidden></div>
     </div>
 
     <div class="ml-card clin">
-      <div class="tag">Clinical follow-up · PHQ-9</div>
-      <h3>Depression measure (Nepali)</h3>
-      <p>Nine items, scored and interpreted on the handset. Used to follow <b>one person over time</b> after
-        they have been referred for care — not to screen a shelter. The form states plainly what the score
-        does and does not mean.</p>
-      <p class="src">Nepali version validated by Kohrt et al., BMC Psychiatry 2016 — cut-off ≥10,
-        sensitivity 0.94, specificity 0.80, but positive predictive value only 0.42.
-        Answers to “track progression from acute distress to clinical disorders”, 14 Sep 2026.</p>
+      <div class="tag" data-i18n="ml.p008"></div>
+      <h3 data-i18n="ml.p046"></h3>
+      <p data-i18n="ml.p025" data-i18n-html></p>
+      <p class="src" data-i18n="ml.p024"></p>
       <div class="ml-actions">
-        <a href="phq9.html">📝 Open here</a>
-        <button class="sec" data-url="https://mhpss-nepal.github.io/form/phq9.html" onclick="COPY(this)">🔗 Copy link</button>
-        <button class="sec" data-qr="phq9" onclick="QRT(this)">📱 QR</button>
+        <a href="phq9.html" data-i18n="ml.act.open"></a>
+        <button class="sec" data-url="https://mhpss-nepal.github.io/form/phq9.html" onclick="COPY(this)" data-i18n="ml.p072"></button>
+        <button class="sec" data-qr="phq9" onclick="QRT(this)" data-i18n="ml.act.qr"></button>
       </div>
       <div class="qrbox" hidden></div>
     </div>
 
     <div class="ml-card ref">
-      <div class="tag">Referral pathway</div>
-      <h3>Referral out / in</h3>
-      <p>Where a person was sent, for what, and whether they arrived. This is the one link between the
-        psychosocial side and the clinical side — without it, a referral to a health facility disappears
-        into HMIS and the continuum of care cannot be shown.</p>
-      <p class="src">From both meetings, 14–15 Sep 2026: referral directory beyond the current single
-        Excel sheet, and linkage with the protection cluster.</p>
+      <div class="tag" data-i18n="ml.p007"></div>
+      <h3 data-i18n="ml.p045"></h3>
+      <p data-i18n="ml.p023"></p>
+      <p class="src" data-i18n="ml.p022"></p>
       <div class="ml-actions">
-        <a href="referral.html">📝 Open here</a>
-        <button class="sec" data-url="https://mhpss-nepal.github.io/form/referral.html" onclick="COPY(this)">🔗 Copy link</button>
-        <button class="sec" data-qr="referral" onclick="QRT(this)">📱 QR</button>
+        <a href="referral.html" data-i18n="ml.act.open"></a>
+        <button class="sec" data-url="https://mhpss-nepal.github.io/form/referral.html" onclick="COPY(this)" data-i18n="ml.p071"></button>
+        <button class="sec" data-qr="referral" onclick="QRT(this)" data-i18n="ml.act.qr"></button>
       </div>
       <div class="qrbox" hidden></div>
     </div>
 
     <div class="ml-card selfr">
-      <div class="tag">For the person themselves</div>
-      <h3>Self-report — how are you coping</h3>
-      <p>The second form type: filled in by the affected person, not by a worker. Completely anonymous —
-        no code, no contact details, no way back to who answered. It reports how a shelter is doing as a
-        whole, and shows someone where to get help.</p>
-      <p class="src">From the NCD meeting, 15 Sep 2026: “two separate form types … one for clients
-        directly, to protect privacy”, and self-reporting, 14 Sep 2026.</p>
+      <div class="tag" data-i18n="ml.p006"></div>
+      <h3 data-i18n="ml.p044"></h3>
+      <p data-i18n="ml.p021"></p>
+      <p class="src" data-i18n="ml.p020"></p>
       <div class="ml-actions">
-        <a href="selfreport.html">📝 Open here</a>
-        <button class="sec" data-url="https://mhpss-nepal.github.io/form/selfreport.html" onclick="COPY(this)">🔗 Copy link</button>
-        <button class="sec" data-qr="self" onclick="QRT(this)">📱 QR</button>
+        <a href="selfreport.html" data-i18n="ml.act.open"></a>
+        <button class="sec" data-url="https://mhpss-nepal.github.io/form/selfreport.html" onclick="COPY(this)" data-i18n="ml.p070"></button>
+        <button class="sec" data-qr="self" onclick="QRT(this)" data-i18n="ml.act.qr"></button>
       </div>
       <div class="qrbox" hidden></div>
     </div>
 
     <div class="ml-card todo">
-      <div class="tag">Frontliner support</div>
-      <h3>Frontliner group session <span class="est">not drafted</span></h3>
-      <p>Search and rescue teams, army, police, volunteers, forensics staff, helicopter crews moving bodies.
-        Named as a distinct target population, but no agreed content: a group-session count is easy, a
-        wellbeing measure for uniformed responders is a governance decision, not a form decision.</p>
-      <p class="src">Target population named 14 Sep 2026. Waiting on the open action item:
-        “define what ground-level information needs to be collected on a daily basis”.</p>
+      <div class="tag" data-i18n="ml.p005"></div>
+      <h3 data-i18n="ml.p043" data-i18n-html></h3>
+      <p data-i18n="ml.p019"></p>
+      <p class="src" data-i18n="ml.p018"></p>
     </div>
 
     <div class="ml-card todo">
-      <div class="tag">Service provider directory</div>
-      <h3>Directory entry <span class="est">not drafted</span></h3>
-      <p>Adding a psychiatrist, counsellor or service point to the directory that Layer 3 would map.
-        Deliberately not drafted yet: the site code list is not agreed, and a half-agreed directory is
-        worse than the Excel sheet it would replace.</p>
-      <p class="src">Requested 14 Sep 2026. Blocked on the same site-code list as the coverage analysis.</p>
+      <div class="tag" data-i18n="ml.p004"></div>
+      <h3 data-i18n="ml.p042" data-i18n-html></h3>
+      <p data-i18n="ml.p017"></p>
+      <p class="src" data-i18n="ml.p016"></p>
     </div>
 
     <div class="ml-card todo">
-      <div class="tag">Training records</div>
-      <h3>Training attendance <span class="est">not drafted</span></h3>
-      <p>Partners request PFA training repeatedly for the same people because training is not linked to
-        names in a database. Fixing that needs a named database — which is exactly the thing this public
-        site must not hold.</p>
-      <p class="src">Problem described 14 Sep 2026. Belongs in the backend, not here.</p>
+      <div class="tag" data-i18n="ml.p003"></div>
+      <h3 data-i18n="ml.p041" data-i18n-html></h3>
+      <p data-i18n="ml.p015"></p>
+      <p class="src" data-i18n="ml.p014"></p>
     </div>
 
   </div>
 
-  <h2>How to use these</h2>
+  <h2 data-i18n="ml.p039"></h2>
   <div class="ml-note">
     <ul>
-      <li><b>Open here</b> — you fill it in yourself, on this device. Use this when someone reports to you
-        by phone or on paper and you are entering it.</li>
-      <li><b>Copy link</b> — paste it into WhatsApp and send it to a field worker. They open it on their own
-        phone, fill it in there, and export. No app, no account, no sign-in.</li>
-      <li><b>QR</b> — print it and put it on the wall at a holding centre. A phone camera opens the form.
-        Useful for the self-report form, where you want people to reach it without being handed a link.</li>
-      <li><b>No signal</b> — once a form has been opened on a phone, it keeps working offline. Entries stay
-        in that phone's browser until exported.</li>
-      <li><b>Where the exports go</b> — the worker exports a file and sends it to you over WhatsApp or
-        email; you drop it into the <a href="../coordination/inbox.html">field inbox</a>, which turns the
-        files into one table. Nothing travels on its own, because there is no server behind this site.</li>
+      <li data-i18n="ml.p035" data-i18n-html></li>
+      <li data-i18n="ml.p034" data-i18n-html></li>
+      <li data-i18n="ml.p033" data-i18n-html></li>
+      <li data-i18n="ml.p032" data-i18n-html></li>
+      <li data-i18n="ml.p031" data-i18n-html></li>
     </ul>
   </div>
 
-  <h2>Where each form comes from</h2>
-  <p class="lede">So that anyone can check a question against the meeting that asked for it, rather than
-    taking it on trust.</p>
+  <h2 data-i18n="ml.p038"></h2>
+  <p class="lede" data-i18n="ml.p013"></p>
   <div class="tw">
   <table class="prov">
-    <tr><th>Form</th><th>Source</th><th>What the record says</th></tr>
+    <tr><th data-i18n="ml.p051"></th><th data-i18n="ml.p050"></th><th data-i18n="ml.p049"></th></tr>
     <tr>
-      <td>Activity report</td>
-      <td>IASC MHPSS 4Ws (2012), Table 1</td>
-      <td>Published tool. Four additions are marked as additions on the Method page, with the reason for each.</td>
+      <td data-i18n="ml.p069"></td>
+      <td data-i18n="ml.p068"></td>
+      <td data-i18n="ml.p067"></td>
     </tr>
     <tr>
-      <td>Service contact</td>
-      <td>MHPSS Data System Design Meeting, 15 Sep 2026</td>
-      <td>Mobile-friendly link-based form, GPS pinning, new vs returning client, province/subdistrict, focal person, type of service provider; unique-ID anchor with fallback matching at Layer 2.</td>
+      <td data-i18n="ml.p066"></td>
+      <td data-i18n="ml.p065"></td>
+      <td data-i18n="ml.p064"></td>
     </tr>
     <tr>
-      <td>PHQ-9</td>
-      <td>Nepal Flood MHPSS Briefing, 14 Sep 2026 + Kohrt et al. 2016</td>
-      <td>Meeting asked for tracking “progression from acute distress to clinical disorders”. The instrument and its cut-off come from the published Nepali validation, not from the meeting.</td>
+      <td data-i18n="ml.p063"></td>
+      <td data-i18n="ml.p062"></td>
+      <td data-i18n="ml.p061"></td>
     </tr>
     <tr>
-      <td>Referral</td>
-      <td>Both meetings, 14–15 Sep 2026</td>
-      <td>Referral directory beyond a single Excel sheet; protection-cluster linkage; clinical cases currently vanish into HMIS.</td>
+      <td data-i18n="ml.p060"></td>
+      <td data-i18n="ml.p059"></td>
+      <td data-i18n="ml.p058"></td>
     </tr>
     <tr>
-      <td>Self-report</td>
-      <td>MHPSS Data System Design Meeting, 15 Sep 2026</td>
-      <td>“Two separate form types … one for clients directly, to protect privacy.”</td>
+      <td data-i18n="ml.p057"></td>
+      <td data-i18n="ml.p056"></td>
+      <td data-i18n="ml.p055"></td>
     </tr>
     <tr>
-      <td>Daily form list</td>
-      <td><span class="est">Not established</span></td>
-      <td>The meeting left this open: “Team to define what ground-level information needs to be collected on a daily basis for the first layer forms.” Until that is answered, three cards above stay undrafted on purpose.</td>
+      <td data-i18n="ml.p054"></td>
+      <td data-i18n="ml.p053" data-i18n-html></td>
+      <td data-i18n="ml.p052"></td>
     </tr>
   </table>
   </div>
 
-  <h2>What still has to be decided above this page</h2>
-  <div class="banner warn">
-    <b>The contact code is a stand-in, not the answer.</b> It is worked out from a few low-variation
-    details, so it is a pseudonym rather than a truly anonymous token: someone holding a list of candidate
-    names could in principle test them against a code. That is acceptable for agreeing the questions.
-    It is not acceptable for a live register of flood-affected people. A real deployment needs the code
-    salted with a secret the handset never sees — which means a server, and therefore the WHO or EDCD
-    backend, not this site.
-  </div>
-  <div class="banner">
-    <b>Layer 2, as described on 15 September, cannot live here.</b> The meeting described a
-    password-protected backend holding name, sex, gender and location. GitHub Pages serves static files
-    from a public repository; it has no password and no database. The named layer has to sit on the WHO
-    or government infrastructure noted on 14 September, and the forms on this page are the specification
-    for it — not a substitute.
-  </div>
+  <h2 data-i18n="ml.p037"></h2>
+  <div class="banner warn" data-i18n="ml.p002" data-i18n-html></div>
+  <div class="banner" data-i18n="ml.p001" data-i18n-html></div>
 
   <!-- Filled by assets/brand.js. Emblems are off until the official
        files are supplied — see that file before changing anything here. -->
@@ -300,5 +248,7 @@ document.getElementById('qrAll').addEventListener('click', function(){
 <script src="pwa.js"></script>
 <script>window.BRAND_PREFIX="../";</script>
 <script src="../assets/brand.js"></script>
+<script src="../assets/i18n-strings.js"></script>
+<script src="../assets/i18n.js"></script>
 </body>
 </html>

@@ -66,7 +66,30 @@ window.I18N_STRINGS = {
        clinical instrument, and safer than hiding the gap. */
     professionalOnly: [
       "phq9.item", "phq9.scale", "phq9.cutoff",
-      "consent.", "safeguard.", "clinical."
+      "consent.", "safeguard.", "clinical.",
+
+      /* selfreport.*  -- the whole page, and this one is a judgement worth
+         recording rather than a category.
+
+         Every other page has an English reader behind it: a counsellor, a
+         focal point, a Ministry officer. The notice at the top of a machine-
+         translated page works for them, because they can switch to English
+         and check.
+
+         The self-report is filled in by a displaced person about their own
+         distress. They have no English to fall back to, so the notice
+         protects nobody -- it tells them the page may be wrong and offers
+         them no way to find out. And a mistranslated question there does two
+         kinds of harm at once: the answer measures nothing, and someone
+         already distressed is handed a question that does not quite make
+         sense about how they are coping.
+
+         The point of the page is to hear from affected people in their own
+         language. A machine draft is not a faster version of that; it is a
+         different thing wearing its clothes. So the page stays English until
+         a person translates it -- which is also what claude/layer1-forms.md
+         already said: not to be printed or circulated until translated. */
+      "selfreport."
     ],
 
     /* Keys that need no Nepali entry: they are already language-specific
@@ -170,6 +193,101 @@ window.I18N_STRINGS = {
     "hub.foot.emblem": "No WHO or Government of Nepal emblem is used: WHO emblem use requires express written permission and the Nepal national emblem belongs to the Ministry. Prepared with AI assistance.",
     "hub.meta.title": "MHPSS Nepal — Integrated Hub",
     "hub.meta.desc": "One door to the mental health and psychosocial support information system for the Rasuwa–Bhote Koshi flood response. Demonstration build; all figures synthetic.",
+
+    "banner.trialSub": "· drafts for the MHPSS sub-cluster to approve · nothing you enter is sent anywhere",
+
+
+
+
+
+
+
+
+
+
+    /* ---- swept prose: ml ---- */
+    "ml.act.open": "📝 Open here",
+    "ml.act.qr": "📱 QR",
+    "ml.p001": "<b>Layer 2, as described on 15 September, cannot live here.</b> The meeting described a password-protected backend holding name, sex, gender and location. GitHub Pages serves static files from a public repository; it has no password and no database. The named layer has to sit on the WHO or government infrastructure noted on 14 September, and the forms on this page are the specification for it — not a substitute.",
+    "ml.p002": "<b>The contact code is a stand-in, not the answer.</b> It is worked out from a few low-variation details, so it is a pseudonym rather than a truly anonymous token: someone holding a list of candidate names could in principle test them against a code. That is acceptable for agreeing the questions. It is not acceptable for a live register of flood-affected people. A real deployment needs the code salted with a secret the handset never sees — which means a server, and therefore the WHO or EDCD backend, not this site.",
+    "ml.p003": "Training records",
+    "ml.p004": "Service provider directory",
+    "ml.p005": "Frontliner support",
+    "ml.p006": "For the person themselves",
+    "ml.p007": "Referral pathway",
+    "ml.p008": "Clinical follow-up · PHQ-9",
+    "ml.p009": "Daily contact · new vs returning",
+    "ml.p010": "Service delivery · 4Ws / 5W",
+    "ml.p011": "<b>None of these forms submits anywhere.</b> This site is a static site with no server behind it, so there is nothing for a form to send data to. Each form validates what you type, calculates what it should calculate, saves it in your own browser, and lets you export a file. They are here so the sub-cluster can see and agree the questions <i>before</i> anything is collected for real. Do not use them to record a real service and assume it was captured — it was not.",
+    "ml.p012": "Layer 1 · Field · Form master list",
+    "ml.p013": "So that anyone can check a question against the meeting that asked for it, rather than taking it on trust.",
+    "ml.p014": "Problem described 14 Sep 2026. Belongs in the backend, not here.",
+    "ml.p015": "Partners request PFA training repeatedly for the same people because training is not linked to names in a database. Fixing that needs a named database — which is exactly the thing this public site must not hold.",
+    "ml.p016": "Requested 14 Sep 2026. Blocked on the same site-code list as the coverage analysis.",
+    "ml.p017": "Adding a psychiatrist, counsellor or service point to the directory that Layer 3 would map. Deliberately not drafted yet: the site code list is not agreed, and a half-agreed directory is worse than the Excel sheet it would replace.",
+    "ml.p018": "Target population named 14 Sep 2026. Waiting on the open action item: “define what ground-level information needs to be collected on a daily basis”.",
+    "ml.p019": "Search and rescue teams, army, police, volunteers, forensics staff, helicopter crews moving bodies. Named as a distinct target population, but no agreed content: a group-session count is easy, a wellbeing measure for uniformed responders is a governance decision, not a form decision.",
+    "ml.p020": "From the NCD meeting, 15 Sep 2026: “two separate form types … one for clients directly, to protect privacy”, and self-reporting, 14 Sep 2026.",
+    "ml.p021": "The second form type: filled in by the affected person, not by a worker. Completely anonymous — no code, no contact details, no way back to who answered. It reports how a shelter is doing as a whole, and shows someone where to get help.",
+    "ml.p022": "From both meetings, 14–15 Sep 2026: referral directory beyond the current single Excel sheet, and linkage with the protection cluster.",
+    "ml.p023": "Where a person was sent, for what, and whether they arrived. This is the one link between the psychosocial side and the clinical side — without it, a referral to a health facility disappears into HMIS and the continuum of care cannot be shown.",
+    "ml.p024": "Nepali version validated by Kohrt et al., BMC Psychiatry 2016 — cut-off ≥10, sensitivity 0.94, specificity 0.80, but positive predictive value only 0.42. Answers to “track progression from acute distress to clinical disorders”, 14 Sep 2026.",
+    "ml.p025": "Nine items, scored and interpreted on the handset. Used to follow <b>one person over time</b> after they have been referred for care — not to screen a shelter. The form states plainly what the score does and does not mean.",
+    "ml.p026": "From the NCD data-system meeting, 15 Sep 2026: new vs returning client, province/subdistrict, focal person, type of service provider, GPS pin, unique-ID anchor.",
+    "ml.p027": "The daily form. New or returning, municipality and ward, who delivered it, what kind of provider, and a location pin. A <b>contact code</b> is worked out on your own phone so a returning person is recognised without their name or number ever leaving the handset.",
+    "ml.p028": "Feeds the 4Ws table and the national 5W. Fields follow IASC MHPSS 4Ws (2012) Table 1, plus four marked additions.",
+    "ml.p029": "One row per activity, per site, per day. Coded sites and activities, sex and age disaggregation, both calendars. Records <b>services, not people</b> — there is no field for a name, and none is to be added.",
+    "ml.p030": "<b>Open here</b> loads the form in this page. <b>Copy link</b> gives you a link to send a field worker over WhatsApp, so they fill it in on their own phone. <b>QR</b> shows a printable code for a noticeboard at a holding centre. Every form works on a phone, and keeps working with no signal.",
+    "ml.p031": "<b>Where the exports go</b> — the worker exports a file and sends it to you over WhatsApp or email; you drop it into the <a href=\"../coordination/inbox.html\">field inbox</a>, which turns the files into one table. Nothing travels on its own, because there is no server behind this site.",
+    "ml.p032": "<b>No signal</b> — once a form has been opened on a phone, it keeps working offline. Entries stay in that phone's browser until exported.",
+    "ml.p033": "<b>QR</b> — print it and put it on the wall at a holding centre. A phone camera opens the form. Useful for the self-report form, where you want people to reach it without being handed a link.",
+    "ml.p034": "<b>Copy link</b> — paste it into WhatsApp and send it to a field worker. They open it on their own phone, fill it in there, and export. No app, no account, no sign-in.",
+    "ml.p035": "<b>Open here</b> — you fill it in yourself, on this device. Use this when someone reports to you by phone or on paper and you are entering it.",
+    "ml.p036": "One link, every form a field worker needs",
+    "ml.p037": "What still has to be decided above this page",
+    "ml.p038": "Where each form comes from",
+    "ml.p039": "How to use these",
+    "ml.p040": "Forms",
+    "ml.p041": "Training attendance <span class=\"est\">not drafted</span>",
+    "ml.p042": "Directory entry <span class=\"est\">not drafted</span>",
+    "ml.p043": "Frontliner group session <span class=\"est\">not drafted</span>",
+    "ml.p044": "Self-report — how are you coping",
+    "ml.p045": "Referral out / in",
+    "ml.p046": "Depression measure (Nepali)",
+    "ml.p047": "Service contact record",
+    "ml.p048": "Activity report",
+    "ml.p049": "What the record says",
+    "ml.p050": "Source",
+    "ml.p051": "Form",
+    "ml.p052": "The meeting left this open: “Team to define what ground-level information needs to be collected on a daily basis for the first layer forms.” Until that is answered, three cards above stay undrafted on purpose.",
+    "ml.p053": "<span class=\"est\">Not established</span>",
+    "ml.p054": "Daily form list",
+    "ml.p055": "“Two separate form types … one for clients directly, to protect privacy.”",
+    "ml.p056": "MHPSS Data System Design Meeting, 15 Sep 2026",
+    "ml.p057": "Self-report",
+    "ml.p058": "Referral directory beyond a single Excel sheet; protection-cluster linkage; clinical cases currently vanish into HMIS.",
+    "ml.p059": "Both meetings, 14–15 Sep 2026",
+    "ml.p060": "Referral",
+    "ml.p061": "Meeting asked for tracking “progression from acute distress to clinical disorders”. The instrument and its cut-off come from the published Nepali validation, not from the meeting.",
+    "ml.p062": "Nepal Flood MHPSS Briefing, 14 Sep 2026 + Kohrt et al. 2016",
+    "ml.p063": "PHQ-9",
+    "ml.p064": "Mobile-friendly link-based form, GPS pinning, new vs returning client, province/subdistrict, focal person, type of service provider; unique-ID anchor with fallback matching at Layer 2.",
+    "ml.p065": "MHPSS Data System Design Meeting, 15 Sep 2026",
+    "ml.p066": "Service contact",
+    "ml.p067": "Published tool. Four additions are marked as additions on the Method page, with the reason for each.",
+    "ml.p068": "IASC MHPSS 4Ws (2012), Table 1",
+    "ml.p069": "Activity report",
+    "ml.p070": "🔗 Copy link",
+    "ml.p071": "🔗 Copy link",
+    "ml.p072": "🔗 Copy link",
+    "ml.p073": "🔗 Copy link",
+    "ml.p074": "🔗 Copy link",
+    "ml.p075": "📱 QR for this page",
+    "ml.p076": "🔗 Copy the link to this page",
+    "ml.p077": "Send this one link and a field worker has all the forms — no app to install, nothing to sign in to.",
+
+    "page.index.brand": "Field forms",
+    "page.index.sub": "Layer 1 · Rasuwa / Bhote Koshi",
 
     /* ---- the machine-translation notice ----
        Shown in BOTH languages at once, on purpose. A notice that says "this
