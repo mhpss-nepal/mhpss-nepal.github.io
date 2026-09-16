@@ -152,21 +152,27 @@ should not be made to.
 
 Stated rather than smoothed over.
 
-- **IASC 4Ws activity codes are not filled in.** `activity.iasc` is `null`
-  throughout. The official code list must be obtained from the manual; it has
-  not been, and guessing codes would be worse than leaving them empty.
+- **IASC 4Ws activity codes are applied in part.** The 2012 code list (Table 2:
+  11 codes, 45 subcodes) is in hand. Eight activities carry their subcode as a
+  direct match; five carry a rule instead, because the subcode depends on the
+  cadre or the content, and no subcode is written for them. Whether helpline
+  contact and coordination meeting belong in a 4Ws activity list, and whether
+  the 2012 codes or the updated set in a May 2024 draft toolkit (not obtained)
+  should be the basis, are open.
 - **No Bikram Sambat conversion.** Nepali month lengths vary year to year and
   cannot be computed from a formula. A verified calendar table for 2082–2085
   from a Government of Nepal source is needed first.
 - **The site list is not agreed.** It is derived from the holding-centre roster
-  sheet plus sites appearing in submitted reports. EDCD and the sub-cluster have
-  not signed it off.
+  sheet, the list of centres from the District Administration Office, Nuwakot,
+  of 29 Bhadra 2083, and sites appearing in submitted reports. EDCD and the
+  MHPSS Technical Working Group have not signed it off.
 - **The activity list is not agreed.** Consolidated from what partners have
   actually submitted, not from an agreed taxonomy.
 - **No accessibility audit** has been run beyond colour-contrast validation of
   the chart palette.
-- **Nothing is translated into Nepali** beyond the site names carried from the
-  roster.
+- **Most text is not yet in Nepali.** Pages carry a language switch and fall
+  back to English where a Nepali string is still awaited; machine drafts are
+  announced as such, and clinical wording stays in English.
 
 ## Attribution
 

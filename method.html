@@ -81,15 +81,18 @@
     could be identified.</p>
 
   <h2>Mapping to the IASC 4Ws model</h2>
-  <p>The IASC MHPSS 4Ws manual (2012), Table 1, defines seventeen core items. The fields map onto them. Four
-    additions are marked, and every one of them comes from a defect observed in the current reporting
-    workbook rather than from the manual:</p>
+  <p>The IASC MHPSS 4Ws manual (2012), Table 1, lists 22 items: A to Q, then five marked <em>Optional</em>.
+    The manual does not call any of them core. The fields map onto A to Q. The additions are marked, and
+    every one of them comes from a defect observed in the current reporting workbook rather than from the
+    manual:</p>
   <div class="scroll"><table>
     <tr><th style="width:30%">Addition</th><th>Why it exists</th></tr>
     <tr><td><strong>Bikram Sambat date</strong>, stored separately</td>
       <td>Dates in the current workbook are BS values sitting in Gregorian date cells, so every sort and every period filter is silently corrupted.</td></tr>
-    <tr><td><strong>Sex and age disaggregation</strong> — six numeric fields</td>
-      <td>Partners are already reporting it, as sentences typed into the <em>provider</em> column, because the form has nowhere to put it. It lands in whichever field is nearest.</td></tr>
+    <tr><td><strong>Sex and age disaggregation</strong> — twelve numeric fields</td>
+      <td>Four age bands — 0–4, 5–17, 18–59, 60 and over — each female, male, and other or not recorded. Partners are already reporting it, as sentences typed into the <em>provider</em> column, because the form has nowhere to put it. It lands in whichever field is nearest.</td></tr>
+    <tr><td><strong>Funding tag</strong> — one or more donors</td>
+      <td>Without it, one organisation reporting under two funding lines looks like two organisations. The manual has no item for the donor; its item C is the organisation an activity is done with, which the form records separately.</td></tr>
     <tr><td><strong>Modality</strong> — in person, outreach, telephone</td>
       <td>Helpline contacts were otherwise unrecordable, so remote support sat in a separate tab and was counted nowhere.</td></tr>
     <tr><td><strong>Cadre</strong> — counsellor, psychologist, psychiatrist</td>
@@ -118,18 +121,25 @@
   <h2 id="not-established">Register of what is not established</h2>
   <p>&ldquo;Not established&rdquo; is an acceptable answer. A wrong figure is not.</p>
   <div class="stack">
-    <div class="card"><h3><span class="est">Not obtained</span> &nbsp; IASC 4Ws activity codes</h3>
-      <p><code>activity.iasc</code> is <code>null</code> throughout. The official code list must come from the
-        manual; it has not been obtained. Guessed codes would look right and be wrong, which is worse than
-        empty, because a wrong code propagates into every aggregate downstream and nobody can see it.</p></div>
+    <div class="card"><h3><span class="est">Partly open</span> &nbsp; IASC 4Ws activity codes</h3>
+      <p>The code list of the 2012 manual (Table 2: 11 codes, 45 subcodes) is in hand. Where an activity matches
+        a subcode directly, the subcode sits on the activity in the code list and a report carries it without
+        anyone typing it — eight activities. Where the subcode depends on the cadre
+        of whoever delivered the service or on what it covered — specialised care, medication, referral, IEC
+        material, assessment — the rule is recorded and no subcode is written. A guessed code would look right
+        and be wrong, which is worse than empty, because a wrong code propagates into every aggregate downstream
+        and nobody can see it.</p>
+      <p>Two questions stay open: whether a helpline contact and a coordination meeting belong in a 4Ws activity
+        list at all, and whether the 2012 codes remain the basis — an updated set in a May 2024 draft toolkit
+        has not been obtained.</p></div>
     <div class="card"><h3><span class="est">Not obtained</span> &nbsp; Bikram Sambat conversion table</h3>
       <p>No calendar conversion is performed anywhere in this system. Nepali month lengths vary from year to
         year and cannot be computed from a formula — conversion needs a lookup table of days per month per BS
         year. A verified table for 2082–2085 from a Government of Nepal source is required first. Both
         calendars are stored separately in the meantime and everything sorts on the Gregorian field.</p></div>
     <div class="card"><h3><span class="est">Not agreed</span> &nbsp; The site list</h3>
-      <p>Derived from the holding-centre roster of the daily reporting workbook plus sites appearing in
-        submitted reports. EDCD and the MHPSS Technical Working Group have not signed it off. Sites that appear in reports
+      <p>Derived from the holding-centre roster of the daily reporting workbook, the list of centres from the
+        District Administration Office, Nuwakot, of 29 Bhadra 2083, and sites appearing in submitted reports. EDCD and the MHPSS Technical Working Group have not signed it off. Sites that appear in reports
         but were never on the roster are flagged separately and <strong>never counted as coverage gaps</strong>
         — a site nobody ever listed as a service point cannot be counted as one that was missed.</p></div>
     <div class="card"><h3><span class="est">Not agreed</span> &nbsp; The activity list</h3>
@@ -138,10 +148,16 @@
       <p>The reporting sheet counts service contacts; the national 5W counts people reached. Until NDRRMA and
         EDCD rule on this in writing, no figure from the sheet is submitted. See
         <a href="layer3.html">Layer 3</a>.</p></div>
-    <div class="card"><h3><span class="est">Not run</span> &nbsp; Accessibility audit · Nepali translation</h3>
+    <div class="card"><h3><span class="est">Not run</span> &nbsp; Accessibility audit</h3>
       <p>Colour contrast has been checked numerically across every surface in both light and dark modes, and
         the chart palette was validated for colour-vision separation. That is not a full accessibility audit,
-        and none has been run. Nothing is translated into Nepali beyond the site names carried from the roster.</p></div>
+        and none has been run.</p></div>
+    <div class="card"><h3><span class="est">Partial</span> &nbsp; Nepali translation</h3>
+      <p>Pages carry a language switch, but most text is not yet in Nepali. A page that is not available in
+        Nepali says so. On a page that is, any string still awaiting its Nepali version shows in English, a
+        machine draft is announced as translated automatically, and the English version is stated to be the
+        authoritative one. Clinical wording and consent text stay in English whatever the dictionary holds:
+        a machine-rendered PHQ-9 is not the PHQ-9.</p></div>
   </div>
 
   <h2>Location granularity</h2>
