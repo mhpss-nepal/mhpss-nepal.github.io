@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Layer 2 · Coordination view — MHPSS Nepal</title>
+<meta name="description" content="Demonstration coordination hub for mental health and psychosocial support in the Rasuwa–Bhote Koshi flood response. All figures are synthetic.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="../assets/hub.css">
+</head><body>
+
+<div class="synth">DEMONSTRATION — EVERY FIGURE ON THIS PAGE IS SYNTHETIC
+  <span>· generated for design review · not response data · must not be quoted</span></div>
+
+<header class="site">
+  <div class="wrap">
+    <div class="mast">
+      <div class="mark">MH</div>
+      <div>
+        <h1>Coordination view</h1>
+        <div class="sub">Layer 2 · Rasuwa–Bhote Koshi flood response · service-level information only</div>
+      </div>
+      <div class="spacer"></div>
+      <button class="tbtn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="../" style="font-weight:600">← Public page</a>
+      <a href="#coverage" aria-current="page">Coverage</a>
+      <a href="#who">Who is doing what</a>
+      <a href="#when">Over time</a>
+      <a href="#what">Activities</a>
+      <a href="#people">Workforce</a>
+      <a href="#helpline">Helplines</a>
+      <a href="#layers">Architecture</a>
+      <a href="inbox.html">Field inbox</a>
+      <a href="access.html">Access</a>
+      <a href="../form/index.html">Field forms</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero" id="top">
+    <div class="k">The question this hub exists to answer</div>
+    <div class="v" id="heroLine">…</div>
+    <p>A 4Ws is not a list of who is present. It is the instrument that says <strong>which sites are at zero</strong>.
+       The denominator is the official holding-centre roster; a site that appears in reports but was never on the
+       roster is shown separately and is never counted as a gap.</p>
+  </section>
+
+  <div class="kpis" id="kpis"></div>
+
+  <!-- ══ COVERAGE ══ -->
+  <section class="card" id="coverage">
+    <div class="chead">
+      <div class="grow">
+        <h2>Coverage of the holding-centre roster</h2>
+        <div class="note">Every site on the official roster, whether or not anyone has reported working there.
+          Ordered by district, then by roster number. Hover a site for its detail.</div>
+      </div>
+    </div>
+    <div class="cov" id="covGrid"></div>
+    <div class="legend">
+      <b><span class="sw" style="background:var(--critical)"></span> No service reported — a gap</b>
+      <b><span class="sw" style="background:var(--warning)"></span> Reported on 3 days or fewer</b>
+      <b><span class="sw" style="background:var(--good)"></span> Reported on more than 3 days</b>
+      <b style="color:var(--muted)">Roster population shown where recorded</b>
+    </div>
+  </section>
+
+  <!-- ══ WHO ══ -->
+  <section class="card" id="who">
+    <div class="chead">
+      <div class="grow">
+        <h2>Who is doing what, where</h2>
+        <div class="note">Reach by organisation. One measure, one colour — the bars are ranked, not categorised,
+          so colour carries no extra meaning here.</div>
+      </div>
+      <button class="tbtn" data-toggle="whoTbl" type="button">Show table</button>
+    </div>
+    <figure><svg id="orgChart" role="img" aria-label="Reach by organisation, ranked"></svg>
+      <figcaption>Synthetic. Reach counts service contacts, not unique people — one person attending on three days counts three times.</figcaption>
+    </figure>
+    <div class="scroll" id="whoTbl" hidden style="margin-top:14px"></div>
+  </section>
+
+  <!-- ══ WHEN ══ -->
+  <section class="card" id="when">
+    <div class="chead">
+      <div class="grow">
+        <h2>Contacts per day</h2>
+        <div class="note">Bikram Sambat dates as reported. No calendar conversion is performed anywhere in this
+          system — no verified BS conversion table has been obtained.</div>
+      </div>
+      <button class="tbtn" data-toggle="whenTbl" type="button">Show table</button>
+    </div>
+    <figure><svg id="dayChart" role="img" aria-label="Contacts recorded per day"></svg>
+      <figcaption>Synthetic. Hover for the day's figure and the number of sites reporting.</figcaption>
+    </figure>
+    <div class="scroll" id="whenTbl" hidden style="margin-top:14px"></div>
+  </section>
+
+  <!-- ══ WHAT ══ -->
+  <section class="card" id="what">
+    <div class="chead">
+      <div class="grow">
+        <h2>Activity mix by district</h2>
+        <div class="note">Grouped into five activity families plus a residual. Segments are direct-labelled because
+          three of the five fills sit below 3:1 against the light background — the label, not the colour, carries the value.</div>
+      </div>
+      <button class="tbtn" data-toggle="whatTbl" type="button">Show table</button>
+    </div>
+    <div class="keys" id="actKeys"></div>
+    <figure><svg id="actChart" role="img" aria-label="Activity mix by district"></svg>
+      <figcaption>Synthetic. Districts ordered by total reach.</figcaption>
+    </figure>
+    <div class="scroll" id="whatTbl" hidden style="margin-top:14px"></div>
+  </section>
+
+  <!-- ══ PEOPLE ══ -->
+  <section class="card" id="people">
+    <div class="chead">
+      <div class="grow">
+        <h2>Deployed workforce</h2>
+        <div class="note">One row per person, coded cadre. In the live system this replaces six overlapping name
+          lists. <strong>No contact details are held here</strong> — the hub records that a cadre is deployed at a
+          district, not how to reach an individual.</div>
+      </div>
+    </div>
+    <div class="scroll" id="cadreTbl"></div>
+  </section>
+
+  <!-- ══ HELPLINE ══ -->
+  <section class="card" id="helpline">
+    <div class="chead">
+      <div class="grow">
+        <h2>Helpline demand</h2>
+        <div class="note">Remote contacts belong in the same count as face-to-face ones. A line reporting nothing is
+          shown as reporting nothing, not omitted — the silence is the finding.</div>
+      </div>
+    </div>
+    <div class="scroll" id="helpTbl"></div>
+  </section>
+
+  <!-- ══ LAYERS ══ -->
+  <section class="card" id="layers">
+    <h2>How the three layers fit together</h2>
+    <div class="note">Information moves in one direction only. Nothing flows back down, and no layer can read the
+      layer below it.</div>
+    <div class="layers">
+      <div class="layer">
+        <span class="pill l1">Layer 1 · Field</span>
+        <h3>Reporting</h3>
+        <p>One row per activity, per site, per day. Coded sites, activities and organisations. Works with no signal.
+          No beneficiary fields exist and none are to be added.</p>
+        <a href="../form/index.html">Open the field forms →</a>
+      </div>
+      <div class="layer">
+        <span class="pill l2">Layer 2 · Coordination</span>
+        <h3>Analysis</h3>
+        <p>Coverage gaps, duplication checks, the 4Ws matrix. Service-level information only. Restricted to the
+          sub-cluster; enforcement sits at the database, never in the page.</p>
+        <a href="inbox.html">Open the field inbox →</a><br>
+        <a href="coverage.html">Open the analysis view →</a>
+      </div>
+      <div class="layer">
+        <span class="pill l3">Layer 3 · Public</span>
+        <h3>National instruments</h3>
+        <p>Aggregated figures submitted into the government-owned national 5W, and a public page hosted by the
+          Ministry. The gap was never the instrument — it was the connection.</p>
+        <a href="../docs/DATA_MODEL.md">Read the data model →</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site"><div class="wrap">
+  <p><b>This is a demonstration.</b> Every number, name, site figure and date on this page is synthetic, generated
+     deterministically on 15 September 2026 so that the design can be reviewed without exposing response data. It is
+     not the response's data and must not be quoted, screenshotted as evidence, or cited in any report.</p>
+  <p><b>What is real here</b> is the architecture, the instrument, the controlled vocabularies and the method — the
+     site and activity lists are drawn from records the response already holds, and are marked draft until EDCD and
+     the MHPSS sub-cluster sign them off.</p>
+  <p><b>No personal data.</b> This page holds no names, telephone numbers or email addresses of service users or of
+     staff. The workforce view records cadre and district only. The system is a coordination system: it holds
+     service-level information and does not hold individual-level information.</p>
+  <p><b>Governance.</b> Three questions raised on 14 September 2026 — hosting on a non-WHO account, AI assistance in
+     development, and the procurement route for a domain — remain open. Until each has a written answer this remains
+     a demonstration running on synthetic content only.</p>
+  <p style="color:var(--muted)">No WHO or Government of Nepal emblem is used: WHO emblem use requires express written
+     permission and the Nepal national emblem belongs to the Ministry. Prepared with AI assistance.</p>
+</div></footer>
+
+<div id="tip" role="tooltip" aria-hidden="true"></div>
+
+<script src="../assets/codes.js"></script>
+<script src="../data/demo.js"></script>
+<script src="../assets/hub.js"></script>
+<!-- The bilingual engine: mounts the ENG/NEP toggle so it does not
+     vanish when a reader navigates here from the hub, and states
+     plainly that this page is not in Nepali yet. -->
+<script src="../assets/i18n-strings.js"></script>
+<script src="../assets/i18n.js"></script>
+</body></html>

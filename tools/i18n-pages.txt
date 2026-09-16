@@ -6,6 +6,9 @@
 # come back from the translator. Adding English prose to an enforced page
 # without a key fails the gate -- which is the point.
 
-index.html keyed
+# index.html is now the Layer 3 PUBLIC page (it replaced the old door page on
+# 16 Sep 2026). It is brand-new English prose and not keyed yet, so it sits as
+# pending -- counted and reported, not blocked. The keys the old door page used
+# are still in the dictionary and several are reusable when this page is keyed.
 form/index.html keyed
 form/selfreport.html keyed

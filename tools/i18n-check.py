@@ -30,6 +30,7 @@ Run from the repository root:  python3 tools/i18n-check.py
 """
 import csv
 import json
+import io
 import os
 import re
 import sys
@@ -131,8 +132,20 @@ def load_pages():
     for base, dirs, files in os.walk(ROOT):
         dirs[:] = [d for d in dirs if d not in (".git", "node_modules", "tools")]
         for f in files:
-            if f.endswith(".html"):
-                found.append(os.path.relpath(os.path.join(base, f), ROOT))
+            if not f.endswith(".html"):
+                continue
+            rel = os.path.relpath(os.path.join(base, f), ROOT)
+            # A redirect stub is not a page. The stubs left behind at moved
+            # addresses carry ~25 words of "this has moved" and would
+            # otherwise pad the "words to key up" total with work that does
+            # not exist, and appear as pages awaiting translation forever.
+            try:
+                head = io.open(os.path.join(ROOT, rel), encoding="utf-8").read(2500)
+            except Exception:
+                head = ""
+            if 'http-equiv="refresh"' in head:
+                continue
+            found.append(rel)
     return {p: state.get(p, "pending") for p in sorted(found)}
 
 
