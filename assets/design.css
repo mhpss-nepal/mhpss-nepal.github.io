@@ -491,3 +491,16 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 .fig code,.src code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   font-size:.92em;background:var(--grey-1);border:1px solid var(--grey-2);
   border-radius:3px;padding:0 4px}
+
+/* ---------- the insight callout ------------------------------------- */
+/* Adib's own design rules (Visual_Design_Lessons_28Jun2026.md, rule 5)
+   require a "so what" after every visualisation: do not leave the reader
+   to interpret a figure on their own. It is also the difference between a
+   chart and a finding -- anything can draw the chart. */
+.insight{border-left:3px solid var(--np-crimson);background:var(--grey-1);
+         padding:11px 14px;margin:14px 0 0;border-radius:0 var(--r) var(--r) 0}
+.insight b{display:block;font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;
+           color:var(--np-crimson-d);font-weight:700;margin-bottom:3px}
+.insight p{margin:0;font-size:12.5px;line-height:1.62;color:var(--ink-d);max-width:92ch}
+.insight.blue{border-left-color:var(--np-blue)}
+.insight.blue b{color:var(--np-blue)}
