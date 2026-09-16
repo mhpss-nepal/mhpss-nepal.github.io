@@ -240,6 +240,23 @@ function label(it) {
   if (isNepali() && it.np) return it.np;
   return it.name || "";
 }
+/* A dropdown's first line -- "Select…", "All districts". See the
+   placeholders note in assets/i18n-strings.js for why these are matched by
+   their English text and why that is temporary. Anything unmatched is
+   returned unchanged and warned about once, so it stays visible. */
+var phMissed = {};
+function ph(txt) {
+  if (!txt || !isNepali()) return txt;
+  var map = (window.I18N_STRINGS && window.I18N_STRINGS._meta &&
+             window.I18N_STRINGS._meta.placeholders) || {};
+  if (map[txt]) return map[txt];
+  if (!phMissed[txt]) {
+    phMissed[txt] = 1;
+    try { console.warn("[codes] placeholder with no Nepali:", txt); } catch (e) {}
+  }
+  return txt;
+}
+
 /* the lookup form: a code, and the list it belongs to */
 function labelOf(list, code) {
   if (!list || !code) return code || "";
@@ -270,5 +287,5 @@ window.CODES = {
   META, DISTRICTS, SITES, ACTIVITIES, ORGS, DONORS, CADRES,
   TARGET_GROUPS, MODALITIES, STATUS,
   siteByCode, orgByCode, districtByCode, activityByCode, ROSTER_SITES,
-  label, labelOf, npCoverage
+  label, labelOf, ph, npCoverage
 };

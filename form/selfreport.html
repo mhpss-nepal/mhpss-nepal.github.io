@@ -181,7 +181,7 @@
   var C = window.CODES, L = window.L1, KIND = "selfreport";
   var $ = function (id) { return document.getElementById(id); };
 
-  L.fillSelect($("site"), C.SITES.concat([{ code: "OTHER", name: "Somewhere else" }]),
+  L.fillSelect($("site"), C.SITES.concat([{ code: "OTHER", name: "Somewhere else", np: "अन्य कतै", np_src: "draft" }]),
                { placeholder: "— choose your site —" });
 
   function pick(name) {

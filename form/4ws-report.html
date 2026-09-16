@@ -232,7 +232,7 @@
     sel.innerHTML = "";
     if (placeholder) {
       var o = document.createElement("option");
-      o.value = ""; o.textContent = placeholder; sel.appendChild(o);
+      o.value = ""; o.textContent = C.ph(placeholder); sel.appendChild(o);
     }
     items.forEach(function (it) {
       var o = document.createElement("option");

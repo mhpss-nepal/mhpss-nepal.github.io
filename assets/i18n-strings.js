@@ -97,6 +97,31 @@ window.I18N_STRINGS = {
        invariant in every language. Declared, not assumed. */
     noTranslationNeeded: ["mt."],
 
+    /* PLACEHOLDERS — a bridge, and it is meant to be temporary.
+       -----------------------------------------------------------------
+       "Select…", "— choose —", "All districts": the first line of every
+       dropdown, and the first Nepali word a field worker looks for. They
+       live in the pages' own code, so on a page not yet keyed up they
+       stayed English while every option below them turned Nepali -- an
+       English instruction above a Nepali list, which is the worst of both.
+
+       Keying each page up replaces these with proper keys. Until then
+       they are matched by their English text, which is exactly the loose
+       English the gate exists to catch -- so this map is the ONE place it
+       is allowed, it is listed here where it can be seen, and l18n warns
+       in the console about any placeholder it could not match. Delete an
+       entry when its page is keyed. */
+    placeholders: {
+      "— choose —":            "— छनोट गर्नुहोस् —",
+      "Select…":               "छान्नुहोस्…",
+      "— choose your site —":  "— तपाईंको स्थान छान्नुहोस् —",
+      "Not specified":         "उल्लेख नगरिएको",
+      "All districts":         "सबै जिल्ला",
+      "Ongoing":               "चालु",
+      "Other — not listed":    "अन्य — सूचीमा नभएको",
+      "Somewhere else":        "अन्य कतै"
+    },
+
     /* Where each Nepali string came from, so the page can say so and the
        gate can tell a machine draft from reviewed text.
          machine = drafted automatically, English remains authoritative

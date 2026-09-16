@@ -156,7 +156,9 @@
     opts = opts || {};
     var out = [];
     if (opts.placeholder !== false) {
-      out.push('<option value="">' + (opts.placeholder || "— choose —") + "</option>");
+      var phTxt = opts.placeholder || "— choose —";
+      if (window.CODES && window.CODES.ph) phTxt = window.CODES.ph(phTxt);
+      out.push('<option value="">' + phTxt + "</option>");
     }
     items.forEach(function (it) {
       var v, l;
