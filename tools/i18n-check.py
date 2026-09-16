@@ -407,6 +407,17 @@ def main(argv):
                   if k in d["en"] and k not in html_keys
                   and re.search(r"<[a-zA-Z/][^>]*>", d["en"][k])]
 
+        # ---- an HTML entity in a string the page inserts as plain text.
+        # The same trap one step smaller: the sweep copied "&#8212;" out of a
+        # page's source, and textContent printed it literally on the public
+        # Flood Response page (16 Sep 2026) -- no tag, so the markup check
+        # above let it through. Found by looking at a screenshot. In a plain
+        # string, write the character itself.
+        for k in set(keys):
+            if (k in d["en"] and k not in html_keys and k not in markup
+                    and re.search(r"&(#\d+|#x[0-9a-fA-F]+|[a-zA-Z]{2,8});", d["en"][k])):
+                markup.append(k)
+
         # ---- a keyed element that WRAPS a form control. Filling it, by
         # textContent or innerHTML, destroys the control.
         wraps = [k for k in set(control_keys) if k and k in d["en"]]
@@ -424,8 +435,8 @@ def main(argv):
             fail.append((p, "visible text carrying no key -- add one or the two "
                             "versions will drift", loose[:8]))
         if markup:
-            fail.append((p, "string contains markup but the element has no "
-                            "data-i18n-html -- it would render as visible "
+            fail.append((p, "string contains markup or an HTML entity but the element "
+                            "has no data-i18n-html -- it would render as visible "
                             "source code", sorted(markup)[:8]))
         if wraps:
             fail.append((p, "keyed element wraps a form control -- filling it "

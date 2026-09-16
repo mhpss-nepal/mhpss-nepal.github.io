@@ -3,66 +3,45 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>MHPSS Technical Working Group Nepal — Rasuwa–Bhotekoshi flood response</title>
-<meta name="description" content="Coordination and information sharing between mental health and psychosocial support actors in the Rasuwa–Bhotekoshi flood response, Nepal. Health Cluster, with WHO Nepal and MoHP/EDCD.">
+<title>MHPSS Technical Working Group Nepal</title>
+<meta name="description" content="Mental health and psychosocial support in Nepal's Rasuwa–Bhotekoshi flood response: helplines, where to refer someone, materials, resources, and the coordination group.">
 <meta name="theme-color" content="#006996">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Mukta: the typeface the Ministry of Finance uses on its own flood-update
-     page. One family carries Devanagari and Latin, so the Nepali view is the
+<!-- Mukta: one family carries Devanagari and Latin, so the Nepali view is the
      same document rather than a different website. design.css names system
      fallbacks, so a failed font request costs typography, never legibility. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="assets/app.css">
 <link rel="stylesheet" href="assets/design.css">
-<style>
-  /* page-only. Everything reusable is in design.css. */
-  body{background:#fff}
-  .split{display:grid;gap:26px;grid-template-columns:minmax(0,1.32fr) minmax(0,1fr);
-         align-items:start}
-  @media (max-width:860px){ .split{grid-template-columns:1fr;gap:20px} }
-  .ringwrap{background:#fff;border:1px solid var(--grey-3);border-radius:var(--r-md);
-            padding:18px 20px}
-  .ringwrap h4{margin:0 0 3px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;
-               color:var(--slate-2);font-weight:700}
-  .ringwrap .note{margin:0 0 14px;font-size:12px;color:var(--slate-2)}
-  .ringrow{display:flex;gap:18px;align-items:center}
-  .ringrow svg{flex:0 0 auto}
-  .leg{flex:1 1 auto;min-width:0}
-  .leg div{display:flex;align-items:baseline;gap:8px;font-size:12.5px;padding:3px 0;
-           border-bottom:1px solid var(--grey-2)}
-  .leg div:last-child{border-bottom:0}
-  .leg i{flex:0 0 auto;width:10px;height:10px;border-radius:2px;display:block;
-         transform:translateY(1px)}
-  .leg span{flex:1 1 auto;color:var(--ink-d)}
-  .leg b{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--slate-2);font-weight:700}
-  .flowfig{background:#fff;border:1px solid var(--grey-3);border-radius:var(--r-md);
-           padding:20px;margin-top:8px}
-  .flowfig svg{width:100%;height:auto;display:block;max-width:820px;margin:0 auto}
-  .twocol{display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
-  ul.tight{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.66;color:var(--ink-d)}
-  ul.tight li{margin-bottom:4px}
-  .defquote{border-left:4px solid var(--np-blue);background:var(--np-blue-t);padding:15px 18px;
-            border-radius:0 var(--r-md) var(--r-md) 0;margin-top:18px}
-  .defquote p{margin:0;font-size:15px;line-height:1.66;color:#004969;max-width:none}
-  .defquote cite{display:block;margin-top:7px;font-style:normal;font-size:12px;color:#006996}
-</style>
+<link rel="stylesheet" href="assets/site.css">
+<script>
+/* Links into the old one-page site were circulated before 16 September 2026.
+   Its coordination sections now live on Flood Response, so an old anchor is
+   sent on to the same section there rather than landing nowhere. */
+(function () {
+  var moved = { "#coverage": 1, "#pyramid": 1, "#tools": 1, "#method": 1 };
+  var h = window.location.hash;
+  if (moved[h]) window.location.replace("flood-response.html" + h);
+  else if (h === "#contact") window.location.replace("contact-us.html");
+})();
+</script>
 </head>
 <body>
 
-<div class="synth">DEMONSTRATION BUILD &middot; draft instrument <span>&middot; code lists not agreed with EDCD or the MHPSS Technical Working Group</span></div>
-<!--NAV:top overview-->
+<!--NAV:top home-->
+<div class="synth"><span data-i18n="banner.demo"></span> <span data-i18n="banner.demoSub"></span></div>
 <header class="gov">
   <div class="in">
     <a class="id" href="./">
       <span data-mark="44"></span>
       <span style="min-width:0">
-        <span class="who-line">Health Cluster &middot; Nepal</span>
-        <b>MHPSS Technical Working Group</b>
-        <span class="place">Rasuwa &middot; Nuwakot &middot; flood response</span>
+        <span class="who-line" data-i18n="mast.cluster"></span>
+        <b data-i18n-skip>MHPSS Technical Working Group</b>
+        <span class="place" data-i18n="mast.place"></span>
       </span>
     </a>
-    <div class="mid">
+    <div class="mid" data-i18n-skip>
       <b>Mental Health &amp; Psychosocial Support</b>
       <span>मानसिक स्वास्थ्य र मनोसामाजिक सहयोग</span>
     </div>
@@ -70,657 +49,148 @@
       <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
            finds one, instead of floating it top-right over these buttons. -->
       <span data-i18n-toggle class="langslot"></span>
-      <a class="gbtn out" href="hub/">Coordination hub</a>
-      <a class="gbtn crimson" href="form/">Field forms</a>
+      <a class="gbtn out" href="hub/" data-i18n="mast.hub"></a>
+      <a class="gbtn crimson" href="form/" data-i18n="nav.forms"></a>
     </div>
   </div>
 </header>
-<nav class="navband" aria-label="Sections of this site">
+<nav class="navband" aria-label="Sections of this site" data-i18n-skip>
   <div class="in">
-    <a class="on" aria-current="page" href="./"><b>Overview</b><i>समग्र विवरण</i></a>
-    <a href="form/"><b>Field forms</b><i>फिल्ड फारम</i></a>
-    <a href="hub/"><b>Coordination dashboard</b><i>ड्यासबोर्ड</i></a>
-    <a href="method.html"><b>Method</b><i>विधि</i></a>
-    <a href="architecture.html"><b>Architecture</b><i>संरचना</i></a>
-    <a href="access-explained.html"><b>Who sees what</b><i>पहुँच</i></a>
+    <a class="on" aria-current="page" href="./"><b>Home</b><i>गृहपृष्ठ</i></a>
+    <a href="flood-response.html"><b>Flood Response</b><i>बाढी प्रतिकार्य</i></a>
+    <a href="bps.html"><b>BPS+</b><i>BPS+ तालिम</i></a>
+    <a href="iec.html"><b>IEC</b><i>IEC सामग्री</i></a>
+    <a href="referral-directory.html"><b>Referral Directory</b><i>रेफरल निर्देशिका</i></a>
+    <a href="resources.html"><b>Resources</b><i>स्रोत सामग्री</i></a>
+    <a href="videos.html"><b>Videos</b><i>भिडियो</i></a>
+    <a href="contact-us.html"><b>Contact</b><i>सम्पर्क</i></a>
   </div>
 </nav>
-<div class="jump" aria-label="Sections of this page">
-  <div class="in"><span class="lab">On this page</span>
-    <a href="#coverage">§1 What is measured</a>
-    <a href="#pyramid">§2 Where it sits</a>
-    <a href="#members">§3 Who takes part</a>
-    <a href="#work">§4 What the group does</a>
-    <a href="#tools">§5 Forms & dashboard</a>
-    <a href="#method">§6 Three layers</a>
-  </div>
-</div>
 <!--/NAV-->
-
-<!-- ============ status strip ============ -->
-<div class="statusbar">
-  <div class="in">
-    <span class="live">DRAFT</span>
-    <span>Event: <b>Bhotekoshi flood of Bhadra 10, 2083 · 26 Aug 2026</b></span>
-    <span class="sep">·</span>
-    <span>Districts: <b>Rasuwa, Nuwakot</b></span>
-    <span class="sep">·</span>
-    <span>Reporting: <b>not yet started</b></span>
-    <span class="sep">·</span>
-    <span>Figures on this page: <b>none are reported data</b></span>
-  </div>
-</div>
 
 <div class="page">
 
-  <!-- ============ headline sheet ============ -->
+  <!-- ============ hero ============ -->
   <div class="sheet">
     <div class="split">
       <div>
-        <div class="stamp">
-          <span>Prepared for WHO Nepal, MoHP and EDCD</span>
-          <span class="tagpill">not yet agreed</span>
-        </div>
-        <h1 class="title">One shared table for MHPSS in the Rasuwa–Bhotekoshi response</h1>
-        <p class="subtitle">Which holding centres have received a mental health or
-        psychosocial service, which have received none, and who is providing what — counted
-        once, against one roster, by every organisation reporting.</p>
-
-        <div class="figblock">
-          <div class="cap">Holding-centre roster sites with no MHPSS service reported</div>
-          <div class="big pending">Awaiting the first reporting cycle</div>
-          <div class="breakdown">
-            <span class="bpill plain">Roster not yet agreed with EDCD</span>
-            <span class="bpill plain">Activity codes not yet agreed</span>
-            <span class="bpill crimson">No organisation has reported yet</span>
-          </div>
-        </div>
+        <div class="stamp" data-i18n="home.p002" data-i18n-html></div>
+        <h1 class="title" data-i18n="home.p023"></h1>
+        <p class="subtitle" data-i18n="home.p014"></p>
+        <p class="golinks" data-i18n="home.p013" data-i18n-html></p>
       </div>
-
-      <!-- The ring that used to sit here showed four equal slices, none of
-           them filled. It was a shape, not a figure: three of these four
-           things have to be agreed before the fourth can happen at all, and
-           a circle cut in four says the opposite. -->
-      <div class="gates">
-        <h4>What a coverage figure requires</h4>
-        <div class="count"><b>0 of 4</b><span>in place</span></div>
-        <ol>
-          <li>
-            <span class="box"></span>
-            <span class="txt"><b>Holding-centre roster</b>
-              <i>The list of sites, and the population at each. Agreed with EDCD and
-              the district health offices in Rasuwa and Nuwakot.</i></span>
-            <span class="st">not agreed</span>
-          </li>
-          <li>
-            <span class="box"></span>
-            <span class="txt"><b>Activity code list</b>
-              <i>The official IASC 4Ws activity codes have not been obtained, so the
-              codes in use are this response's own consolidation of what partners
-              submitted.</i></span>
-            <span class="st">not agreed</span>
-          </li>
-          <li>
-            <span class="box"></span>
-            <span class="txt"><b>Reporting calendar</b>
-              <i>Who submits, against which roster, and how often.</i></span>
-            <span class="st">not set</span>
-          </li>
-          <li class="needs">
-            <span class="box"></span>
-            <span class="txt"><b>One cycle of partner submissions</b>
-              <i>Needs all three above. Until it happens, every figure on this page
-              is empty rather than estimated.</i></span>
-            <span class="st grey">none yet</span>
-          </li>
-        </ol>
+      <div class="hlbox">
+        <h4 data-i18n="home.hl"></h4>
+<!--NAV:help home-->
+<ul class="hlmini">
+  <li class="lead"><a class="num" href="tel:1166" data-i18n-skip>1166</a><span class="name" data-i18n="hl.1166.name"></span></li>
+  <li><a class="num" href="tel:16600102005" data-i18n-skip>1660 010 2005</a><span class="name" data-i18n="hl.tpo.name"></span></li>
+  <li><a class="num" href="tel:1115" data-i18n-skip>1115</a><span class="name" data-i18n="hl.1115.name"></span></li>
+</ul>
+<p class="golinks"><a href="flood-response.html#helplines" data-i18n="hl.all"></a></p>
+<!--/NAV-->
       </div>
-    </div>
-
-    <!-- Placed here because it answers the question the figures above raise:
-         why is everything empty? -->
-    <div class="fig">
-      <h4>Where the response is now</h4>
-      <p class="lede">Three stations, not an axis: the third has no date yet, so drawing a
-      length for it would be inventing one.</p>
-      <div class="fscroll">
-      <svg viewBox="0 0 860 150" role="img"
-           aria-label="Three stations. The Bhotekoshi flood on 26 August 2026, Bhadra 10 2083. Today. And the first reporting cycle, which is not yet scheduled.">
-       <g font-family="Mukta,sans-serif">
-        <!-- Three dated stations, deliberately NOT drawn to scale: the third
-             has no date, so an axis with a length would be inventing one. -->
-        <line x1="102" y1="70" x2="416" y2="70" stroke="#006996" stroke-width="3"/>
-        <line x1="444" y1="70" x2="756" y2="70" stroke="#939391" stroke-width="2"
-              stroke-dasharray="6 5"/>
-        <rect x="84" y="64" width="12" height="12" fill="#006996"/>
-        <circle cx="430" cy="70" r="7" fill="#006996"/>
-        <circle cx="770" cy="70" r="7" fill="#fff" stroke="#767674" stroke-width="1.6"
-                stroke-dasharray="3 3"/>
-
-        <g text-anchor="middle">
-          <text x="259" y="52" font-size="15" font-weight="800" fill="#006996"
-                id="tlSpan">21 days</text>
-          <text x="259" y="36" font-size="11" fill="#5c5c5a">elapsed</text>
-          <text x="600" y="52" font-size="13" font-weight="700" fill="#5c5c5a">date not set</text>
-          <text x="600" y="36" font-size="11" fill="#5c5c5a">the reporting calendar has still to be agreed</text>
-
-          <text x="90" y="95" font-size="13" font-weight="700" fill="#1d1d1b">Bhotekoshi flood</text>
-          <text x="90" y="111" font-size="11.5" fill="#5c5c5a">26 August 2026</text>
-          <text x="90" y="125" font-size="11" fill="#5c5c5a">Bhadra 10, 2083</text>
-
-          <text x="430" y="95" font-size="13" font-weight="700" fill="#006996">Today</text>
-          <text x="430" y="111" font-size="11.5" fill="#5c5c5a" id="tlToday">16 September 2026</text>
-          <text x="430" y="125" font-size="11" fill="#5c5c5a">nothing reported into this system yet</text>
-
-          <text x="770" y="95" font-size="13" font-weight="700" fill="#1d1d1b">First reporting cycle</text>
-          <text x="770" y="111" font-size="11.5" fill="#5c5c5a">not yet scheduled</text>
-          <text x="770" y="125" font-size="11" fill="#5c5c5a">needs the roster and the code list</text>
-        </g>
-       </g>
-      </svg>
-      </div>
-      <div class="insight">
-        <b>What this figure says</b>
-        <p>The forms and the dashboard were built in the three weeks after the flood, and they
-        work today. What does not exist is an agreement to use them on a schedule. That is a
-        decision to be taken at the Technical Working Group, not a piece of software still to be written —
-        and it is why the figures above are empty rather than late.</p>
-      </div>
-      <p class="figsrc"><b>Calendars</b> — dates in Bikram Sambat appear only where the
-      response has supplied them. No conversion between the two calendars is computed on this
-      page or in the forms, because no verified conversion table is held. <b>Elapsed time</b>
-      is counted from the flood date and updates itself.</p>
-    </div>
-
-    <div class="rowcards">
-      <div class="rc">
-        <span class="ico" data-icon="pin" data-icon-size="22"></span>
-        <h3>Holding-centre roster</h3>
-        <p class="desc">The denominator. Every coverage figure is measured against it.</p>
-        <span class="num sm">To be confirmed</span>
-        <span class="foot">with EDCD and the district health offices</span>
-      </div>
-      <div class="rc">
-        <span class="ico" data-icon="people" data-icon-size="22"></span>
-        <h3>People reached</h3>
-        <p class="desc">Unique individuals. A contact is a session; the two are never added.</p>
-        <span class="num sm">Not yet reporting</span>
-        <span class="foot">see the counting rules in §1</span>
-      </div>
-      <div class="rc tint">
-        <span class="ico" data-icon="grid" data-icon-size="22"></span>
-        <h3>Sites with no service</h3>
-        <p class="desc">The figure this coordination exists to produce.</p>
-        <span class="num sm">Not yet reporting</span>
-        <span class="foot">needs the roster and one reporting cycle</span>
-      </div>
-      <div class="rc fill">
-        <span class="ico" data-icon="form" data-icon-size="22"></span>
-        <h3>Forms in the field</h3>
-        <p class="desc">Five forms, on a phone, working with no signal.</p>
-        <span class="num">5</span>
-        <span class="foot">ready to use · synthetic data only</span>
-      </div>
-    </div>
-
-    <div class="adv">
-      <span class="m">!</span>
-      <p><b>Nothing on this page is reported data.</b> The forms and the dashboard work today
-      and can be used, but every figure inside them is synthetic and marked as such on the page
-      itself. No number here should be quoted as a response figure, in a report or to a donor,
-      until the Technical Working Group has agreed the roster and a reporting calendar.</p>
     </div>
   </div>
 
-  <!-- ============ 1 · coverage ============ -->
-  <section class="sec2" id="coverage">
-    <h2><span class="no">§1</span> What is being measured, and against what</h2>
-    <p class="intro">A total can look healthy while a whole holding centre has nobody. So the
-    measure is not the total reached — it is coverage against the official roster, and the
-    gap is the point.</p>
-
-    <!-- The figure is generated from assets/codes.js by tools/roster-fig.py and
-         checked by the deploy guard, so the number of squares drawn cannot
-         drift from the number of site codes the forms actually offer. -->
-    <div class="fig" data-sitefig="23,12,16,15">
-      <h4>Every site in the response, one square each</h4>
-      <p class="lede">A square is one site code in the response's site list. A square is
-      filled when at least one organisation has reported an MHPSS activity there. None is
-      filled, because no organisation has reported yet — so this figure is, for now, the
-      gap itself.</p>
-      <div class="urow">
-        <p class="ulab"><b>23</b> On the proposed holding-centre roster <span>the denominator every coverage figure is measured against</span></p>
-        <div class="units"><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i></div>
-      </div>
-      <div class="urow">
-        <p class="ulab"><b>12</b> On the district administration's list, not on that roster <span>DAO Nuwakot, 29 Bhadra 2083 · whether they join the denominator is an open question</span></p>
-        <div class="units"><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i></div>
-      </div>
-      <div class="urow">
-        <p class="ulab"><b>16</b> Reported by partners, on neither list <span>shown apart, and never counted as a gap</span></p>
-        <div class="units"><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i></div>
-      </div>
-      <div class="urow">
-        <p class="ulab"><b>15</b> Reported outside Rasuwa and Nuwakot <span>Dhading, Kathmandu, Nawalparasi (Bardaghat Susta East), Sindhupalchok</span></p>
-        <div class="units"><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i></div>
-      </div>
-      <div class="ukey">
-        <span><i class="roster"></i>On the proposed roster · no service reported</span>
-        <span><i class="served"></i>On the roster · at least one service reported</span>
-        <span><i class="govlist"></i>On the district list, not on the roster</span>
-        <span><i class="offroster"></i>Reported off both lists</span>
-        <span><i class="outside"></i>Outside the two districts</span>
-      </div>
-      <div class="insight">
-        <b>What this figure says</b>
-        <p>The roster holds 23 sites. The district administration in Nuwakot lists 12 more,
-        and partners have reported from 31 places that are on neither list, 15 of them outside
-        the two districts. The difference is not an error in the data to be cleaned up — it is
-        the roster question: either those places belong on the roster, or the response has
-        extended past it. Only EDCD and the
-        district health offices in Rasuwa and Nuwakot can settle that, and until they do, the
-        denominator of every coverage figure is provisional. That is the first thing to put on
-        an agenda, ahead of any reporting format.</p>
-      </div>
-      <p class="figsrc"><b>Source</b> — the site list in
-      <code>assets/codes.js</code>, following the code list of 15 September 2026: the
-      holding-centre roster held by the district health offices, the District Administration
-      Office Nuwakot list of 29 Bhadra 2083, and the site names appearing in partner reports.
-      The roster has not been agreed with EDCD, so the denominator may still change. Fifteen
-      further sites sit in Dhading, Kathmandu, Nawalparasi (Bardaghat Susta East) and
-      Sindhupalchok: the response reached beyond the two flood districts, which is why a
-      district column exists on every form.</p>
-    </div>
-
-    <div class="tscroll">
-      <table class="t2">
-        <caption>The four figures the dashboard is built to produce, and the state of each.</caption>
-        <thead><tr>
-          <th>Figure</th><th>Definition</th><th>Denominator</th><th>State</th>
-        </tr></thead>
-        <tbody>
-          <tr><td class="k">Sites with no service</td>
-              <td>Roster sites for which no organisation has reported any MHPSS activity</td>
-              <td>Holding-centre roster</td>
-              <td class="pend">roster not agreed</td></tr>
-          <tr><td class="k">People reached</td>
-              <td>Unique individuals, deduplicated across organisations</td>
-              <td>Affected population at the site</td>
-              <td class="pend">no submissions</td></tr>
-          <tr><td class="k">Service contacts</td>
-              <td>Sessions. One person may have several; never added to the figure above</td>
-              <td>—</td>
-              <td class="pend">no submissions</td></tr>
-          <tr><td class="k">Organisations reporting</td>
-              <td>Partners submitting against the shared roster in a given cycle</td>
-              <td>Partners active in the response</td>
-              <td class="pend">calendar not agreed</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p class="src"><b>Counting rules</b> — reach is unique individuals; a service contact is a
-    session. The two are never added together. A site that appears in a report but is not on
-    the roster is shown separately and is never counted as a gap. Activity codes follow the
-    IASC 4Ws where the official list is available, and are left empty where it is not, rather
-    than invented.</p>
-  </section>
-
-  <!-- ============ 2 · the pyramid ============ -->
-  <section class="sec2" id="pyramid">
-    <h2><span class="no">§2</span> Where this sits in the MHPSS response</h2>
-    <p class="intro">MHPSS is not one service. The IASC Guidelines describe a layered system of
-    complementary supports, and a response is read on whether all four layers are present — not
-    on the total number of people seen. The activity codes on the field form are grouped to
-    these layers, so coverage can be read layer by layer rather than as a single number.</p>
-
-    <div class="fig">
-      <h4>The IASC intervention pyramid</h4>
-      <p class="lede">All layers are important and should ideally be implemented concurrently.
-      The pyramid is wide at the bottom because that is where most people are reached, not
-      because the bottom layer matters more.</p>
-      <div class="pyrgrid">
-      <svg viewBox="0 0 400 320" role="img"
-           aria-label="A four-layer pyramid. The layers are named beside it, from the top down.">
-       <g font-family="Mukta,sans-serif">
-        <polygon points="61.25,232.5 338.75,232.5 385,306 15,306"     fill="#eaf7fd" stroke="#acd9ec"/>
-        <polygon points="107.5,159 292.5,159 338.75,232.5 61.25,232.5" fill="#acd9ec" stroke="#79bbd8"/>
-        <polygon points="153.75,85.5 246.25,85.5 292.5,159 107.5,159"  fill="#009fe3" stroke="#009fe3"/>
-        <polygon points="200,12 246.25,85.5 153.75,85.5"               fill="#006996" stroke="#006996"/>
-        <g font-size="17" font-weight="800" text-anchor="middle">
-          <text x="200" y="283" fill="#006996">1</text>
-          <text x="200" y="209" fill="#004969">2</text>
-          <text x="200" y="136" fill="#1d1d1b">3</text>
-          <text x="200" y="71"  fill="#ffffff">4</text>
-        </g>
-       </g>
-      </svg>
-      <!-- The layer names are HTML, not text inside the drawing: on a phone
-           the grid stacks and they stay readable, which text set inside a
-           fixed viewBox does not. -->
-      <ol class="playerlist">
-        <li><span class="sw l4">4</span>
-          <div><b>Specialised services</b>
-          <p>The small percentage whose suffering is intolerable and who may have significant
-          difficulty in basic daily functioning. A small share of the population &#8212; but in a
-          large emergency, still thousands of people.</p></div></li>
-        <li><span class="sw l3">3</span>
-          <div><b>Focused, non-specialised supports</b>
-          <p>More focused individual, family or group interventions by trained and supervised
-          workers: psychological first aid, and basic mental health care by primary health care
-          workers.</p></div></li>
-        <li><span class="sw l2">2</span>
-          <div><b>Community and family supports</b>
-          <p>Family tracing and reunification, assisted mourning and communal healing ceremonies,
-          mass communication on constructive coping, supportive parenting, formal and non-formal
-          education, livelihoods, and the activation of social networks.</p></div></li>
-        <li><span class="sw l1">1</span>
-          <div><b>Basic services and security</b>
-          <p>Security, adequate governance and services that address basic physical needs &#8212;
-          food, shelter, water, basic health care, control of communicable diseases &#8212; through
-          which the well-being of all people is protected.</p></div></li>
-      </ol>
-      </div>
-      <div class="insight blue">
-        <b>What this figure says</b>
-        <p>Ten of the fifteen activity codes on the field form sit in layers 2, 3 and 4.
-        Nothing on the form records layer 1, because basic services and security are delivered
-        by the other clusters. So this system can show whether MHPSS reached a holding centre —
-        it cannot show whether that centre has water. The two have to be read side by side, and
-        a coverage figure from here should never be presented as a picture of the whole
-        response.</p>
-      </div>
-      <p class="figsrc"><b>Source</b> — IASC, <i>Guidelines on Mental Health and Psychosocial
-      Support in Emergency Settings</i>, 2007: the intervention pyramid figure and the
-      description of each layer. The four layer names are as printed there. Later renderings of
-      the figure label the layers differently; this page keeps the 2007 wording.</p>
-    </div>
-
-    <div class="tscroll">
-      <table class="t2">
-        <caption>What this response records at each layer, and the state of it.</caption>
-        <thead><tr>
-          <th>Layer</th><th>Activity codes on the field form</th><th class="n">Codes</th><th>State</th>
-        </tr></thead>
-        <tbody>
-          <tr><td class="k">4 · Specialised services</td>
-              <td>Specialised mental health service; psychotropic medication provision</td>
-              <td class="n">2</td>
-              <td class="pend">code list not agreed</td></tr>
-          <tr><td class="k">3 · Focused, non-specialised supports</td>
-              <td>Psychological first aid; individual and group psychosocial counselling;
-              support to responders and staff care</td>
-              <td class="n">4</td>
-              <td class="pend">code list not agreed</td></tr>
-          <tr><td class="k">2 · Community and family supports</td>
-              <td>Psychoeducation and awareness sessions; recreational and structured activity;
-              child-friendly space activity; IEC material distribution</td>
-              <td class="n">4</td>
-              <td class="pend">code list not agreed</td></tr>
-          <tr><td class="k">1 · Basic services and security</td>
-              <td>No activity code. This layer is delivered by the other clusters; what the
-              Technical Working Group reports is whether MHPSS is present within it</td>
-              <td class="n">—</td>
-              <td class="pend">outside this system</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p class="src"><b>Five codes sit across the layers rather than in one.</b> Referral is a
-    pathway between layers, not a layer; a helpline contact is a channel, and the support given
-    over it belongs to whichever layer it came from; rapid assessment, coordination meetings and
-    training are system functions. The published mapping of the MHPSS Minimum Service Package
-    onto the pyramid marks coordination and assessment as not applicable to a single layer for
-    the same reason. <b>The grouping is this response's own.</b> The official IASC 4Ws activity
-    code list has not been obtained, so no code on the form carries an official IASC number —
-    the field is present and left empty rather than filled with a guess.</p>
-
+  <!-- ============ 1 · mission ============ -->
+  <section class="sec2" id="mission">
+    <h2 data-i18n="home.p026" data-i18n-html></h2>
+    <p class="intro" data-i18n="home.p012"></p>
     <div class="defquote">
-      <p>MHPSS describes any type of local or outside support that aims to protect or promote
-      psychosocial well-being, or prevent or treat mental disorders.
-      <cite>IASC Guidelines on Mental Health and Psychosocial Support in Emergency Settings, 2007</cite></p>
+      <p data-i18n="home.p011"></p>
+      <cite data-i18n="home.cite" data-i18n-html></cite>
     </div>
+    <p class="src" data-i18n="home.p010" data-i18n-html></p>
   </section>
 
-  <!-- ============ 3 · membership ============ -->
+  <!-- ============ 2 · about and membership ============ -->
   <section class="sec2" id="members">
-    <h2><span class="no">§3</span> Who takes part</h2>
-    <p class="intro">The Technical Working Group is open to government bodies, UN agencies, international
-    and national NGOs, professional associations, academic departments, and any organisation
-    or individual active in mental health and psychosocial support in this response.</p>
-
+    <h2 data-i18n="home.p025" data-i18n-html></h2>
+    <p class="intro" data-i18n="home.p009"></p>
     <div class="twocol">
       <div>
-        <h3>Convened under the Health Cluster</h3>
+        <h3 data-i18n="home.p032"></h3>
         <ul class="tight">
-          <li>Ministry of Health and Food Safety (MoHP)</li>
-          <li>Epidemiology and Disease Control Division — NCD &amp; Mental Health Section</li>
-          <li>District health offices, Rasuwa and Nuwakot</li>
-          <li>WHO Nepal</li>
+          <li data-i18n="home.p022" data-i18n-html></li>
+          <li data-i18n="home.p021"></li>
+          <li data-i18n="home.p020"></li>
         </ul>
-        <h3>Reporting partners</h3>
+        <h3 data-i18n="home.p031"></h3>
         <ul class="tight">
-          <li>Organisations reporting MHPSS activity in the response</li>
-          <li>Professional associations and academic departments</li>
+          <li data-i18n="home.p019"></li>
+          <li data-i18n="home.p018"></li>
         </ul>
       </div>
       <div>
-        <h3>Cross-sector, and why it matters here</h3>
-        <p>MHPSS in Nepal has long been coordinated through two tracks — a mental health
-        sub-cluster under the Health Cluster, and a psychosocial working group under
-        Protection. Organisations whose primary mandate is not MHPSS but whose work carries
-        mental health or psychosocial components are asked to attend and contribute:</p>
+        <h3 data-i18n="home.p030"></h3>
+        <p data-i18n="home.p008"></p>
         <ul class="tight">
-          <li>Protection and child protection</li>
-          <li>Gender-based violence services</li>
-          <li>Education, nutrition, camp management</li>
+          <li data-i18n="home.p017"></li>
+          <li data-i18n="home.p016"></li>
+          <li data-i18n="home.p015"></li>
         </ul>
-        <p class="muted" style="margin-top:11px"><b>One shared table does not ask anyone to
-        leave their own.</b></p>
       </div>
     </div>
-
-    <p class="src">Membership is listed by category, not by name, until the Technical Working Group
-    confirms its own participant list. Naming an organisation before it has agreed to be
-    named would be a claim, not a record.</p>
+    <p class="src" data-i18n="home.p007" data-i18n-html></p>
   </section>
 
   <!-- ============ 3 · activities ============ -->
   <section class="sec2" id="work">
-    <h2><span class="no">§4</span> What the group does</h2>
-    <div class="tscroll">
-      <table class="t2">
-        <thead><tr><th style="width:23%">Function</th><th>What it means in this response</th>
-        <th style="width:19%">State</th></tr></thead>
-        <tbody>
-          <tr><td class="k">Coordination</td>
-              <td>A standing meeting and one shared table for who is doing what and where, so
-              the health and protection tracks see the same picture without either giving up
-              its own reporting line.</td>
-              <td class="pend">meeting rhythm to be set</td></tr>
-          <tr><td class="k">Technical resources</td>
-              <td>IASC Guidelines on MHPSS in Emergency Settings; the MHPSS Minimum Service
-              Package; shared assessment instruments; agreed referral pathways, with
-              supervision and training routed to whoever can provide it.</td>
-              <td class="pend">pathways to be agreed</td></tr>
-          <tr><td class="k">Information management</td>
-              <td>Common activity codes, one site roster, a form a field worker can fill on a
-              phone with no signal, and a dashboard that shows the coverage gap rather than
-              only the total reached.</td>
-              <td>forms and dashboard built</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ============ 5 · tools ============ -->
-  <section class="sec2" id="tools">
-    <h2><span class="no">§5</span> Forms and dashboard</h2>
-    <p class="intro">The operational layers. They work today, on a phone, with no signal — and
-    they hold synthetic data only until the roster, the activity codes and the reporting
-    calendar are agreed.</p>
-
-    <div class="rowcards">
-      <a class="rc" href="form/">
-        <span class="ico" data-icon="form" data-icon-size="22"></span>
-        <h3>Field forms</h3>
-        <p class="desc">Activity report, service contact, PHQ-9, referral and a self-report
-        form. Opens on a phone, keeps working with no signal, nothing to install.</p>
-        <span class="go">Open the forms →</span>
-      </a>
-      <a class="rc" href="hub/">
+    <h2 data-i18n="home.p024" data-i18n-html></h2>
+    <div class="acts">
+      <div class="act tint">
+        <span class="ico" data-icon="coord" data-icon-size="22"></span>
+        <h3 data-i18n="home.p029"></h3>
+        <p data-i18n="home.p006"></p>
+        <span class="state" data-i18n="home.p035"></span>
+      </div>
+      <div class="act">
+        <span class="ico" data-icon="book" data-icon-size="22"></span>
+        <h3 data-i18n="home.p028"></h3>
+        <p data-i18n="home.p005"></p>
+        <span class="state" data-i18n="home.p034"></span>
+      </div>
+      <div class="act">
         <span class="ico" data-icon="grid" data-icon-size="22"></span>
-        <h3>Coordination dashboard</h3>
-        <p class="desc">Coverage against the roster, duplication, the 4Ws matrix, and the
-        inbox that turns submitted files into one table.</p>
-        <span class="go">Open the dashboard →</span>
-      </a>
-      <a class="rc" href="access-explained.html">
-        <span class="ico" data-icon="shield" data-icon-size="22"></span>
-        <h3>Who can see what</h3>
-        <p class="desc">What the register refuses to store, who can read it, and the limits of
-        the protection — in plain language, not in code.</p>
-        <span class="go">Read the access model →</span>
-      </a>
-    </div>
-  </section>
-
-  <!-- ============ 6 · method ============ -->
-  <section class="sec2" id="method">
-    <h2><span class="no">§6</span> Three layers, one direction</h2>
-    <p class="intro">Data moves one way. It is entered once in the field, interpreted at
-    coordination level, and published only as aggregates. Nothing on the public layer can
-    reach back down into a record about a person.</p>
-
-    <div class="flowfig">
-      <div class="fscroll wide">
-      <svg viewBox="0 0 820 210" role="img"
-           aria-label="Three layers. Layer 1, field entry: a record with a code, never a name. Layer 2, coordination: counts by site and week. Layer 3, public: gaps against the roster. Data flows upward only.">
-        <g font-family="Mukta,sans-serif">
-          <!-- layer 1 -->
-          <rect x="1" y="139" width="524" height="62" fill="#eaf7fd" stroke="#acd9ec"/>
-          <rect x="1" y="139" width="4" height="62" fill="#006996"/>
-          <text x="22" y="161" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#006996">LAYER 1 · FIELD</text>
-          <text x="22" y="182" font-size="15" font-weight="600" fill="#1d1d1b">One entry, on a phone, with no signal</text>
-          <!-- layer 2 -->
-          <rect x="1" y="72" width="524" height="60" fill="#f6f6f5" stroke="#dadada"/>
-          <rect x="1" y="72" width="4" height="60" fill="#009fe3"/>
-          <text x="22" y="93" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#006996">LAYER 2 · COORDINATION</text>
-          <text x="22" y="114" font-size="15" font-weight="600" fill="#1d1d1b">Duplication read, coverage measured</text>
-          <!-- layer 3 -->
-          <rect x="1" y="5" width="524" height="60" fill="#1d1d1b"/>
-          <rect x="1" y="5" width="4" height="60" fill="#006996"/>
-          <text x="22" y="26" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#79bbd8">LAYER 3 · PUBLIC</text>
-          <text x="22" y="47" font-size="15" font-weight="600" fill="#ffffff">Aggregates only — this page</text>
-
-          <!-- the one-way arrows, sitting IN the gap between the bars. The
-               first version put them at x=505, hard against the right edge of
-               the bars, where they read as stray marks rather than as flow. -->
-          <g stroke="#006996" stroke-width="2" fill="none" stroke-linecap="round"
-             stroke-linejoin="round">
-            <path d="M263 138 263 133"/><path d="M258.5 136 263 131.5 267.5 136"/>
-            <path d="M263 71 263 66"/><path d="M258.5 69 263 64.5 267.5 69"/>
-          </g>
-          <g font-size="10" font-weight="700" fill="#006996" letter-spacing=".6">
-            <text x="276" y="138">aggregated</text>
-            <text x="276" y="71">aggregated</text>
-          </g>
-
-          <!-- what each layer is allowed to hold -->
-          <g font-size="12.5" fill="#5c5c5a">
-            <text x="552" y="164">a record, with a code —</text>
-            <text x="552" y="181" font-weight="700" fill="#006996">never a name</text>
-            <text x="552" y="105">a count, by site and week</text>
-            <text x="552" y="38">a gap, against the roster</text>
-          </g>
-          <g stroke="#dadada" stroke-width="1.3">
-            <path d="M540 160 532 160"/><path d="M540 101 532 101"/><path d="M540 34 532 34"/>
-          </g>
-        </g>
-      </svg>
+        <h3 data-i18n="home.p027"></h3>
+        <p data-i18n="home.p004"></p>
+        <span class="state" data-i18n="home.p033"></span>
       </div>
     </div>
-
-    <div class="twocol" style="margin-top:18px">
-      <div>
-        <h3>What the model refuses to guess</h3>
-        <ul class="tight">
-          <li>Activity codes are left empty where the official IASC list has not been obtained</li>
-          <li>No automatic Bikram Sambat conversion, because no verified conversion table is held</li>
-          <li>A reported site that is not on the roster is shown apart, never counted as a gap</li>
-          <li>The register refuses names, phone numbers, dates of birth, national IDs and precise locations</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Read further</h3>
-        <ul class="tight">
-          <li><a href="method.html">Data model and method</a> — what the model holds, and what it refuses to guess</li>
-          <li><a href="architecture.html">Architecture concept</a> — how the three layers are built</li>
-          <li><a href="access-explained.html">Who can see what</a> — the access model in plain language</li>
-        </ul>
-      </div>
-    </div>
-
+    <p class="golinks" data-i18n="home.p003" data-i18n-html></p>
   </section>
 
 </div>
 
-<!-- ============ footer ============ -->
-<footer class="gfoot" id="contact">
+<!--NAV:foot home-->
+<footer class="gfoot">
   <div class="in">
     <div class="cols">
-      <div><h4>Technical Working Group lead</h4>
-        <p><span class="tbc">To be confirmed</span><br>
-        Ministry of Health and Food Safety — EDCD</p></div>
-      <div><h4>WHO co-lead</h4>
-        <p><span class="tbc">To be confirmed</span><br>WHO Nepal</p></div>
-      <div><h4>Information management</h4>
-        <p><span class="tbc">To be confirmed</span><br>
-        For the forms, the dashboard and the reporting calendar</p></div>
-      <div><h4>Working tools</h4>
-        <p><a href="form/">Field forms</a><br><a href="hub/">Coordination dashboard</a><br>
-        <a href="access-explained.html">Who can see what</a></p></div>
+      <div><h4 data-i18n="foot.site"></h4>
+        <p><a href="flood-response.html" data-i18n="foot.flood"></a><br>
+        <a href="referral-directory.html" data-i18n="foot.referral"></a><br>
+        <a href="resources.html" data-i18n="foot.resources"></a><br>
+        <a href="contact-us.html" data-i18n="foot.contact"></a></p></div>
+      <div><h4 data-i18n="foot.tools"></h4>
+        <p><a href="form/" data-i18n="nav.forms"></a><br>
+        <a href="form/cards.html" data-i18n="foot.cards"></a><br>
+        <a href="hub/" data-i18n="mast.hub"></a></p></div>
+      <div><h4 data-i18n="ref.strip"></h4>
+        <p><a href="architecture.html" data-i18n="ref.architecture"></a><br>
+        <a href="method.html" data-i18n="ref.method"></a><br>
+        <a href="access-explained.html" data-i18n="ref.access"></a><br>
+        <a href="layer3.html" data-i18n="ref.layer3"></a></p></div>
     </div>
-    <p>Rasuwa–Bhotekoshi flood response · mental health and psychosocial support · draft,
-    September 2026. Prepared for the WHO Nepal mental health team, the Ministry of Health and
-    Food Safety and EDCD. <b style="color:#fff">Not agreed with EDCD or the MHPSS
-    Technical Working Group.</b></p>
-    <p>This page presents programme-level information only. It holds no names, no client
-    identifiers and no case information of any kind. No WHO or Government of Nepal emblem is
-    used: WHO emblem use requires express written permission and the Nepal national emblem
-    belongs to the Ministry — the mark in the masthead is an original one for this
-    deployment. Prepared with AI assistance.</p>
-    <p><a id="srcLink" href="#" hidden>Source and method on GitHub</a>
-    <span id="siteHost"></span></p>
+    <p data-i18n="foot.draft" data-i18n-html></p>
+    <p data-i18n="foot.privacy"></p>
   </div>
 </footer>
+<!--/NAV-->
 
-<script src="assets/codes.js"></script>
 <script src="assets/mark.js"></script>
 <script src="assets/icons.js"></script>
 <script src="assets/i18n-strings.js"></script>
 <script src="assets/i18n.js"></script>
-<script>
-(function () {
-  /* The timeline's middle station. The flood date is fixed; "today" and the
-     days elapsed are not, so they are filled here rather than typed into the
-     markup and left to go quietly wrong. The typed values are correct on the
-     day this was written, so a browser with scripting off is not misled. */
-  var flood = new Date(Date.UTC(2026, 7, 26)), now = new Date();
-  var days = Math.floor((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
-                         - flood.getTime()) / 86400000);
-  var sp = document.getElementById("tlSpan"), td = document.getElementById("tlToday");
-  if (sp && days >= 0) sp.textContent = days === 1 ? "1 day" : days + " days";
-  if (td) td.textContent = now.toLocaleDateString("en-GB",
-          { day: "numeric", month: "long", year: "numeric" });
-})();
-(function () {
-  var h = location.host, host = document.getElementById("siteHost");
-  if (host) host.textContent = h ? "· " + h : "";
-  var m = /^([a-z0-9-]+)\.github\.io$/i.exec(h);
-  var a = document.getElementById("srcLink");
-  if (a && m) { a.href = "https://github.com/" + m[1] + "/" + h; a.hidden = false; }
-})();
-</script>
 </body>
 </html>

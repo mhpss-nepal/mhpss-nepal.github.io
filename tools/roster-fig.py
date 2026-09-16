@@ -2,16 +2,19 @@
 """
 MHPSS Nepal -- the site unit chart: build it, and keep it true
 ---------------------------------------------------------------------
-The figure in section 1 of index.html draws ONE SQUARE PER SITE CODE.
+The figure on flood-response.html draws ONE SQUARE PER SITE CODE. (It stood
+on the home page until 16 Sep 2026, when the public site took the
+mhpssmyanmar.org structure and the coordination figures moved to Flood
+Response.)
 That is only worth drawing if the squares are the real list, so the
 squares are generated from assets/codes.js rather than typed, and this
 same script is run by the deploy guard to refuse a deploy where the
 drawn figure and the code list have drifted apart.
 
-  build   print the <div> rows, to paste into index.html
-  apply   rewrite the rows and the marker inside index.html in place
+  build   print the <div> rows, to paste into flood-response.html
+  apply   rewrite the rows and the marker inside flood-response.html in place
   check   recount codes.js, compare with the numbers marked in
-          index.html, and exit non-zero if they differ
+          flood-response.html, and exit non-zero if they differ
 
 Counted groups, all from `source` and `district` in codes.js:
   roster    on the proposed holding-centre roster, Rasuwa and Nuwakot
@@ -28,6 +31,7 @@ import re, sys, os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+PAGE = "flood-response.html"   # the page that carries the figure
 RESPONSE = ("RAS", "NUW")
 NOT_SITES = ("escape", "retired")
 
@@ -111,8 +115,16 @@ def build():
     for key, title, note in rows(g):
         n = len(g[key])
         parts.append('      <div class="urow">')
-        parts.append('        <p class="ulab"><b>%d</b> %s <span>%s</span></p>'
-                     % (n, title, note))
+        # The page is keyed (tools/i18n-pages.txt), so the words are dictionary
+        # keys -- fig.<group> and fig.<group>.note in assets/i18n-strings.js,
+        # where rows() above is copied. The one note computed from codes.js,
+        # the list of districts, is proper names and the same in both languages.
+        if key == "outside":
+            parts.append('        <p class="ulab"><b>%d</b> <em data-i18n="fig.%s"></em> <span data-i18n-skip>%s</span></p>'
+                         % (n, key, note))
+        else:
+            parts.append('        <p class="ulab"><b>%d</b> <em data-i18n="fig.%s"></em> <span data-i18n="fig.%s.note"></span></p>'
+                         % (n, key, key))
         parts.append('        <div class="units">' +
                      ('<i class="u %s"></i>' % key) * n + '</div>')
         parts.append('      </div>')
@@ -122,35 +134,35 @@ def build():
 ROWS_RE = re.compile(r'(      <div class="urow">\n.*?\n      </div>\n)+', re.S)
 
 def apply():
-    """Rewrite the generated rows and the marker inside index.html.
+    """Rewrite the generated rows and the marker inside the figure's page.
     Everything else on the page -- the lede, the key, the insight -- is
     written by hand and left alone."""
-    path = os.path.join(ROOT, "index.html")
+    path = os.path.join(ROOT, PAGE)
     page = open(path, encoding="utf-8").read()
     html, g = build()
     if not ROWS_RE.search(page) or 'data-sitefig="' not in page:
-        print("index.html carries no generated rows or no marker; paste the build output by hand")
+        print("%s carries no generated rows or no marker; paste the build output by hand" % PAGE)
         return 1
     page = ROWS_RE.sub(html + "\n", page, count=1)
     page = re.sub(r'data-sitefig="[^"]*"', 'data-sitefig="%s"' % marker(g), page, count=1)
     open(path, "w", encoding="utf-8").write(page)
-    print("index.html rewritten: marker %s" % marker(g))
+    print("%s rewritten: marker %s" % (PAGE, marker(g)))
     return 0
 
 # ---------------------------------------------------------------- check
 def check():
     g = counts()
-    page = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+    page = open(os.path.join(ROOT, PAGE), encoding="utf-8").read()
     m = re.search(r'data-sitefig="([^"]+)"', page)
     print("MHPSS Nepal -- the site unit chart")
     print("  codes.js:  roster=%d  gov-list=%d  off-roster=%d  outside=%d"
           % (len(g["roster"]), len(g["govlist"]), len(g["offlist"]), len(g["outside"])))
     if not m:
-        print("\n  index.html carries no data-sitefig marker. The figure cannot be")
+        print("\n  %s carries no data-sitefig marker. The figure cannot be" % PAGE)
         print("  checked, so it must not ship. Regenerate it with: roster-fig.py apply")
         return 1
     want = marker(g)
-    print("  index.html: %s" % m.group(1))
+    print("  %s: %s" % (PAGE, m.group(1)))
     if m.group(1) != want:
         print("\n  DRIFTED -- the drawn figure no longer matches the site list.")
         print("  Regenerate it: tools/roster-fig.py apply")
@@ -162,6 +174,19 @@ def check():
             print("\n  DRIFTED -- %d %s squares are drawn, the list holds %d."
                   % (drawn, key, len(g[key])))
             return 1
+    # the words: the page takes them from the dictionary (fig.* keys), so a
+    # title edited in rows() above and not there would never reach the page
+    strings = open(os.path.join(ROOT, "assets/i18n-strings.js"), encoding="utf-8").read()
+    for key, title, note in rows(g):
+        pairs = [("fig.%s" % key, title)] + ([] if key == "outside" else [("fig.%s.note" % key, note)])
+        for k, want_text in pairs:
+            m2 = re.search(r'"%s"\s*:\s*"((?:[^"\\]|\\.)*)"' % re.escape(k), strings)
+            if not m2:
+                print("\n  MISSING -- %s is not in assets/i18n-strings.js; the row would be blank." % k)
+                return 1
+            if m2.group(1) != want_text:
+                print("\n  DRIFTED -- %s in the dictionary says %r, rows() says %r." % (k, m2.group(1), want_text))
+                return 1
     print("\n  True: every site code in the list is drawn once, and only once.")
     return 0
 

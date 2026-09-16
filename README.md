@@ -47,19 +47,22 @@ built to supply.
 
 ## What is here
 
-| | |
-|---|---|
-| [`index.html`](index.html) | **The hub** — five doors, one per layer plus two reference pages |
-| [`form/4ws-report.html`](form/4ws-report.html) | **Layer 1.** The activity report form |
-| [`coordination/index.html`](coordination/index.html) | **Layer 2.** Coverage gaps, 4Ws matrix, activity mix, workforce, helplines |
-| [`dashboard/index.html`](dashboard/index.html) | **Layer 2 tool.** Load your own export and analyse it — nothing is uploaded |
-| [`layer3.html`](layer3.html) | **Layer 3.** Not built. What goes public, who owns it, what blocks submission |
-| [`architecture.html`](architecture.html) | The three layers, the one-direction boundary, hosts/controls/owns |
-| [`method.html`](method.html) | The data model, and the register of what is **not established** |
-| [`assets/codes.js`](assets/codes.js) | Controlled vocabularies — sites, organisations, activities, cadres |
-| [`assets/store.js`](assets/store.js) | Local storage, deterministic ids, validation, export |
-| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | Field-by-field mapping to the IASC 4Ws model |
-| [`gen.js`](gen.js) | Generates the synthetic demonstration dataset |
+| Address | What it is | Layer |
+|---|---|---|
+| [`/`](index.html) | **Home** — the MHPSS Technical Working Group, its mission and membership (to be agreed), what it does, the helplines | 3 · public |
+| [`flood-response.html`](flood-response.html) | **Flood Response** — the event as its sources state it, the published response summary, helplines, field tools, programme guidance (none yet), and how the response is coordinated | 3 · public |
+| [`bps.html`](bps.html) · [`iec.html`](iec.html) · [`videos.html`](videos.html) | **BPS+ · IEC · Videos** — honestly empty until real, approved Nepal material exists | 3 · public |
+| [`referral-directory.html`](referral-directory.html) | **Referral Directory** — helplines, the declared affected area on COD-AB boundaries, and the published palika-level directory | 3 · public |
+| [`resources.html`](resources.html) · [`contact-us.html`](contact-us.html) | **Resources · Contact** — sourced items only; roles, names to be confirmed | 3 · public |
+| [`form/`](form/index.html) | **Layer 1.** The field forms and the printable QR card sheet | 1 |
+| [`hub/`](hub/index.html) | **Layer 2.** Coordination view, coverage and 4Ws, field inbox, access | 2 |
+| [`architecture.html`](architecture.html) · [`method.html`](method.html) · [`access-explained.html`](access-explained.html) · [`layer3.html`](layer3.html) | How this system works — reached from the footer, not the menu | reference |
+| [`assets/public-read.js`](assets/public-read.js) | The public pages' only read: `public_stats`, aggregates a coordinator publishes | 3 |
+| [`assets/codes.js`](assets/codes.js) | Controlled vocabularies — sites, organisations, activities, cadres | 1–2 |
+| [`assets/store.js`](assets/store.js) | Local storage, deterministic ids, validation, export | 1–2 |
+| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | Field-by-field mapping to the IASC 4Ws model | 1–2 |
+| [`gen.js`](gen.js) | Generates the synthetic demonstration dataset | 2 |
+| [`tools/`](tools/) | The deploy gates: navigation, bilingual, offline, QR, figures, map, text setting, contrast | all |
 
 ### The form
 

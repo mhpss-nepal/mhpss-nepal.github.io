@@ -6,9 +6,17 @@
 # come back from the translator. Adding English prose to an enforced page
 # without a key fails the gate -- which is the point.
 
-# index.html is now the Layer 3 PUBLIC page (it replaced the old door page on
-# 16 Sep 2026). It is brand-new English prose and not keyed yet, so it sits as
-# pending -- counted and reported, not blocked. The keys the old door page used
-# are still in the dictionary and several are reusable when this page is keyed.
+# The public website (Layer 3), rebuilt to the mhpssmyanmar.org model on
+# 16 Sep 2026: all eight pages are keyed from the day they were written, so no
+# English prose can be added to them without a key. Nepali is still awaited
+# for the long prose -- short strings carry machine drafts, marked as such.
+index.html keyed
+flood-response.html keyed
+bps.html keyed
+iec.html keyed
+referral-directory.html keyed
+resources.html keyed
+videos.html keyed
+contact-us.html keyed
 form/index.html keyed
 form/selfreport.html keyed

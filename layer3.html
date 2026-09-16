@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Layer 3 · Public layer — MHPSS Nepal</title>
+<title>Layer 3 position — MHPSS Nepal</title>
 <meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#006996">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,18 +15,18 @@
 <div class="synth">DEMONSTRATION BUILD · this layer is <strong>not built</strong> <span>· what follows is a position, not a product</span></div>
 <!-- the mark, so a reference page is recognisably part of the same product
      rather than a loose document. The bar keeps its breadcrumb. -->
-<!--NAV:top architecture-->
+<!--NAV:top layer3-->
 <header class="gov">
   <div class="in">
     <a class="id" href="./">
       <span data-mark="44"></span>
       <span style="min-width:0">
-        <span class="who-line">Health Cluster &middot; Nepal</span>
-        <b>MHPSS Technical Working Group</b>
-        <span class="place">Rasuwa &middot; Nuwakot &middot; flood response</span>
+        <span class="who-line" data-i18n="mast.cluster"></span>
+        <b data-i18n-skip>MHPSS Technical Working Group</b>
+        <span class="place" data-i18n="mast.place"></span>
       </span>
     </a>
-    <div class="mid">
+    <div class="mid" data-i18n-skip>
       <b>Mental Health &amp; Psychosocial Support</b>
       <span>मानसिक स्वास्थ्य र मनोसामाजिक सहयोग</span>
     </div>
@@ -34,21 +34,31 @@
       <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
            finds one, instead of floating it top-right over these buttons. -->
       <span data-i18n-toggle class="langslot"></span>
-      <a class="gbtn out" href="hub/">Coordination hub</a>
-      <a class="gbtn crimson" href="form/">Field forms</a>
+      <a class="gbtn out" href="hub/" data-i18n="mast.hub"></a>
+      <a class="gbtn crimson" href="form/" data-i18n="nav.forms"></a>
     </div>
   </div>
 </header>
-<nav class="navband" aria-label="Sections of this site">
+<nav class="navband" aria-label="Sections of this site" data-i18n-skip>
   <div class="in">
-    <a href="./"><b>Overview</b><i>समग्र विवरण</i></a>
-    <a href="form/"><b>Field forms</b><i>फिल्ड फारम</i></a>
-    <a href="hub/"><b>Coordination dashboard</b><i>ड्यासबोर्ड</i></a>
-    <a href="method.html"><b>Method</b><i>विधि</i></a>
-    <a class="on" aria-current="page" href="architecture.html"><b>Architecture</b><i>संरचना</i></a>
-    <a href="access-explained.html"><b>Who sees what</b><i>पहुँच</i></a>
+    <a href="./"><b>Home</b><i>गृहपृष्ठ</i></a>
+    <a href="flood-response.html"><b>Flood Response</b><i>बाढी प्रतिकार्य</i></a>
+    <a href="bps.html"><b>BPS+</b><i>BPS+ तालिम</i></a>
+    <a href="iec.html"><b>IEC</b><i>IEC सामग्री</i></a>
+    <a href="referral-directory.html"><b>Referral Directory</b><i>रेफरल निर्देशिका</i></a>
+    <a href="resources.html"><b>Resources</b><i>स्रोत सामग्री</i></a>
+    <a href="videos.html"><b>Videos</b><i>भिडियो</i></a>
+    <a href="contact-us.html"><b>Contact</b><i>सम्पर्क</i></a>
   </div>
 </nav>
+<div class="jump ref" aria-label="How this system works" style="--wh-tx:#006996">
+  <div class="in"><span class="lab" data-i18n="ref.strip"></span>
+    <a href="architecture.html" data-i18n="ref.architecture"></a>
+    <a href="method.html" data-i18n="ref.method"></a>
+    <a href="access-explained.html" data-i18n="ref.access"></a>
+    <a class="on" aria-current="page" href="layer3.html" data-i18n="ref.layer3"></a>
+  </div>
+</div>
 <!--/NAV-->
 <main>
   <div class="eyebrow">Layer 3 · Public</div>
@@ -117,7 +127,7 @@
   <footer>Draft position, September 2026 · <a href="architecture.html">architecture concept</a> ·
     <a href="hub/">back to the hub</a><br>
     No emblem is used: WHO emblem use requires express written permission and the Nepal national emblem belongs
-    to the Ministry. Prepared with AI assistance.</footer>
+    to the Ministry.</footer>
 </main><!-- The bilingual engine: mounts the ENG/NEP toggle so it does not
      vanish when a reader navigates here from the hub, and states
      plainly that this page is not in Nepali yet. -->
