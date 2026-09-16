@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MHPSS Sub-Cluster Nepal — Rasuwa / Bhote Koshi flood response</title>
+<meta name="description" content="Coordination and information sharing between MHPSS actors in the Rasuwa and Bhote Koshi flood response, Nepal.">
+<link rel="stylesheet" href="../assets/app.css">
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  /* Layer 3 — the public face. Structure follows mhpssmyanmar.org: a working
+     group site, not an agency site. Identity, purpose, who it is open to,
+     what it does, where the tools are, who to contact.
+     Palette and type are the hub's own, so the two layers read as one thing. */
+  :root{ --l3:#20313b; --l3-a:#007eb4; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.65 "Noto Sans",system-ui,-apple-system,sans-serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  a{color:var(--who-d)}
+
+  /* ---- masthead ---- */
+  .mast{background:var(--l3);color:#fff;padding:0}
+  .mast .wrap{padding:26px 20px 30px}
+  .navbar{display:flex;flex-wrap:wrap;gap:2px 20px;align-items:center;
+          border-bottom:1px solid rgba(255,255,255,.14);padding:11px 0 12px}
+  .navbar a{color:#cfe0ea;text-decoration:none;font-size:13.5px;font-weight:600;
+            letter-spacing:.2px;padding:4px 0}
+  .navbar a:hover{color:#fff}
+  .navbar .sp{flex:1 1 auto}
+  .idrow{display:flex;gap:16px;align-items:flex-start;margin-top:26px}
+  .idmark{flex:0 0 auto;width:52px;height:52px;border-radius:8px;
+          background:var(--who);display:grid;place-items:center;
+          font:700 17px/1 "Noto Sans",sans-serif;letter-spacing:.5px}
+  .idtext .kicker{font-size:11.5px;letter-spacing:2.4px;text-transform:uppercase;
+                  color:#9dbdcf;font-weight:700}
+  .idtext h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+             font-size:clamp(25px,4.4vw,38px);line-height:1.15;margin:5px 0 0}
+  .idtext .sub{color:#b9cdd9;font-size:15px;margin-top:7px}
+  .purpose{margin:24px 0 0;max-width:74ch;font-size:15.5px;line-height:1.72;
+           color:#dce7ee;text-align:justify}
+  .mast .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+  .btn3{display:inline-block;background:var(--who);color:#fff;text-decoration:none;
+        font-weight:700;font-size:14px;padding:10px 18px;border-radius:6px}
+  .btn3.g{background:transparent;color:#cfe0ea;border:1px solid rgba(255,255,255,.34)}
+
+  /* ---- sections ---- */
+  section{padding:40px 0}
+  section + section{border-top:1px solid var(--line-s)}
+  .eyebrow{font-size:11.5px;letter-spacing:2.2px;text-transform:uppercase;
+           color:var(--slate);font-weight:700}
+  h2{font-family:Georgia,serif;font-weight:400;font-size:25px;line-height:1.24;
+     margin:8px 0 14px}
+  h3{font-family:Georgia,serif;font-weight:400;font-size:18px;margin:0 0 7px}
+  p{margin:0 0 13px;max-width:78ch;text-align:justify}
+  .lede{font-size:17px;color:var(--ink)}
+
+  .grid3{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));margin-top:20px}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:18px 19px}
+  .card .ic{font-size:21px;line-height:1;margin-bottom:9px}
+  .card p{font-size:14.5px;color:var(--slate);margin:0}
+
+  /* the status strip — honest about there being no reported data yet */
+  .statwrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
+            padding:20px;margin-top:20px}
+  .stats{display:grid;gap:1px;background:var(--line-s);
+         grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border-radius:4px;overflow:hidden}
+  .st{background:var(--paper);padding:15px 16px}
+  .st b{display:block;font-family:Georgia,serif;font-weight:400;font-size:27px;
+        line-height:1.1;color:var(--l3)}
+  .st b.none{font-size:19px;color:var(--mute)}
+  .st span{display:block;font-size:11.5px;letter-spacing:.7px;text-transform:uppercase;
+           color:var(--slate);font-weight:700;margin-top:6px}
+  .st em{display:block;font-style:normal;font-size:12.5px;color:var(--mute);margin-top:4px}
+  .srcline{font-size:12.5px;color:var(--mute);margin:14px 0 0;max-width:none}
+
+  .note{border-left:3px solid var(--warn);background:var(--warn-t);
+        padding:13px 16px;border-radius:0 var(--r) var(--r) 0;margin:18px 0 0}
+  .note p{font-size:14px;margin:0;color:#6b3a14}
+  .note b{color:#5a2f10}
+
+  .members{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));margin-top:16px}
+  .mg{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+  .mg h3{font-size:14.5px;font-family:"Noto Sans",sans-serif;font-weight:700;
+         letter-spacing:.2px;margin:0 0 6px;color:var(--l3)}
+  .mg ul{margin:0;padding-left:17px;font-size:13.5px;color:var(--slate);line-height:1.6}
+
+  .doors{display:grid;gap:13px;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));margin-top:20px}
+  .door3{display:block;background:var(--paper);border:1px solid var(--line);
+         border-radius:var(--r);padding:19px;text-decoration:none;color:inherit}
+  .door3:hover{border-color:var(--who);box-shadow:0 1px 6px rgba(0,126,180,.1)}
+  .door3 .tag{font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;
+              font-weight:700;color:var(--who-d)}
+  .door3 strong{display:block;font-family:Georgia,serif;font-weight:400;font-size:19px;margin:6px 0 7px}
+  .door3 p{font-size:14px;color:var(--slate);margin:0;text-align:left}
+
+  .defn{background:var(--who-t);border:1px solid #cfe4ef;border-radius:var(--r);
+        padding:18px 20px;margin-top:20px}
+  .defn p{margin:0;font-size:15px;color:#13414f}
+
+  footer{background:var(--l3);color:#b9cdd9;padding:30px 0 36px;margin-top:8px;font-size:13.5px}
+  footer .wrap{padding:0 20px}
+  footer p{max-width:80ch;color:#b9cdd9;font-size:13.5px}
+  footer a{color:#9dd3ee}
+  footer .hr{height:1px;background:rgba(255,255,255,.14);margin:0 0 20px}
+  .contact{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-bottom:22px}
+  .contact h3{color:#fff;font-size:13.5px;font-family:"Noto Sans",sans-serif;
+              font-weight:700;letter-spacing:.3px;margin:0 0 5px}
+  .pend{color:#e8b98d;font-weight:700}
+
+  @media (max-width:560px){
+    .idrow{gap:12px}.idmark{width:44px;height:44px;font-size:15px}
+    p,.purpose{text-align:left}
+  }
+  @media print{ .mast{background:#fff;color:#000} .navbar,.mast .acts{display:none} }
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="wrap">
+    <nav class="navbar">
+      <a href="#about">About</a>
+      <a href="#response">Flood response</a>
+      <a href="#activities">What the group does</a>
+      <a href="#tools">Forms &amp; dashboard</a>
+      <a href="#method">Method</a>
+      <a href="#contact">Contact</a>
+      <span class="sp"></span>
+    </nav>
+
+    <div class="idrow">
+      <div class="idmark">MH</div>
+      <div class="idtext">
+        <div class="kicker">Health Cluster · Nepal</div>
+        <h1>MHPSS Sub-Cluster<br>Nepal</h1>
+        <div class="sub">Mental Health &amp; Psychosocial Support · Rasuwa–Bhote Koshi flood response</div>
+      </div>
+    </div>
+
+    <p class="purpose">The purpose of the Mental Health and Psychosocial Support (MHPSS)
+    Sub-Cluster is to enable coordination and information sharing between MHPSS actors
+    responding to the Rasuwa–Bhote Koshi floods, to work towards one shared picture of
+    who is doing what and where, to make referral pathways usable across organisations,
+    and to apply the IASC Guidelines on MHPSS in Emergency Settings to this response.</p>
+
+    <div class="acts">
+      <a class="btn3" href="#tools">Field forms and dashboard</a>
+      <a class="btn3 g" href="#contact">Join the sub-cluster</a>
+    </div>
+  </div>
+</header>
+
+<section id="response">
+  <div class="wrap">
+    <div class="eyebrow">The flood response</div>
+    <h2>The question this coordination exists to answer</h2>
+    <p class="lede">Not how many people were reached in total — that number can look
+    healthy while a whole holding centre has nobody. The question is which sites on the
+    official roster have received no mental health or psychosocial service at all, and
+    that can only be answered if every organisation reports against the same roster.</p>
+
+    <div class="statwrap">
+      <div class="stats">
+        <div class="st"><b class="none">Not yet reporting</b><span>Roster sites with no service</span><em>awaiting the first agreed reporting cycle</em></div>
+        <div class="st"><b class="none">Not yet reporting</b><span>People reached</span><em>unique individuals, not contacts</em></div>
+        <div class="st"><b class="none">Not yet reporting</b><span>Organisations reporting</span><em>against the shared roster</em></div>
+        <div class="st"><b class="none">Not yet agreed</b><span>Holding-centre roster</span><em>denominator to be confirmed with EDCD</em></div>
+      </div>
+      <p class="srcline">Denominator: the official holding-centre roster, once agreed.
+      Reach is counted as unique individuals; a service contact is a session, and one
+      person may have several — the two are never added together.</p>
+    </div>
+
+    <div class="note">
+      <p><b>Nothing here is reported data yet.</b> This page will carry figures only
+      once organisations have reported against an agreed roster and an agreed reporting
+      calendar. The working forms and the dashboard already exist and can be used, but
+      every figure in them today is synthetic and marked as such on the page itself —
+      so nothing on this site should be quoted as a response figure.</p>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <div class="eyebrow">About</div>
+    <h2>Who the sub-cluster is open to</h2>
+    <p>The MHPSS Sub-Cluster is open to government bodies, UN agencies, international
+    and national NGOs, professional associations, academic departments, and interested
+    organisations or individuals active in mental health and psychosocial support in
+    Nepal.</p>
+    <p>Mental health and psychosocial support in Nepal has long been coordinated through
+    two tracks — a mental health sub-cluster under the Health Cluster, and a psychosocial
+    working group under Protection. Organisations whose primary mandate is not MHPSS but
+    whose work carries mental health or psychosocial components — protection, child
+    protection, gender-based violence, education, nutrition, camp management — are
+    encouraged to attend and contribute. One shared table does not ask anyone to leave
+    their own.</p>
+
+    <div class="members">
+      <div class="mg">
+        <h3>Government</h3>
+        <ul>
+          <li>Ministry of Health and Food Safety (MoHP)</li>
+          <li>Epidemiology and Disease Control Division — NCD &amp; Mental Health Section</li>
+          <li>District health offices, Rasuwa and Nuwakot</li>
+        </ul>
+      </div>
+      <div class="mg">
+        <h3>UN and international</h3>
+        <ul>
+          <li>WHO Nepal</li>
+          <li>Other UN agencies and INGOs active in the response</li>
+        </ul>
+      </div>
+      <div class="mg">
+        <h3>National organisations</h3>
+        <ul>
+          <li>Organisations reporting MHPSS activity in the response</li>
+          <li>Professional associations and academic departments</li>
+        </ul>
+      </div>
+      <div class="mg">
+        <h3>Cross-sector</h3>
+        <ul>
+          <li>Protection and child protection</li>
+          <li>GBV services</li>
+          <li>Education, nutrition, camp management</li>
+        </ul>
+      </div>
+    </div>
+    <p class="srcline">Membership is listed by category rather than by name until the
+    sub-cluster confirms its own participant list. Naming an organisation here before it
+    has agreed to be named would be a claim, not a record.</p>
+  </div>
+</section>
+
+<section id="activities">
+  <div class="wrap">
+    <div class="eyebrow">Activities</div>
+    <h2>What the group does</h2>
+    <div class="grid3">
+      <div class="card">
+        <div class="ic">🤝</div>
+        <h3>Coordination</h3>
+        <p>A standing meeting and one shared table for who is doing what and where, so the
+        health and protection tracks can see the same picture without either giving up its
+        own reporting line.</p>
+      </div>
+      <div class="card">
+        <div class="ic">📚</div>
+        <h3>Technical resources</h3>
+        <p>The IASC Guidelines on MHPSS in Emergency Settings, the MHPSS Minimum Service
+        Package, shared assessment instruments, and agreed referral pathways — with
+        supervision and training routed to whoever can provide it.</p>
+      </div>
+      <div class="card">
+        <div class="ic">📈</div>
+        <h3>Information management</h3>
+        <p>Common activity codes, one site roster, a form a field worker can fill on a
+        phone with no signal, and a dashboard that shows the coverage gap rather than only
+        the total reached.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tools">
+  <div class="wrap">
+    <div class="eyebrow">Working tools</div>
+    <h2>Forms and dashboard</h2>
+    <p>These are the operational layers. They work today, on a phone, with no signal —
+    but they hold synthetic data only until the sub-cluster agrees the roster, the
+    activity codes and the reporting calendar.</p>
+    <div class="doors">
+      <a class="door3" href="../form/">
+        <div class="tag">Layer 1 · Field</div>
+        <strong>Field forms</strong>
+        <p>Activity report, service contact, PHQ-9, referral and a self-report form.
+        Opens on a phone, keeps working with no signal, nothing to install.</p>
+      </a>
+      <a class="door3" href="../coordination/">
+        <div class="tag">Layer 2 · Coordination</div>
+        <strong>Coordination dashboard</strong>
+        <p>Coverage against the roster, duplication, the 4Ws matrix, and the inbox that
+        turns submitted files into one table.</p>
+      </a>
+      <a class="door3" href="../access-explained.html">
+        <div class="tag">Governance</div>
+        <strong>Who can see what</strong>
+        <p>What the register refuses to store, who can read it, and the limits of the
+        protection — in plain language, not in code.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="method">
+  <div class="wrap">
+    <div class="eyebrow">Method</div>
+    <h2>How the numbers are built, and what they refuse to guess</h2>
+    <p>The counting rules are published rather than assumed: reach is unique individuals,
+    a contact is a session, and the two are never added. Activity codes follow the IASC
+    4Ws where the official list is available and are left empty where it is not, rather
+    than invented. A site that appears in a report but not on the roster is shown
+    separately and never counted as a gap.</p>
+    <div class="doors">
+      <a class="door3" href="../method.html">
+        <div class="tag">Reference</div>
+        <strong>Data model &amp; method</strong>
+        <p>What the model holds, and what it refuses to guess.</p>
+      </a>
+      <a class="door3" href="../architecture.html">
+        <div class="tag">Reference</div>
+        <strong>Architecture</strong>
+        <p>Three layers, one direction — field, coordination, public.</p>
+      </a>
+    </div>
+
+    <div class="defn">
+      <p><b>MHPSS</b> describes any type of local or outside support that aims to protect
+      or promote psychosocial well-being, or prevent or treat mental disorders.
+      <span style="opacity:.75">— IASC Guidelines on Mental Health and Psychosocial
+      Support in Emergency Settings</span></p>
+    </div>
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="hr"></div>
+    <div class="contact">
+      <div>
+        <h3>Sub-cluster lead</h3>
+        <p><span class="pend">To be confirmed</span><br>
+        Ministry of Health and Food Safety — EDCD</p>
+      </div>
+      <div>
+        <h3>WHO co-lead</h3>
+        <p><span class="pend">To be confirmed</span><br>WHO Nepal</p>
+      </div>
+      <div>
+        <h3>Information management</h3>
+        <p><span class="pend">To be confirmed</span><br>
+        Contact for the forms, the dashboard and the reporting calendar</p>
+      </div>
+    </div>
+    <div class="hr"></div>
+    <p>Rasuwa–Bhote Koshi flood response · mental health and psychosocial support ·
+    draft, September 2026. Prepared for the WHO Nepal mental health team, the Ministry
+    of Health and Food Safety and EDCD. <b>Not agreed with EDCD or the MHPSS
+    sub-cluster.</b></p>
+    <p>This page presents programme-level information only. It holds no names, no client
+    identifiers and no case information of any kind. No WHO or Government of Nepal
+    emblem is used: WHO emblem use requires express written permission and the Nepal
+    national emblem belongs to the Ministry. Prepared with AI assistance.</p>
+    <p><a id="srcLink" href="#" hidden>Source and method on GitHub</a>
+    <span id="siteHost"></span></p>
+  </div>
+</footer>
+
+<!-- The bilingual engine. This is the most public page on the site, so the
+     ENG/NEP toggle belongs here above all, and the notice states plainly that
+     the page is not in Nepali yet rather than leaving a reader to wonder. -->
+<script src="../assets/i18n-strings.js"></script>
+<script src="../assets/i18n.js"></script>
+<script>
+/* The footer names the address it is actually served from, rather than
+   repeating one that someone typed once and that dies on the next move. */
+(function () {
+  var h = location.host, host = document.getElementById("siteHost");
+  if (host) host.textContent = h ? "· " + h : "";
+  var m = /^([a-z0-9-]+)\.github\.io$/i.exec(h);
+  var a = document.getElementById("srcLink");
+  if (a && m) { a.href = "https://github.com/" + m[1] + "/" + h; a.hidden = false; }
+})();
+</script>
+</body>
+</html>

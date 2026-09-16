@@ -87,8 +87,12 @@
     <div class="hr"></div>
     <span data-i18n="hub.foot.line1"></span><br>
     <span data-i18n="hub.foot.line2"></span><br>
-    <a href="https://github.com/mhpss-nepal/mhpss-nepal.github.io" data-i18n="hub.foot.source"></a>
-    <span data-i18n-skip>· mhpss-nepal.github.io</span><br>
+    <!-- Both of these follow the address the page is actually served from,
+         rather than repeating it. The repo link is derived from the host for
+         a *.github.io address and hidden otherwise, so it cannot end up
+         pointing at a repo that no longer backs this site. -->
+    <a id="srcLink" href="#" data-i18n="hub.foot.source" hidden></a>
+    <span id="siteHost" data-i18n-skip></span><br>
     <span data-i18n="hub.foot.emblem"></span>
   </footer>
 
@@ -114,6 +118,19 @@
 </script>
 <script src="assets/i18n-strings.js"></script>
 <script src="assets/i18n.js"></script>
+<script>
+/* The footer names the address it is on, not an address someone typed once. */
+(function () {
+  var h = location.host, host = document.getElementById("siteHost");
+  if (host) host.textContent = h ? "\u00b7 " + h : "";
+  var m = /^([a-z0-9-]+)\.github\.io$/i.exec(h);
+  var a = document.getElementById("srcLink");
+  if (a && m) {
+    a.href = "https://github.com/" + m[1] + "/" + h;
+    a.hidden = false;
+  }
+})();
+</script>
 <script>window.BRAND_PREFIX="";</script>
 <script src="assets/brand.js"></script>
 </body></html>
