@@ -36,7 +36,7 @@ WHAT "AFFECTED AREA" MEANS HERE -- decided 16 September 2026
 
 Boundaries: OCHA COD-AB Nepal v02 (Survey Department of Nepal, UN RCO
 Nepal), valid from 2024-03-14, via HDX dataset cod-ab-npl, CC BY-IGO.
-Palika level only -- never a point, never a site (claude/access-model.md).
+Palika level only -- never a point, never a site, as the access model says.
 """
 import io, json, math, os, re, subprocess, sys, tempfile
 

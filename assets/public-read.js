@@ -18,7 +18,7 @@
        by mistake -- the floor is enforced here as well as by the publisher
 
    The document shapes are the contract with whoever publishes them. They
-   are written down in claude/public-stats-contract.md; schema 1:
+   are written down in full with the project documents; schema 1:
 
    public_stats/flood_response
      schema 1 · basis (string) · computed_at (server time) ·

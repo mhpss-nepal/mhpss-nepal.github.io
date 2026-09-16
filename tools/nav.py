@@ -24,14 +24,14 @@ Markers, written once into each page by hand:
   <!--NAV:foot KEY--> ... <!--/NAV-->   the website footer
   <!--NAV:help KEY--> ... <!--/NAV-->   the helplines, on two public pages
 """
-import os, re, sys
+import json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # --------------------------------------------------------------- the website
 # The public website follows mhpssmyanmar.org page for page (decided 16 Sep
-# 2026; the model is recorded in claude/layer3-model-mhpssmyanmar.md, and who
-# reads each page in claude/layer3-page-brief.md). A public MHPSS site is for
+# 2026; the model, and who reads each page, are recorded with the project
+# documents). A public MHPSS site is for
 # affected people and field partners -- materials, referral routes,
 # resources, a way to make contact -- so these eight are the only items in
 # the band. Pages with no Nepal content yet exist and say so plainly.
@@ -39,6 +39,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # np labels are DRAFT, like every other Nepali string on this site. Where the
 # response's own documents use a word, that word is used: प्रतिकार्य,
 # "IEC सामग्री" and रेफरल are the EDCD flood response report's own vocabulary.
+# They reach the translation worksheet as nav.band.<key>, and the check below
+# refuses a band whose words differ from the dictionary's.
 NAV = [
     ("home",      "Home",               "गृहपृष्ठ",          "./"),
     ("flood",     "Flood Response",     "बाढी प्रतिकार्य",    "flood-response.html"),
@@ -284,6 +286,20 @@ def render(kind, key):
         return help_block(key)
     return rail_block(key)
 
+def band_words():
+    path = os.path.join(ROOT, "assets", "i18n-strings.js")
+    strings = open(path, encoding="utf-8").read()
+    ne_at = strings.index("\n  ne: {")
+    out = []
+    for k, en, np, href in NAV:
+        for lang, want, block in (("en", en, strings[:ne_at]), ("ne", np, strings[ne_at:])):
+            m = re.search(r'\n\s*"nav\.band\.%s"\s*:\s*"((?:[^"\\]|\\.)*)"' % re.escape(k), block)
+            got = json.loads('"%s"' % m.group(1)) if m else None
+            if got != want:
+                out.append("nav.band.%s [%s]  dictionary: %s   nav.py: %s"
+                           % (k, lang, "missing" if got is None else got, want))
+    return out
+
 def run(apply_it):
     rows, bad = [], 0
     for rel, s in pages():
@@ -325,6 +341,18 @@ def run(apply_it):
         print("\n  INCOMPLETE -- the website band points at pages that are not whole:")
         for m in missing:
             print("    " + m)
+        return 1
+    # The band carries both languages at once, so its labels are written here
+    # and not looked up at runtime. The words a Nepali speaker checks, though,
+    # live in the dictionary and the translation worksheet, as nav.band.<key>.
+    # The two must say the same thing: a label corrected in the worksheet and
+    # not here would never reach the band, on every page of the site.
+    words = band_words()
+    if words:
+        print("\n  WORDS DRIFTED -- the band and assets/i18n-strings.js disagree:")
+        for w in words:
+            print("    " + w)
+        print("  Make NAV above say what the dictionary says, then run: tools/nav.py apply")
         return 1
     if apply_it:
         print("\n  %d page(s) rewritten from tools/nav.py." % bad)
