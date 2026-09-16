@@ -73,7 +73,19 @@
      serves the folder locally to test or demo it. */
   if ("serviceWorker" in navigator && window.isSecureContext) {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("sw.js", { scope: "./" }).then(function (reg) {
+      /* updateViaCache "none": the worker script itself is never served from
+         the browser's HTTP cache. Without this a phone can keep running an
+         old worker -- and therefore an old copy of every form -- for as long
+         as the CDN's cache header says. That was observed on this site: a
+         fix was live and verified at the origin, and the browser went on
+         serving the previous version until the worker was updated by hand.
+         A field worker will not do that by hand, so it is done here. */
+      navigator.serviceWorker.register("sw.js", { scope: "./", updateViaCache: "none" }).then(function (reg) {
+        /* and ask, every load, whether a newer one exists. sw.js calls
+           skipWaiting() and clients.claim(), so a new version takes over on
+           the next page the worker serves rather than waiting for every tab
+           to close. */
+        try { reg.update(); } catch (e) { /* ignore */ }
         if (!reg.active && navigator.onLine && !sessionStorage.getItem("mhpss-np-savedmsg")) {
           try { sessionStorage.setItem("mhpss-np-savedmsg", "1"); } catch (e) { /* ignore */ }
           var b = show("<b>Saving these forms to this phone…</b> once this finishes they open " +
