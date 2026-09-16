@@ -331,9 +331,25 @@ select{background-image:linear-gradient(45deg,transparent 50%,var(--hc-mute) 50%
   border-color:var(--wh-d);background:var(--wh-t);color:var(--wh-d);font-weight:700}
 
 .btn{border-radius:var(--r);padding:10px 18px;font-weight:700;font-size:14px;box-shadow:none}
-.btn:not(.ghost):not(.sec){background:var(--wh-d);border-color:var(--wh-d);color:#fff}
-.btn:not(.ghost):not(.sec):hover{background:#002a70}
+.btn:not(.ghost):not(.sec):not(.grey){background:var(--wh-d);border-color:var(--wh-d);color:#fff}
+/* Hover was #002a70 -- a blue-purple left over from the palette before the
+   Health Cluster one, and the only off-palette colour left in the button set. */
+.btn:not(.ghost):not(.sec):not(.grey):hover{background:var(--wh-dd)}
 .btn.ghost,.btn.sec{background:var(--paper,#fff);border-color:var(--line,var(--grey-3));color:var(--wh-tx)}
+/* .grey is app.css's QUIETEST variant -- the control you should be least drawn
+   to. The filled rule above matched :not(.ghost):not(.sec) at specificity
+   (0,3,0), which silently beat `.btn.grey` (0,2,0) in app.css, so every grey
+   button on all eight pages that use one rendered as a filled primary.
+   Found 16 Sep 2026 on the coverage loader, where it made "Load synthetic
+   demonstration data" the most prominent control on a page whose primary
+   action is now reading the live register. Adding .grey to the :not() chain
+   fixes all 15 of them at once.
+   The border is #939391, not --grey-3: at 1.40:1 on white --grey-3 is
+   invisible, and on a white-on-white button the border is what makes it read
+   as a button at all. #939391 is 3.08:1, the same value already checked for
+   the out-of-district square in the site chart. */
+.btn.grey{background:var(--paper,#fff);border-color:#939391;color:var(--hc-mute)}
+.btn.grey:hover{background:var(--grey-1);border-color:var(--hc-mute)}
 .btn.ghost:hover,.btn.sec:hover{border-color:var(--wh-d)}
 
 /* the demonstration band at the top of the field pages */

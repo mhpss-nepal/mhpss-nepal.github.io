@@ -18,6 +18,32 @@
     padding:9px 14px; margin-bottom:-2px; cursor:pointer; color:var(--slate)}
   .tab.on{color:var(--who-d); border-bottom-color:var(--who)}
   .panel{display:none} .panel.on{display:block}
+  /* An empty live register hides the tabs rather than showing five panels of
+     zeros. !important because it has to beat .panel.on, which is what the tab
+     handler sets. */
+  .panel.noshow{display:none!important}
+  /* The hidden ATTRIBUTE is display:none in the UA sheet, which any later
+     display:flex or display:grid silently beats. It bit .tabs over the
+     empty-register panel, and again on the live strip, which stayed on screen
+     above a synthetic file with a stale "as of" time on it. Restating the rule
+     once, with weight, ends the whole family of "I set hidden and it stayed
+     visible" bugs on this page. */
+  [hidden]{display:none!important}
+  .hideblk{display:none!important}
+
+  /* The live strip. An "as of" time on every figure is the Layer 2 gap-list
+     item: a dashboard that moves is only trustworthy if it says WHEN it last
+     moved. The dot pulses so the listener is visibly attached, and stops
+     pulsing for anyone who has asked for reduced motion. */
+  .livestrip{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;
+    margin:0 0 14px;padding:9px 13px;border:1px solid var(--ok);border-left:3px solid var(--ok);
+    border-radius:var(--r);background:var(--ok-t);font-size:12.5px;color:var(--ink)}
+  .livestrip .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:0 0 auto;
+    animation:livepulse 2s ease-in-out infinite}
+  .livestrip .asof{font-variant-numeric:tabular-nums;color:var(--ok);font-weight:700}
+  .livestrip .xs{color:var(--slate)}
+  @keyframes livepulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @media (prefers-reduced-motion:reduce){ .livestrip .dot{animation:none} }
   .drop{border:2px dashed var(--line); border-radius:var(--r); padding:26px; text-align:center; background:#fff}
   .drop.over{border-color:var(--who); background:var(--who-t)}
   .bar{height:9px; background:var(--line-s); border-radius:5px; overflow:hidden; min-width:70px}
@@ -62,13 +88,23 @@
 <div class="wrap wide">
 
   <h1>Coverage, duplication and the 4Ws matrix</h1>
-  <p class="lede">Reads a file you choose. Nothing is uploaded, nothing is fetched, and the page has no network access of its own.</p>
+  <p class="lede">Reads the live register, or a file you choose. On the live path every figure is recomputed the moment a worker saves a report — there is no refresh schedule to wait for. Reading the register needs an account; a file is read in the page and never uploaded.</p>
 
   <div class="card" id="loader">
     <div class="drop" id="drop">
-      <p style="margin:0 0 12px"><b>Load an export from the report form</b> — a <code>.json</code> or <code>.csv</code> file.</p>
+      <p style="margin:0 0 4px"><b>Read the live register</b> — every figure updates as reports arrive.</p>
+      <p class="xs" style="margin:0 0 12px">A Firestore listener, not a refresh schedule: the page recomputes on the change itself. Reading needs an account; submitting a report does not.</p>
       <div class="btns" style="justify-content:center">
-        <label class="btn" style="cursor:pointer">Choose a file<input type="file" id="file" accept=".json,.csv" hidden></label>
+        <button type="button" class="btn" id="useLive">Connect to the live register</button>
+      </div>
+
+      <div id="livePanel" hidden style="margin-top:16px;text-align:left"></div>
+
+      <hr style="margin:20px 0;border:0;border-top:1px solid var(--line)">
+
+      <p style="margin:0 0 12px"><b>Or load an export from the report form</b> — a <code>.json</code> or <code>.csv</code> file.</p>
+      <div class="btns" style="justify-content:center">
+        <label class="btn ghost" style="cursor:pointer">Choose a file<input type="file" id="file" accept=".json,.csv" hidden></label>
         <button type="button" class="btn ghost" id="useLocal">Use reports saved in this browser</button>
         <button type="button" class="btn grey" id="useDemo">Load synthetic demonstration data</button>
       </div>
@@ -79,6 +115,19 @@
   <div id="app" hidden>
 
     <div class="banner" id="srcNote"></div>
+    <div class="livestrip" id="liveStrip" hidden></div>
+
+    <div class="card" id="emptyReg" hidden>
+      <h2 style="margin:0 0 8px;font-size:18px">The register is connected, and holds no activity reports yet</h2>
+      <p style="margin:0 0 10px">This is the live state, not an error, and not a page of zeros dressed up as figures.
+         The listener is attached: the moment a worker saves a report on
+         <a href="../form/4ws-report.html">the activity form</a>, it appears here without a reload.</p>
+      <p class="xs" style="margin:0">Two things put real figures in: reports filed on the form from now on, and the cleaned
+         backlog of 300 records once its four import blockers close. Until then the
+         <b>synthetic demonstration data</b> on the previous screen is what shows the dashboard's shape —
+         and it is labelled synthetic wherever it appears.</p>
+      <div class="btns" style="margin-top:12px"><button type="button" class="btn grey sm" id="emptyOff">Change source</button></div>
+    </div>
 
     <div class="stats" id="stats"></div>
 
@@ -156,7 +205,7 @@
     <div class="panel" id="p-raw">
       <div class="btns" style="margin-bottom:12px">
         <button type="button" class="btn ghost sm" id="expAll">Export everything loaded as CSV</button>
-        <button type="button" class="btn grey sm" id="reload">Load a different file</button>
+        <button type="button" class="btn grey sm" id="reload">Change source</button>
       </div>
       <div class="tbl-wrap">
         <table class="data">
@@ -174,6 +223,13 @@
 
 <script src="../assets/codes.js"></script>
 <script src="../assets/store.js"></script>
+<!-- The live register. fb-config.js carries the project's own config and is
+     never written from outside the repository; fb.js holds the listener, the
+     sign-in and the offline queue. Reading the register needs an account AND a
+     roles/{uid} document -- signing in proves who you are, it does not grant
+     sight of the records. -->
+<script src="../assets/fb-config.js"></script>
+<script src="../assets/fb.js"></script>
 <!-- The bilingual engine: mounts the ENG/NEP toggle so it does not
      vanish when a reader navigates here from the hub, and states
      plainly that this page is not in Nepali yet. -->
@@ -269,18 +325,176 @@
     return out;
   }
 
-  /* ---------- load ---------- */
-  function load(rows, src) {
-    if (!rows || !rows.length) return toast("That file has no records in it", true);
+  /* ---------- load ----------
+     `live` is passed only by the register path. An empty FILE is a mistake
+     worth a toast; an empty REGISTER is a true state of the system and has
+     to render as itself, because a page of zeros looks exactly like a page
+     that is broken. */
+  function load(rows, src, live) {
+    if (!live && (!rows || !rows.length)) return toast("That file has no records in it", true);
+    rows = rows || [];
     DATA = rows; SRC = src;
     $("loader").hidden = true; $("app").hidden = false;
+
+    var empty = live && !rows.length;
+    $("emptyReg").hidden = !empty;
+    ["stats", "srcNote"].forEach(function (id) { $(id).classList.toggle("hideblk", empty); });
+    document.querySelector(".tabs").classList.toggle("hideblk", empty);
+    document.querySelectorAll(".panel").forEach(function (el) { el.classList.toggle("noshow", empty); });
+    if (empty) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+
     var dates = rows.map(function (r) { return r.dateAD; }).filter(Boolean).sort();
     $("srcNote").innerHTML = "<b>" + rows.length + " records loaded</b> from " + esc(src) +
       (dates.length ? " · reporting period " + dates[0] + " to " + dates[dates.length - 1] : "") +
       (src.indexOf("Synthetic") === 0 ? " · <b>this is not real data</b>" : "");
     render();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (!live) { window.scrollTo({ top: 0, behavior: "smooth" }); }
   }
+
+  /* ---------- the live register -----------------------------------------
+     FB.watch is a Firestore onSnapshot listener. That is the whole point of
+     this path: the figures move on the change itself, not on a schedule and
+     not when someone remembers to re-upload a workbook. Nothing is
+     persisted in this browser from the live path -- the records belong to
+     the register, and this page is a view of them.
+
+     Four states, each with its own remedy, and none of them a blank screen:
+       no config      -- the bridge is not wired into this build
+       not ready      -- the database cannot be reached
+       no user        -- reading needs an account (writing does not)
+       no role doc    -- signed in, but not granted sight of the records
+     The wording matches the field inbox on purpose, so a coordinator meets
+     one system rather than two. */
+  /* WANT_LIVE: the listener attaches when the coordinator asks for it, not on
+     page load. The page should not reach for the network before anyone has
+     asked it to, and it makes the four states deterministic instead of
+     depending on when Firebase happens to resolve the session.
+     REFUSED: once the register has refused a read, that message stays put --
+     clicking Connect again used to paint "attaching the listener..." over the
+     one screen that explained what was actually wrong. */
+  var LIVE_ON = false, LIVE_AT = null, LIVE_TICK = null, WANT_LIVE = false, REFUSED = false;
+
+  function liveApply(rows) {
+    /* Only activity reports belong on this page. The register also carries
+       service contacts, referrals and PHQ-9 follow-ups; those have their own
+       shape and their own view, and counting them here would inflate every
+       figure on the page. */
+    var recs = rows.filter(function (r) { return (r.kind || "") === "activity"; })
+      .map(function (r) {
+        var o = JSON.parse(JSON.stringify(r));
+        o.id = o.id || o._id || "";
+        return o;
+      });
+    LIVE_AT = new Date();
+    LIVE_ON = true;
+    load(recs, "the live register", true);
+    stampLive(rows.length, recs.length);
+  }
+
+  function stampLive(total, acts) {
+    var el = $("liveStrip");
+    if (!LIVE_ON) { el.hidden = true; return; }
+    el.hidden = false;
+    var t = LIVE_AT;
+    var hh = function (x) { return (x < 10 ? "0" : "") + x; };
+    var clock = hh(t.getHours()) + ":" + hh(t.getMinutes()) + ":" + hh(t.getSeconds());
+    var other = (total || 0) - (acts || 0);
+    el.innerHTML = '<span class="dot" aria-hidden="true"></span>' +
+      '<span><b>Live</b> — recomputed on the register\u2019s own changes, not on a schedule.</span>' +
+      '<span class="asof">as of <b>' + clock + '</b> <span id="liveAge"></span></span>' +
+      '<span class="xs">' + (acts || 0) + ' activity report(s)' +
+      (other > 0 ? ' · ' + other + ' other record(s) in the register, not counted here' : '') + '</span>' +
+      '<button type="button" class="btn grey sm" id="liveOff" style="margin-left:auto">Change source</button>';
+    $("liveOff").addEventListener("click", resetSource);
+    ageLive();
+    clearInterval(LIVE_TICK);
+    LIVE_TICK = setInterval(ageLive, 5000);
+  }
+
+  function ageLive() {
+    var a = $("liveAge");
+    if (!a || !LIVE_AT) return;
+    var s2 = Math.max(0, Math.round((Date.now() - LIVE_AT.getTime()) / 1000));
+    a.textContent = s2 < 10 ? "(just now)"
+      : s2 < 90 ? "(" + s2 + "s ago)"
+      : "(" + Math.round(s2 / 60) + " min ago)";
+  }
+
+  function livePaint(st) {
+    var el = $("livePanel");
+    el.hidden = false;
+    if (REFUSED) return;
+    if (!st.configured) {
+      el.innerHTML = '<div class="banner warn" style="margin:0"><b>No register is wired into this build.</b> ' +
+        'The file paths below still work. Once the project config is in place, reports appear here the ' +
+        'moment a worker saves one.</div>';
+      return;
+    }
+    if (!st.ready) {
+      el.innerHTML = '<div class="banner warn" style="margin:0"><b>Cannot reach the register.</b> ' +
+        (st.error ? esc(st.error) : "No connection.") + '</div>';
+      return;
+    }
+    if (!st.user) {
+      el.innerHTML =
+        '<div class="banner" style="margin:0 0 12px"><b>Reading the register needs an account.</b> ' +
+        'Submitting a report does not — a field worker needs only the link. Reading is a coordination ' +
+        'act, so the register asks who you are.</div>' +
+        '<div class="row"><div class="f"><label for="em">Email</label>' +
+        '<input type="email" id="em" autocomplete="username"></div>' +
+        '<div class="f"><label for="pw">Password</label>' +
+        '<input type="password" id="pw" autocomplete="current-password"></div></div>' +
+        '<div class="btns"><button type="button" class="btn" id="signin">Sign in</button>' +
+        '<span class="xs" id="signerr"></span></div>';
+      $("signin").addEventListener("click", function () {
+        var b = this; b.disabled = true; b.textContent = "Signing in…";
+        window.FB.signIn($("em").value.trim(), $("pw").value).catch(function (e) {
+          b.disabled = false; b.textContent = "Sign in";
+          $("signerr").innerHTML = '<span style="color:var(--critical,#9b2c2c)">' +
+            esc(e && e.message ? e.message.replace(/^Firebase:\s*/, "") : "could not sign in") + "</span>";
+        });
+      });
+      return;
+    }
+    el.innerHTML = '<div class="banner ok" style="margin:0"><b>Signed in as ' + esc(st.user.email) +
+      '.</b> Attaching the listener…</div>';
+  }
+
+  function liveAttach() {
+    if (!WANT_LIVE || LIVE_ON || REFUSED) return;
+    var st = window.FB.status();
+    if (!(st.ready && st.user)) return;
+    LIVE_ON = true;
+    window.FB.watch(liveApply, function (err) {
+      LIVE_ON = false; REFUSED = true;
+      clearInterval(LIVE_TICK);
+      $("liveStrip").hidden = true;
+      $("app").hidden = true;
+      $("loader").hidden = false;
+      $("livePanel").hidden = false;
+      $("livePanel").innerHTML = '<div class="banner stop" style="margin:0"><b>The register refused the read.</b> ' +
+        esc(err) + '<br><br>Almost always this means the account is signed in but has not been granted ' +
+        'access. Signing in proves who you are; it does not grant sight of the records. An admin adds ' +
+        'the address on the <a href="access.html">Access</a> page, or by hand in the console as a ' +
+        '<code>roles/&lt;uid&gt;</code> document.</div>';
+    });
+  }
+
+  if (window.FB) {
+    window.FB.onStatus(function (st) {
+      if (!WANT_LIVE) return;
+      if (!st.user) { LIVE_ON = false; clearInterval(LIVE_TICK); $("liveStrip").hidden = true; }
+      if (!$("loader").hidden) { livePaint(st); }
+      liveAttach();
+    });
+  }
+
+  $("useLive").addEventListener("click", function () {
+    WANT_LIVE = true; REFUSED = false;
+    if (!window.FB) { $("livePanel").hidden = false; livePaint({ configured: false }); return; }
+    livePaint(window.FB.status());
+    liveAttach();
+  });
 
   $("file").addEventListener("change", function (e) {
     var f = e.target.files[0]; if (!f) return;
@@ -301,7 +515,20 @@
     load(r, "reports saved in this browser");
   });
   $("useDemo").addEventListener("click", function () { load(demo(), "Synthetic demonstration data"); });
-  $("reload").addEventListener("click", function () { $("app").hidden = true; $("loader").hidden = false; window.scrollTo({ top: 0, behavior: "smooth" }); });
+  function resetSource() {
+    $("app").hidden = true; $("loader").hidden = false;
+    /* Leaving the live view stops the clock and hides the strip, so a stale
+       "as of" time can never sit over a file's figures. */
+    LIVE_ON = false; WANT_LIVE = false; REFUSED = false; clearInterval(LIVE_TICK);
+    $("livePanel").hidden = true;
+    $("liveStrip").hidden = true; $("emptyReg").hidden = true;
+    ["stats", "srcNote"].forEach(function (id) { $(id).classList.remove("hideblk"); });
+    document.querySelector(".tabs").classList.remove("hideblk");
+    document.querySelectorAll(".panel").forEach(function (el) { el.classList.remove("noshow"); });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  $("reload").addEventListener("click", resetSource);
+  $("emptyOff").addEventListener("click", resetSource);
 
   var dz = $("drop");
   ["dragenter", "dragover"].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add("over"); }); });
