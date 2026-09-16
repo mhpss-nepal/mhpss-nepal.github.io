@@ -261,9 +261,10 @@
   function orgName(code) {
     var o = C.orgByCode[code]; return o ? o.name : (code || "not stated");
   }
-  function siteName(code) {
+  function siteName(code, r) {
     if (!code) return "not stated";
     if (/^OTHER/.test(code)) return "Other — " + (code.split(":")[1] || "unnamed") + " (not on roster)";
+    if (code === "PALIKA") return (C.palikaName(r && r.palika) || "palika not stated") + " (palika level)";
     var s = C.siteByCode[code]; return s ? s.name : code;
   }
   function tally(list, fn) {
@@ -417,7 +418,7 @@
                    : esc(val(r, ["service", "activity"]) || "");
         return "<tr><td>" + esc(KINDS[r._kind] || r._kind) + "</td><td>" + esc(orgName(r.org)) +
           "</td><td>" + esc(val(r, ["date_ad", "dateAD", "date"])) + "</td><td>" +
-          esc(siteName(r.site)) + "</td><td><code style='font-size:11px'>" +
+          esc(siteName(r.site, r)) + "</td><td><code style='font-size:11px'>" +
           esc(r.contact_code || "—") + "</code></td><td>" + esc(r.sex || "—") + "</td><td>" +
           esc(val(r, ["age_band", "ageBand"]) || "—") + "</td><td>" + detail + "</td><td>" +
           esc(r._file || "—") + "</td></tr>";

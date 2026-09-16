@@ -81,15 +81,21 @@
 
       <div class="row">
         <div class="f">
-          <label for="donor">Funding source <span class="opt">— optional</span></label>
-          <select id="donor" name="donor"></select>
-          <div class="help">Recorded so that one organisation reporting under two donors is not mistaken for two organisations.</div>
+          <label data-i18n="f4.donorsLab">Funding source <span class="opt">— optional, tick all that apply</span></label>
+          <div class="chks" id="donors"></div>
+          <div class="help" data-i18n="f4.donorsHelp">Recorded so that one organisation reporting under two donors is not mistaken for two organisations. An activity funded by two donors carries both.</div>
         </div>
         <div class="f">
           <label for="cadre">Cadre delivering the activity</label>
           <select id="cadre" name="cadre"></select>
           <div class="help">Missing from the current form — which is why counsellors, psychologists and psychiatrists cannot be counted apart.</div>
         </div>
+      </div>
+
+      <div class="f">
+        <label for="partners" data-i18n="f4.partnersLab">Joint activity with <span class="opt">— optional</span></label>
+        <input type="text" id="partners" name="partners" autocomplete="off" placeholder="Other organisations this activity was done with, separated by commas">
+        <div class="help" data-i18n="f4.partnersHelp">Organisations that did this activity with you — not the funder, which goes above. Item C of the IASC 4Ws.</div>
       </div>
     </div>
 
@@ -126,6 +132,12 @@
         <div class="help">Flagged for review, so it can be added to the roster or matched to an existing entry.</div>
       </div>
 
+      <div class="f" id="palikaWrap" hidden>
+        <label for="palika" data-i18n="f4.palikaLab">Palika (local level)</label>
+        <select id="palika" name="palika"></select>
+        <div class="help" data-i18n="f4.palikaHelp">Named after the official list of local levels. A palika-level report is counted at palika level and never as a site, so it cannot close a gap on the roster.</div>
+      </div>
+
       <div class="f">
         <label for="modality">Modality</label>
         <select id="modality" name="modality"></select>
@@ -140,7 +152,7 @@
         <div class="f">
           <label for="activity">Activity</label>
           <select id="activity" name="activity"></select>
-          <div class="help">One activity per report. If two different activities happened at one site on one day, submit two reports.</div>
+          <div class="help">One activity per report. If two different activities happened at one site on one day, submit two reports. <span id="iascHint"></span></div>
         </div>
         <div class="f">
           <label for="status">Status</label>
@@ -269,7 +281,7 @@
         <p class="ofw-n" data-i18n="f4.ofwNote">One person can be in both, and is in a band above as well. These two are checked against the total but are never summed with it or with each other.</p>
       </div>
 
-      <div class="help" style="margin-top:8px" data-i18n="f4.disHelp">Reports in the current workbook carry breakdowns like “Women (18+) = 19, Men (18+) = 28” typed into the provider column, because the form has nowhere else to put them. Here they have somewhere, the parts are checked against the total, and the four bands fold to the two the official 5Ws asks for.</div>
+      <div class="help" style="margin-top:8px" data-i18n="f4.disHelp">Reports in the current workbook carry breakdowns typed into the provider column — a “women 18+ = 12, men 18+ = 9” where an organisation name should be — because the form has nowhere else to put them. Here they have somewhere, the parts are checked against the total, and the four bands fold to the two the official 5Ws asks for.</div>
     </div>
 
     <!-- 5 · SUBMIT -->
@@ -341,7 +353,6 @@
 
   /* ---------- populate ---------- */
   fill($("org"), C.ORGS, "code", null, "Select…");
-  fill($("donor"), C.DONORS, null, null, "Not specified");
   fill($("cadre"), C.CADRES, "code", null, "Select…");
   fill($("district"), C.DISTRICTS, "code", null, "All districts");
   fill($("modality"), C.MODALITIES, "code", null, "Select…");
@@ -350,6 +361,25 @@
        function (a) { return C.label(a) + "  ·  " + C.label({ name: a.group, np: a.groupNp }); },
        "Select…");
 
+  /* Funding tags as a tick list: one report in the current workbook is
+     funded by two donors at once, and a single select could not say so.
+     "Not specified" is the absence of a tick, not a tick of its own. */
+  function fillDonors(keep) {
+    var picked = keep || [];
+    $("donors").querySelectorAll("input:checked").forEach(function (i) { picked.push(i.value); });
+    $("donors").innerHTML = "";
+    C.DONORS.filter(function (d) { return d !== "Not specified"; }).forEach(function (d) {
+      var l = document.createElement("label");
+      l.className = "chk";
+      l.innerHTML = '<input type="checkbox" value="' + d + '"><span>' + d + "</span>";
+      $("donors").appendChild(l);
+    });
+    picked.forEach(function (v) {
+      var i = $("donors").querySelector('input[value="' + v.replace(/"/g, "") + '"]');
+      if (i) i.checked = true;
+    });
+  }
+  fillDonors();
   function fillTargetGroups() {
     var picked = [];
     $("tgs").querySelectorAll("input:checked").forEach(function (i) { picked.push(i.value); });
@@ -375,6 +405,7 @@
       var had = el.value; el._refill(); if (had) el.value = had;
     }
     fillTargetGroups();
+    fillDonors();
   });
 
   /* what the dropdown says after a site that is not on the roster */
@@ -383,25 +414,55 @@
     var pop = s.pop === null || s.pop === undefined ? "" : "  ·  " + s.pop + " people";
     return C.label(s) + pop + (SITE_TAG[s.source] || "");
   }
+  /* Not a site: a report that covers a palika and no single place. It is
+     offered after the sites and before "Other", and it is what a share of
+     the backlog actually looks like -- partners report "Bidur Municipality"
+     rather than a holding centre. Coded at palika level, never as a site. */
+  var PALIKA_ITEM = { code: "PALIKA", name: "Palika level — no specific site" };
   function refreshSites() {
     var d = $("district").value;
     /* FORM_SITES: a retired code stays in the list so old records resolve, but is never a choice */
-    var list = C.FORM_SITES.filter(function (s) { return !d || s.district === d || s.code === "OTHER"; });
+    var sites = C.FORM_SITES.filter(function (s) { return s.code !== "OTHER" && (!d || s.district === d); });
+    var list = sites.concat([PALIKA_ITEM, C.siteByCode.OTHER]);
     var keep = $("site").value;
     fill($("site"), list, "code", siteLabel, "Select…");
     if (keep && list.some(function (s) { return s.code === keep; })) $("site").value = keep;
-    var s = C.siteByCode[$("site").value];
-    $("siteHelp").innerHTML = s && s.source === "reported"
+    refreshPalikas();
+    var v = $("site").value, s = C.siteByCode[v];
+    $("siteHelp").innerHTML = v === "PALIKA"
+      ? "Use this only when the report covers a <b>palika and no single site</b>. It is counted at palika level and never as a site, so it cannot close a gap on the roster."
+      : s && s.source === "reported"
       ? "This site appears in submitted reports but is <b>not on the holding-centre roster</b>. It is recorded, and flagged so it can be confirmed or matched."
       : s && s.source === "gov-list"
       ? "This site is on the <b>District Administration Office list</b> for Nuwakot but not on the holding-centre roster. It is recorded; whether it counts towards coverage is still to be decided."
       : "Choose from the holding-centre roster. Only pick “Other” if the site genuinely is not listed — every “Other” has to be reconciled by hand later.";
+  }
+  /* The palika list follows the district. Shown for a palika-level report
+     (required) and for an unlisted site (optional -- it is what lets the
+     site be placed later). A named site carries its own palika. */
+  function refreshPalikas() {
+    var d = $("district").value, v = $("site").value;
+    var list = C.PALIKAS.filter(function (p) { return !d || p.district === d; });
+    var keep = $("palika").value;
+    fill($("palika"), list, "pcode", function (p) { return C.label(p); }, "Select…");
+    if (keep && list.some(function (p) { return p.pcode === keep; })) $("palika").value = keep;
+    $("palikaWrap").hidden = !(v === "PALIKA" || v === "OTHER");
   }
   $("district").addEventListener("change", refreshSites);
   $("site").addEventListener("change", function () {
     $("siteOtherWrap").hidden = this.value !== "OTHER";
     refreshSites();
   });
+  /* The IASC subcode is derived from the activity, never typed. Shown so the
+     reporter sees what the choice maps to; a conditional one says so. */
+  function iascHint() {
+    var a = C.activityByCode[$("activity").value], el = $("iascHint");
+    if (!a) { el.textContent = ""; return; }
+    el.textContent = a.iasc ? "IASC 4Ws subcode " + a.iasc + "."
+      : a.iasc_of ? "IASC subcode " + a.iasc_of.join(" or ") + " — assigned at coordination from the cadre and content."
+      : "";
+  }
+  $("activity").addEventListener("change", iascHint);
   $("org").addEventListener("change", function () { $("orgOtherWrap").hidden = this.value !== "OTHER"; });
   refreshSites();
 
@@ -473,9 +534,10 @@
   function loadReporter() {
     try {
       var r = JSON.parse(localStorage.getItem(RK) || "{}");
-      ["org", "orgOther", "focalName", "focalPhone", "focalEmail", "donor", "cadre", "district"].forEach(function (k) {
+      ["org", "orgOther", "focalName", "focalPhone", "focalEmail", "cadre", "district"].forEach(function (k) {
         if (r[k]) { $(k).value = r[k]; }
       });
+      fillDonors(Array.isArray(r.donors) ? r.donors : (r.donor ? [r.donor] : []));
       $("orgOtherWrap").hidden = $("org").value !== "OTHER";
       refreshSites();
     } catch (e) { /* storage unavailable — carry on */ }
@@ -483,24 +545,36 @@
   function saveReporter() {
     try {
       var r = {};
-      ["org", "orgOther", "focalName", "focalPhone", "focalEmail", "donor", "cadre", "district"].forEach(function (k) { r[k] = $(k).value; });
+      ["org", "orgOther", "focalName", "focalPhone", "focalEmail", "cadre", "district"].forEach(function (k) { r[k] = $(k).value; });
+      r.donors = pickedDonors();
       localStorage.setItem(RK, JSON.stringify(r));
     } catch (e) { /* ignore */ }
   }
 
   /* ---------- collect ---------- */
+  function pickedDonors() {
+    return [].slice.call(document.querySelectorAll("#donors input:checked")).map(function (i) { return i.value; });
+  }
   function collect() {
-    var site = C.siteByCode[$("site").value];
+    var siteCode = $("site").value, site = C.siteByCode[siteCode];
+    var act = C.activityByCode[$("activity").value];
+    /* the palika: from the site when one is named, from the reporter when
+       the report is palika-level or the site is unlisted */
+    var palika = site && site.palika ? site.palika
+               : (siteCode === "PALIKA" || siteCode === "OTHER") ? $("palika").value : "";
     var rec = {
       dateAD: $("dateAD").value,
       dateBS: $("dateBS").value.trim(),
       district: $("district").value,
-      site: $("site").value,
+      palika: palika || "",
+      site: siteCode,
       siteOther: $("siteOther").value.trim(),
-      siteSource: site ? site.source : "",
+      siteSource: siteCode === "PALIKA" ? "palika-level" : site ? site.source : "",
       org: $("org").value,
       orgOther: $("orgOther").value.trim(),
-      donor: $("donor").value,
+      donors: pickedDonors(),
+      partners: $("partners").value.split(",").map(function (x) { return x.trim(); }).filter(Boolean),
+      iascSub: act && act.iasc ? act.iasc : "",
       focalName: $("focalName").value.trim(),
       focalPhone: $("focalPhone").value.trim(),
       focalEmail: $("focalEmail").value.trim(),
@@ -546,10 +620,10 @@
   });
 
   function softReset() {
-    ["dateBS", "site", "siteOther", "activity", "description", "reachedTotal"].concat(partIds).forEach(function (id) { $(id).value = ""; });
+    ["dateBS", "site", "siteOther", "palika", "partners", "activity", "description", "reachedTotal"].concat(partIds).forEach(function (id) { $(id).value = ""; });
     document.querySelectorAll("#tgs input:checked").forEach(function (i) { i.checked = false; });
-    $("siteOtherWrap").hidden = true;
-    refreshSites(); tally();
+    $("siteOtherWrap").hidden = true; $("palikaWrap").hidden = true;
+    refreshSites(); tally(); iascHint();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   $("reset").addEventListener("click", function () { softReset(); $("problems").innerHTML = ""; });
@@ -559,6 +633,10 @@
     if (code === "OTHER" && other) return other + " (other)";
     var m = map[code];
     return m ? m.name : code || "—";
+  }
+  function siteCell(r) {
+    if (r.site === "PALIKA") return (C.palikaName(r.palika) || "palika not stated") + " (palika level)";
+    return label(r.site, C.siteByCode, r.siteOther);
   }
   function render() {
     var rows = S.active();
@@ -570,8 +648,8 @@
       var tr = document.createElement("tr");
       tr.innerHTML =
         "<td>" + (r.dateAD || "—") + (r.dateBS ? '<div class="xs">BS ' + r.dateBS + "</div>" : "") + "</td>" +
-        "<td>" + label(r.site, C.siteByCode, r.siteOther) + "</td>" +
-        "<td>" + label(r.org, C.orgByCode, r.orgOther) + (r.donor && r.donor !== "Not specified" ? '<div class="xs">' + r.donor + "</div>" : "") + "</td>" +
+        "<td>" + siteCell(r) + "</td>" +
+        "<td>" + label(r.org, C.orgByCode, r.orgOther) + (S.donorsOf(r).length ? '<div class="xs">' + S.donorsOf(r).join(", ") + "</div>" : "") + "</td>" +
         "<td>" + label(r.activity, C.activityByCode) + "</td>" +
         '<td class="n">' + (r.reachedTotal === "" ? "—" : r.reachedTotal) + "</td>" +
         '<td class="xs">' + r.id + (r.revision ? " · rev " + r.revision : "") + "</td>";

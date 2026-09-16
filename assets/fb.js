@@ -79,8 +79,18 @@
      the same record produce the same id; two genuinely different records
      do not. Timestamps added by the device are excluded on purpose. */
   function rid(rec) {
+    /* The 4Ws activity report names its fields dateAD / activity / modality
+       (camelCase, from store.js), not date_ad / service like the l1.js
+       forms. Until 16 Sep 2026 this basis read only the snake_case names,
+       so every activity report from one organisation at one site hashed to
+       the SAME document id -- each new day's report overwrote the last in
+       the register. The report's own deterministic id (store.js recordId,
+       over org, site, palika, date, activity, modality) is the identity, so
+       it is the first thing in the basis; the camelCase fields follow for a
+       record that arrives without one. */
     var basis = [
-      rec.kind || "", rec.org || "", rec.date_ad || "", rec.site || "",
+      rec.kind || "", rec.id || "", rec.org || "", rec.date_ad || rec.dateAD || "", rec.site || "",
+      rec.palika || "", rec.activity || "", rec.modality || "",
       rec.contact_code || "", rec.service || rec.reason || rec.instrument || "",
       rec.focal_name || "", rec.administration || "", rec.direction || "",
       rec.q1 === undefined ? "" : String(rec.q1),

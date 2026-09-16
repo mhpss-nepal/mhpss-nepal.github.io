@@ -12,7 +12,7 @@
    ===================================================================== */
 
 const KEY = "mhpss-np-4ws-v1";
-const SCHEMA_VERSION = "4ws-np-0.2.0";  /* 0.2.0: four age bands, 16 Sep 2026 */
+const SCHEMA_VERSION = "4ws-np-0.3.0";  /* 0.2.0: four age bands · 0.3.0: donors list, partners, palika, iascSub, 16 Sep 2026 */
 
 /* ---------------------------------------------------------------------
    Deterministic record id.
@@ -32,7 +32,11 @@ function fnv1a(str) {
   return h >>> 0;
 }
 function recordId(r) {
-  const parts = [r.org, r.orgOther || "", r.site, r.siteOther || "", r.dateAD, r.activity, r.modality].join("|");
+  /* `palika` is in the basis so that two palika-level reports (site
+     "PALIKA") for two palikas on one day are two records, not one. For a
+     report at a named site the palika is implied by the site and changes
+     nothing. */
+  const parts = [r.org, r.orgOther || "", r.site, r.siteOther || "", r.palika || "", r.dateAD, r.activity, r.modality].join("|");
   return "R" + fnv1a(parts).toString(36).toUpperCase().padStart(7, "0");
 }
 
@@ -207,6 +211,11 @@ function validate(r) {
   for (const [k, label] of Object.entries(need)) if (!r[k]) p.push(`${label} is required`);
   if (r.org === "OTHER" && !r.orgOther) p.push("Name the organisation");
   if (r.site === "OTHER" && !r.siteOther) p.push("Name the site");
+  /* A report that covers a palika and no site is coded at palika level:
+     it needs the palika, and it is never counted as a site. */
+  if (r.site === "PALIKA" && !r.palika) p.push("Choose the palika the report covers");
+  if (r.palika && !/^NP\d{7}$/.test(r.palika)) p.push("Palika must be a COD-AB P-code");
+  if (r.partners && r.partners.some((x) => /\d{7,}|@/.test(x))) p.push("Joint-activity partners are organisation names — no phone numbers or emails");
   /* The DEVICE's date, not UTC. Nepal is UTC+05:45, so from midnight until
      05:45 local the UTC date is still yesterday -- a worker filing an early
      report with today's date was told it was in the future and could not
@@ -251,9 +260,9 @@ function num(v) {
    the reach twice. Totals belong in the analysis, never in the dataset.
    ------------------------------------------------------------------- */
 const CSV_COLUMNS = [
-  "id", "createdAt", "revision", "dateAD", "dateBS", "district", "site", "siteOther", "siteSource",
-  "org", "orgOther", "donor", "focalName", "focalPhone", "focalEmail", "cadre",
-  "activity", "modality", "status", "targetGroups", "description",
+  "id", "createdAt", "revision", "dateAD", "dateBS", "district", "palika", "site", "siteOther", "siteSource",
+  "org", "orgOther", "donors", "partners", "focalName", "focalPhone", "focalEmail", "cadre",
+  "activity", "iascSub", "modality", "status", "targetGroups", "description",
   "reachedTotal", "countBasis", "distinctPeople",
   /* four bands as collected */
   "f04", "m04", "o04", "f517", "m517", "o517", "f1859", "m1859", "o1859", "f60", "m60", "o60",
@@ -274,7 +283,7 @@ function toCSV(rows) {
   /* The folded columns are computed at export, not stored on the record:
      one figure in two places is one figure that can disagree with itself. */
   const body = rows.map((r) => {
-    const row = { ...r, ...fold(r) };
+    const row = { ...r, ...fold(r), donors: donorsOf(r) };
     return CSV_COLUMNS.map((c) => esc(row[c])).join(",");
   }).join("\n");
   return "﻿" + head + "\n" + body + "\n"; // BOM so Excel reads UTF-8
@@ -303,9 +312,20 @@ function clearAll() {
   window.__mem = [];
 }
 
+/* The funding tags of a record, whatever its vintage. 0.3.0 records carry
+   `donors` (a list -- one report in the current workbook is funded by two
+   donors at once); earlier records carry a single `donor`. Read through
+   this so no consumer has to know which. */
+function donorsOf(r) {
+  if (!r) return [];
+  if (Array.isArray(r.donors)) return r.donors.filter(Boolean);
+  if (r.donor && r.donor !== "Not specified") return [r.donor];
+  return [];
+}
+
 /* Global for the same reason as codes.js — see the note there. */
 window.STORE = {
-  SCHEMA_VERSION, CSV_COLUMNS, BANDS, PART_IDS, OF_WHOM, fold, disaggTotal,
+  SCHEMA_VERSION, CSV_COLUMNS, BANDS, PART_IDS, OF_WHOM, fold, disaggTotal, donorsOf,
   recordId, all, active, save, archive,
   validate, toCSV, download, stamp, clearAll
 };

@@ -252,7 +252,14 @@
   function toast(m, w) { var t = $("toast"); t.textContent = m; t.className = w ? "show warn" : "show"; clearTimeout(t._h); t._h = setTimeout(function () { t.className = ""; }, 3200); }
   function n(v) { var x = parseInt(v, 10); return isFinite(x) ? x : 0; }
   function esc(s) { return String(s === null || s === undefined ? "" : s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
-  function siteName(r) { if (r.site === "OTHER") return (r.siteOther || "Unnamed") + " (other)"; var s = C.siteByCode[r.site]; return s ? s.name : (r.site || "—"); }
+  function siteName(r) {
+    if (r.site === "OTHER") return (r.siteOther || "Unnamed") + " (other)";
+    /* a palika-level report names no site: it is shown under its palika and never counted as one */
+    if (r.site === "PALIKA") return (C.palikaName(r.palika) || "palika not stated") + " (palika level)";
+    var s = C.siteByCode[r.site]; return s ? s.name : (r.site || "—");
+  }
+  /* the grouping key for "one place": a site code, or one palika for palika-level reports */
+  function placeKey(r) { return r.site === "PALIKA" ? "PALIKA:" + (r.palika || "?") : (r.site || "—"); }
   function orgName(r) { if (r.org === "OTHER") return (r.orgOther || "Unnamed") + " (other)"; var o = C.orgByCode[r.org]; return o ? o.name : (r.org || "—"); }
   function actName(c) { var a = C.activityByCode[c]; return a ? a.name : (c || "—"); }
   function distName(c) { var d = C.districtByCode[c]; return d ? d.name : (c || "—"); }
@@ -638,7 +645,7 @@
 
     var bySite = {};
     DATA.forEach(function (r) {
-      var k = r.site || "—";
+      var k = placeKey(r);
       (bySite[k] = bySite[k] || { reports: 0, reach: 0, orgs: new Set(), last: "", label: siteName(r), district: r.district })
       var b = bySite[k];
       b.reports++; b.reach += n(r.reachedTotal); b.orgs.add(orgName(r));
@@ -670,7 +677,7 @@
     /* --- duplication --- */
     var key = {};
     DATA.forEach(function (r) {
-      var k = (r.dateAD || "?") + "|" + (r.site || "?");
+      var k = (r.dateAD || "?") + "|" + placeKey(r);
       (key[k] = key[k] || { date: r.dateAD, site: siteName(r), rows: [] }).rows.push(r);
     });
     var flags = Object.values(key).filter(function (g) { return new Set(g.rows.map(orgName)).size > 1; });
@@ -683,7 +690,7 @@
     $("dupBody").innerHTML = flags.length ? flags.sort(function (a, b) { return (b.date || "").localeCompare(a.date || ""); }).map(function (g) {
       var byOrg = {};
       g.rows.forEach(function (r) { (byOrg[orgName(r)] = byOrg[orgName(r)] || []).push(r); });
-      var sameOrgTwoDonors = Object.values(byOrg).some(function (v) { return new Set(v.map(function (r) { return r.donor; })).size > 1; });
+      var sameOrgTwoDonors = Object.values(byOrg).some(function (v) { return new Set(v.map(function (r) { return S.donorsOf(r).join("+"); })).size > 1; });
       var acts = new Set(g.rows.map(function (r) { return actName(r.activity); }));
       return "<tr><td>" + esc(g.date || "—") + "</td><td>" + esc(g.site) + "</td>" +
         "<td>" + Object.keys(byOrg).map(function (o) { return esc(o) + " <span class='xs'>(" + byOrg[o].length + ")</span>"; }).join("<br>") + "</td>" +

@@ -349,7 +349,15 @@ window.I18N_STRINGS = {
     "f4.ofPwd":    "Persons with disabilities",
     "f4.ofPreg":   "Pregnant or postpartum",
     "f4.ofwNote":  "One person can be in both, and is in a band above as well. These two are checked against the total but are never summed with it or with each other.",
-    "f4.disHelp":  "Reports in the current workbook carry breakdowns like \u201cWomen (18+) = 19, Men (18+) = 28\u201d typed into the provider column, because the form has nowhere else to put them. Here they have somewhere, the parts are checked against the total, and the four bands fold to the two the official 5Ws asks for.",
+    "f4.disHelp":  "Reports in the current workbook carry breakdowns typed into the provider column \u2014 a \u201cwomen 18+ = 12, men 18+ = 9\u201d where an organisation name should be \u2014 because the form has nowhere else to put them. Here they have somewhere, the parts are checked against the total, and the four bands fold to the two the official 5Ws asks for.",
+    /* 0.3.0 fields, 16 Sep 2026: funding as a list, joint-activity partners,
+       palika-level reports. English only until the translator returns. */
+    "f4.donorsLab":    "Funding source <span class=\"opt\">\u2014 optional, tick all that apply</span>",
+    "f4.donorsHelp":   "Recorded so that one organisation reporting under two donors is not mistaken for two organisations. An activity funded by two donors carries both.",
+    "f4.partnersLab":  "Joint activity with <span class=\"opt\">\u2014 optional</span>",
+    "f4.partnersHelp": "Organisations that did this activity with you \u2014 not the funder, which goes above. Item C of the IASC 4Ws.",
+    "f4.palikaLab":    "Palika (local level)",
+    "f4.palikaHelp":   "Named after the official list of local levels. A palika-level report is counted at palika level and never as a site, so it cannot close a gap on the roster.",
 
     "sr.age.choose": "— choose —",
     "sr.age.u18": "Under 18",
