@@ -240,8 +240,12 @@ table.data td.n{text-align:right; font-variant-numeric:tabular-nums; white-space
 .ml-note li{margin-bottom:5px}
 
 table.prov{width:100%; border-collapse:collapse; font-size:12.5px; margin:10px 0 0}
-table.prov th,table.prov td{text-align:left; vertical-align:top; padding:7px 9px;
+/* th and td were one rule here, and at (0,1,1) it silently beat the bare
+   `td` justification. Split: the header stays set left, the cell -- which
+   carries running prose -- inherits the justification. */
+table.prov th,table.prov td{vertical-align:top; padding:7px 9px;
   border-bottom:1px solid var(--line-s)}
+table.prov th{text-align:left}
 table.prov th{background:var(--bg); font-size:11px; letter-spacing:.05em; text-transform:uppercase;
   color:var(--slate); border-bottom:1px solid var(--line)}
 .tw{overflow-x:auto}

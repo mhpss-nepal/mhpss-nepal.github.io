@@ -90,7 +90,10 @@
      Ministry-of-Finance comparison and still read as one site. */
   --frame:1240px;
   --gutter:28px;
-  --measure:74ch;      /* prose line length, capped independently of the frame */
+  --measure:82ch;      /* prose line length -- the measure recorded in
+                          claude/layer2-spec-from-5ws.md section 6. Not 74ch:
+                          that was set earlier today without checking the
+                          record, and the record stands. */
   --formw:940px;       /* a form column; a 1240px-wide input is not a form */
   --sans:'Mukta',system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans',Arial,sans-serif;
   --r-sm:3px; --r:4px; --r-md:10px; --r-lg:12px;
@@ -673,3 +676,47 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 .rail .railtoggle{display:block;padding:11px 16px 2px}
 .rail .railtoggle #i18nbar{border-color:var(--wh-3)}
 @media (max-width:999px){ .rail .railtoggle{padding:8px 15px 10px} }
+
+/* =====================================================================
+   TEXT SETTING -- claude/text-setting-rules.md
+   ---------------------------------------------------------------------
+   Every block of running text is flush to BOTH margins of whatever
+   container it stands in. A word is never split: one that does not fit
+   goes down to the next line whole, and the words left above spread out
+   to reach the right margin.
+
+   hyphens is none, not auto. `hyphens: auto` is the textbook companion
+   to justified text because it narrows the word gaps -- and it is
+   refused here on purpose: a word broken across a line break is harder
+   to read, and a tidier gap does not pay for that.
+
+   No line-counting logic. A last line never justifies, so a one-line
+   block is untouched by this rule already; a JavaScript line counter
+   only reintroduces the bug of treating a two-line paragraph as if it
+   were a label.
+
+   This changes NO width decision. It justifies to the measure the
+   container already has -- the 82ch prose measure in
+   claude/layer2-spec-from-5ws.md section 6 stands.
+   ===================================================================== */
+p, li, blockquote, dd, td, figcaption,
+.note, .callout, .lede, .subtitle, .help, .stand, .insight, .figsrc{
+  text-align:justify;
+  text-justify:inter-word;
+  -webkit-hyphens:none; hyphens:none;
+  overflow-wrap:normal; word-break:normal;
+}
+
+/* Labels and figures are SET, not justified. Justifying a two-word label
+   stretches it into a gappy line; justification sets paragraphs. */
+th, .mono, code, kbd, samp, .chip, .badge, .tag, .num, .eyebrow,
+.blabel, .ulab, .units, .pill, .tagpill, .stamp, .hint, .opt{
+  text-align:left;
+  -webkit-hyphens:none; hyphens:none;
+}
+
+/* A file name or a code can be longer than a narrow column.
+   break-word, NOT anywhere: `anywhere` breaks the token whenever it is
+   convenient, `break-word` only when it cannot fit a line at all.
+   Neither inserts a hyphen, so neither breaks the rule above. */
+.mono, code, kbd, samp{ overflow-wrap:break-word }
