@@ -26,7 +26,7 @@
 /* The written slot is the fallback when no emblem file is present. It is
    styled to read as a deliberate credit line, not as a broken image. */
 .attrib .slot{border-left:2px solid #d8dfe4; padding:2px 0 2px 11px; min-width:0;
-  font:400 11px/1.4 'Noto Sans',system-ui,sans-serif; color:#8b98a2}
+  font:400 11px/1.4 'Noto Sans',system-ui,sans-serif; color:#636f78}
 .attrib .slot span{display:block; font-weight:700; color:#20313b; font-size:12.5px;
   letter-spacing:0; margin-top:1px}
 .attrib img.mark{height:46px; width:auto; display:block}

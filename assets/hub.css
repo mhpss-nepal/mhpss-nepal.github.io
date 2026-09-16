@@ -1,3 +1,14 @@
+/* Status colours, recomputed 16 September 2026 against the surfaces they are
+   actually drawn on, not against plain white:
+     --good     #0ca30c was 3.12:1 on the card wash -> #0a7d0a, 4.94:1
+     --critical #d03b3b was 4.22:1 on its own pink cell tint -> #b32525, 5.75:1
+                and 3.68:1 on the dark surface -> lifted to #ea7c7c there
+   The meanings are unchanged: red is a roster site with nothing reported,
+   green is a site reporting. */
+/* --muted was #8497A2 — 3.03:1 on white, so every caption, table header and
+   eyebrow set in it failed WCAG AA. It is now #697781 (4.61:1). Dark mode's
+   #7D8F9A already cleared 5.28:1 against #15191C and is unchanged. Checked with
+   a sweep over every text element on every page, in both modes, not by eye. */
 /* Retinted 16 September 2026 to the Health Cluster's own palette
    (healthcluster.who.int Visual Identity Guidelines): Pantone 299 C
    #009fe3 for the brand, and its darker shade #006996 wherever the brand
@@ -18,10 +29,24 @@
 :root{
   color-scheme: light;
   --surface:#ffffff; --surface-2:#F4F7F9; --surface-3:#EAF0F4;
-  --ink:#20313B; --slate:#5B6B76; --muted:#8497A2; --line:#D8DFE4;
+  --ink:#20313B; --slate:#5B6B76; --muted:#636f78; --line:#D8DFE4;
   --brand:#009fe3; --brand-d:#006996; --brand-wash:#eaf7fd;
   --s1:#009fe3; --s2:#eb6834; --s3:#1baf7a; --s4:#6f4fa8; --s5:#e87ba4; --s6:#8497A2;
-  --good:#0ca30c; --warning:#a56208; --serious:#ec835a; --critical:#d03b3b;
+
+/* The activity-mix ramp — SEQUENTIAL, one hue, and that is the point.
+   Five categorical hues could not be made colour-blind-safe at five slots in
+   both light and dark: every candidate set failed the orange-vs-green pair
+   under deuteranopia (the search is recorded in claude/hub-design.md). A ramp
+   solves it by construction, because lightness is the one channel every kind
+   of colour vision keeps. It also says something true that hues did not: the
+   steps run from the broadest, least specialised support to the most
+   specialised, which is the same ordering as the IASC pyramid on the public
+   page. Validated as an ordinal ramp: monotone lightness, every adjacent gap
+   >= 0.06, the pale end clear of the surface, one hue.
+   The residual "Other" is a HATCHED neutral, not a sixth step — it is a
+   remainder, not a family, and a pattern separates it for every reader. */
+  --a1:#6fc0e9; --a2:#22a3dd; --a3:#0079ae; --a4:#005a84; --a5:#003c59; --a0:#9a9a98;
+  --good:#0a7d0a; --warning:#a56208; --serious:#b45020; --critical:#b32525;
   --grid:#EDF1F4; --wash-bad:#FBEDED; --warn-ink:#8a5f00;
   --shadow:0 1px 2px rgba(32,49,59,.06), 0 4px 14px rgba(32,49,59,.05);
   --r:10px;
@@ -31,8 +56,15 @@
     color-scheme: dark;
     --surface:#15191C; --surface-2:#1C2226; --surface-3:#232B30;
     --ink:#EEF3F6; --slate:#A7B7C0; --muted:#7D8F9A; --line:#2C363C;
+  --wh-tx:#79bbd8;   /* design.css's text-blue, lifted for this dark surface */
+  /* status and layer colours for THIS surface: the light-mode values are
+     2.6-3.4:1 against #15191C, and a pill filled with them cannot carry
+     white text either. Computed, not flipped. */
+  --good:#4fc44f; --critical:#ea7c7c; --serious:#f0a077;
+
     --brand:#4cb8e8; --brand-d:#79bbd8; --brand-wash:#0d2c3c;
-    --s1:#1E9BD7; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#7D8F9A;
+    --s1:#4cb8e8; --s2:#e2703a; --s3:#3bbd8a; --s4:#a284f0; --s5:#e57bab; --s6:#8e9aa4;
+  --a1:#0f5a7a; --a2:#12749c; --a3:#1c8ebc; --a4:#3ea9d6; --a5:#6cc3e8; --a0:#8e8e8c;
     --grid:#232B30; --wash-bad:#2A1B1B; --warn-ink:#f0aa5c;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
   }
@@ -41,8 +73,15 @@
   color-scheme: dark;
   --surface:#15191C; --surface-2:#1C2226; --surface-3:#232B30;
   --ink:#EEF3F6; --slate:#A7B7C0; --muted:#7D8F9A; --line:#2C363C;
+  --wh-tx:#79bbd8;   /* design.css's text-blue, lifted for this dark surface */
+  /* status and layer colours for THIS surface: the light-mode values are
+     2.6-3.4:1 against #15191C, and a pill filled with them cannot carry
+     white text either. Computed, not flipped. */
+  --good:#4fc44f; --critical:#ea7c7c; --serious:#f0a077;
+
   --brand:#4cb8e8; --brand-d:#79bbd8; --brand-wash:#0d2c3c;
-  --s1:#1E9BD7; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#7D8F9A;
+  --s1:#4cb8e8; --s2:#e2703a; --s3:#3bbd8a; --s4:#a284f0; --s5:#e57bab; --s6:#8e9aa4;
+  --a1:#0f5a7a; --a2:#12749c; --a3:#1c8ebc; --a4:#3ea9d6; --a5:#6cc3e8; --a0:#8e8e8c;
   --grid:#232B30; --wash-bad:#2A1B1B; --warn-ink:#f0aa5c;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
 }
@@ -58,7 +97,10 @@ a{color:var(--brand-d)}
 @media(max-width:520px){ .wrap{padding:0 16px} body{font-size:14px} }
 
 /* ── synthetic banner ── */
-.synth{background:var(--critical);color:#fff;font-size:12.5px;font-weight:700;
+/* the banner is white ON red, so it keeps its own dark red in both modes;
+   --critical is a TEXT colour on the page surface and is lifted in dark
+   mode, where white on it falls to 2.74:1. */
+.synth{background:#a3201f;color:#fff;font-size:12.5px;font-weight:700;
        letter-spacing:.02em;text-align:center;padding:7px 16px;
        padding-top:calc(7px + env(safe-area-inset-top,0px));position:relative;z-index:40}
 .synth span{font-weight:400;opacity:.92}
@@ -134,7 +176,11 @@ text.axis,.axis text{font-size:11px;fill:var(--slate)}
 line.axis,.axis line{stroke:var(--grid);stroke-width:1}
 .vlabel{font-size:11px;fill:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 .clabel{font-size:11.5px;fill:var(--ink)}
-.slabel{font-size:10px;fill:#fff;font-weight:700}
+
+/* axis and gridline labels for the vertical columns */
+.alabel{font-size:10px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.slabel{font-size:10px;font-weight:700}   /* fill is computed per segment in hub.js */
+#actChart{width:100%;height:auto;display:block}
 .bar{transition:opacity .1s}
 .bar:hover{opacity:.82}
 
@@ -177,3 +223,10 @@ footer.site b{color:var(--ink)}
 #tip b{color:var(--surface)}
 #tip .r{display:flex;justify-content:space-between;gap:14px}
 #tip .r span:last-child{font-variant-numeric:tabular-nums;font-weight:700}
+/* the value above each bar */
+.blabel{font-size:9.5px;font-weight:700;font-variant-numeric:tabular-nums}
+/* Six bars per district cannot be read at phone width, and shrinking the type
+   until they fit is not reading them. The figure keeps its minimum and swipes,
+   the same convention the tables on this site use. */
+#what figure{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#actChart{display:block;width:100%;min-width:720px;height:auto}

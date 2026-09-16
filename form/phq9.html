@@ -222,7 +222,7 @@
   var html = ITEMS.map(function (t, i) {
     var opts = OPTS.map(function (o) {
       return '<label><input type="radio" name="q' + i + '" value="' + o.v + '"> ' + o.l +
-             ' <span style="color:#8b98a2">(' + o.v + ')</span></label>';
+             ' <span style="color:var(--mute)">(' + o.v + ')</span></label>';
     }).join("");
     return '<div class="q" id="qw' + i + '"><div class="qt">' + (i + 1) + '. ' +
            t.replace(/&/g, "&amp;").replace(/</g, "&lt;") +

@@ -223,15 +223,66 @@
       [0, 1, 1, 1]);
   }
 
-  /* Activity mix — stacked, five families + residual, direct-labelled. */
+  /* Activity mix — VERTICAL columns, GROUPED, one bar per activity family.
+     It was horizontal bars, then vertical stacked ones; Adib asked for each
+     family to stand beside the others rather than be piled into one bar. That
+     is the better chart anyway: every family now starts from the baseline, so a
+     small family is compared against the axis instead of being read off the top
+     of whatever is beneath it.
+
+     What this had to solve:
+       · the totals span 26x (4,756 against 185), so the smallest bars are a
+         couple of pixels. The value therefore sits ABOVE each bar, in ink,
+         never inside it — a label inside a two-pixel bar is unreadable at any
+         contrast. And a 100% MIX STRIP under each group carries the composition
+         at full length whatever the district's size, without a second y-scale.
+       · the viewBox takes the container's own width, so one unit is one CSS
+         pixel and a 10px label is 10px on a phone. With a fixed 900-wide
+         viewBox it rendered at about 4px. Six bars per district cannot be read
+         at 320px either, so the figure has a min-width and swipes.
+       · colour is a SEQUENTIAL ramp, not six hues — the reasoning is in
+         hub.css. Palest is the broadest, least specialised support; darkest the
+         most specialised. "Other" is hatched, because it is a remainder.
+     The family order is fixed and runs with the ramp, in every group and in the
+     legend. It is never sorted by size, or position and shading would both
+     stop meaning anything. */
   var FAM = [
-    { key: 'PFA',   label: 'Psychological first aid',   codes: ['PFA'],                     v: '--s1' },
-    { key: 'CNS',   label: 'Counselling',               codes: ['CNS-I', 'CNS-G'],          v: '--s2' },
-    { key: 'COMM',  label: 'Community & children',      codes: ['PSED', 'RECR', 'CFS', 'IEC'], v: '--s3' },
-    { key: 'SPEC',  label: 'Specialised & referral',    codes: ['SPEC', 'MEDS', 'REF'],     v: '--s4' },
-    { key: 'REM',   label: 'Remote & assessment',       codes: ['HELP', 'ASMT', 'STAFF'],   v: '--s5' }
+    { key: 'COMM', label: 'Community & children',     codes: ['PSED', 'RECR', 'CFS', 'IEC'], v: '--a1' },
+    { key: 'REM',  label: 'Remote & assessment',      codes: ['HELP', 'ASMT', 'STAFF'],      v: '--a2' },
+    { key: 'PFA',  label: 'Psychological first aid',  codes: ['PFA'],                        v: '--a3' },
+    { key: 'CNS',  label: 'Counselling',              codes: ['CNS-I', 'CNS-G'],             v: '--a4' },
+    { key: 'SPEC', label: 'Specialised & referral',   codes: ['SPEC', 'MEDS', 'REF'],        v: '--a5' }
   ];
   var famOf = {}; FAM.forEach(function (f) { f.codes.forEach(function (c) { famOf[c] = f.key; }); });
+
+  /* A label's colour is computed against the fill it sits on, not chosen, because
+     the ramp runs pale to dark and reverses between light and dark mode. */
+  function relLum(hex) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 0;
+    var n = parseInt(m[1], 16);
+    var c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
+      v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function ratio(a, b) {
+    var x = relLum(a), y = relLum(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+  function inkOn(bg) {
+    var dark = cssv('--ink') || '#1d1d1b';
+    return ratio('#ffffff', bg) >= ratio(dark, bg) ? '#ffffff' : dark;
+  }
+
+  /* the hatch for the residual, rebuilt each draw so a theme change repaints it */
+  function hatch(svg, id) {
+    var defs = mk('defs', {});
+    var pat = mk('pattern', { id: id, width: 6, height: 6,
+      patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
+    pat.appendChild(mk('rect', { width: 6, height: 6, fill: cssv('--surface') || '#fff' }));
+    pat.appendChild(mk('rect', { width: 2.4, height: 6, fill: cssv('--a0') || '#9a9a98' }));
+    defs.appendChild(pat); svg.appendChild(defs);
+    return 'url(#' + id + ')';
+  }
 
   function drawActs() {
     var svg = el('actChart'); svg.innerHTML = '';
@@ -244,39 +295,123 @@
       var tot = FAM.reduce(function (a, f) { return a + (dm[d][f.key] || 0); }, 0) + (dm[d].OTH || 0);
       return { d: d, name: distBy[d].name, parts: dm[d], tot: tot };
     }).sort(function (a, b) { return b.tot - a.tot; });
-    var W = 900, padL = 118, padR = 74, rowH = 34, gap = 11, H = rows.length * (rowH + gap) + 4;
-    if (window.innerWidth < 620) padL = 82;
+    if (!rows.length) return;
+
+    /* the viewBox takes the container's own width, so one unit is one CSS pixel
+       and a 10px label is 10px on every screen. The container has a min-width
+       and scrolls: six bars per district cannot be read at 320px, and shrinking
+       the type until they fit is not reading them either. */
+    var W = Math.max(720, Math.round(svg.getBoundingClientRect().width || 900));
+    var padL = 54, padR = 14, padT = 26, padB = 74;
+    var plotH = 232, H = padT + plotH + padB;
+    var band = (W - padL - padR) / rows.length;
+    var groupW = band * 0.84;
+    var cells = FAM.concat([{ key: 'OTH', label: 'Other / unclassified', v: null }]);
+    var barW = Math.max(6, groupW / cells.length - 2);   /* 2px surface gap between bars */
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     watermark(svg, W, H);
-    var max = Math.max.apply(null, rows.map(function (r) { return r.tot; }));
+    var resFill = hatch(svg, 'actHatch');
+
+    var biggest = 0;
+    rows.forEach(function (r) { cells.forEach(function (f) {
+      biggest = Math.max(biggest, r.parts[f.key] || 0); }); });
+    var stepU = Math.pow(10, Math.floor(Math.log(biggest) / Math.LN10)) / 2;
+    var top = Math.max(stepU, Math.ceil(biggest / stepU) * stepU);
+    var y0 = padT + plotH;
+
+    var grid = mk('g', { 'aria-hidden': 'true' });
+    for (var t = 0; t <= 4; t++) {
+      var val = top * t / 4, gy = Math.round(y0 - (val / top) * plotH) + 0.5;
+      grid.appendChild(mk('line', { x1: padL, x2: W - padR, y1: gy, y2: gy,
+        stroke: cssv('--grid') || '#e7ecf0', 'stroke-width': 1 }));
+      var al = mk('text', { x: padL - 9, y: gy + 3.5, 'text-anchor': 'end', class: 'alabel' }, fmt(val));
+      al.setAttribute('fill', cssv('--muted')); grid.appendChild(al);
+    }
+    svg.appendChild(grid);
+
+    /* a column with a 4px rounded top and square feet on the baseline */
+    function col(x, y, w, h) {
+      var r = Math.min(4, w / 2, h);
+      return 'M' + x + ' ' + (y + h) + ' L' + x + ' ' + (y + r) +
+             ' Q' + x + ' ' + y + ' ' + (x + r) + ' ' + y +
+             ' L' + (x + w - r) + ' ' + y + ' Q' + (x + w) + ' ' + y + ' ' + (x + w) + ' ' + (y + r) +
+             ' L' + (x + w) + ' ' + (y + h) + ' Z';
+    }
+
+    var stripY = y0 + 15, stripH = 12;
+    var grand = rows.reduce(function (a, q) { return a + q.tot; }, 0);
+
     rows.forEach(function (r, i) {
-      var y = i * (rowH + gap), x = padL;
-      var lab = mk('text', { x: padL - 12, y: y + rowH / 2 + 4, 'text-anchor': 'end', class: 'clabel' }, r.name);
-      lab.setAttribute('fill', cssv('--ink')); svg.appendChild(lab);
-      FAM.forEach(function (f) {
-        var v = r.parts[f.key] || 0; if (!v) return;
-        var w = (v / max) * (W - padL - padR);
-        var seg = mk('rect', { x: x, y: y, width: Math.max(1, w - 2), height: rowH, rx: 2, fill: cssv(f.v), class: 'bar' });
-        svg.appendChild(seg);
-        if (w > 42) {
-          var t = mk('text', { x: x + w / 2 - 1, y: y + rowH / 2 + 3.5, 'text-anchor': 'middle', class: 'slabel' }, fmt(v));
-          svg.appendChild(t);
+      var gx = padL + band * i + (band - groupW) / 2, cx = gx + groupW / 2;
+
+      cells.forEach(function (f, fi) {
+        var v = r.parts[f.key] || 0;
+        var bx = gx + fi * (barW + 2), h = (v / top) * plotH;
+        if (v > 0) {
+          var bar = mk('path', { d: col(bx, y0 - h, barW, h),
+            fill: f.v ? cssv(f.v) : resFill, class: 'bar' });
+          svg.appendChild(bar);
+          bindTip(bar, '<b>' + esc(f.label) + '</b><br><span style="opacity:.8">' + esc(r.name) + '</span>' +
+            '<div class="r"><span>Contacts</span><span>' + fmt(v) + '</span></div>' +
+            '<div class="r"><span>Share of district</span><span>' + Math.round(100 * v / r.tot) + '%</span></div>');
+          /* the value sits ABOVE the bar, in ink, never inside it: at this range
+             the smallest bars are two pixels tall and a label inside them is
+             unreadable however good the contrast is (Adib's rule 10). */
+          if (barW >= 16) {
+            var vl = mk('text', { x: bx + barW / 2, y: y0 - h - 5, 'text-anchor': 'middle',
+              class: 'blabel' }, fmt(v));
+            vl.setAttribute('fill', cssv('--ink')); svg.appendChild(vl);
+          }
+        } else {
+          /* an empty family is drawn as a hairline on the baseline, so the six
+             positions stay in the same order in every group and a gap reads as
+             a nought rather than as a missing category */
+          var z = mk('rect', { x: bx, y: y0 - 1.5, width: barW, height: 1.5,
+            fill: cssv('--grid') || '#e7ecf0' });
+          svg.appendChild(z);
         }
-        bindTip(seg, '<b>' + esc(f.label) + '</b><br><span style="opacity:.8">' + esc(r.name) + '</span>' +
-          '<div class="r"><span>Contacts</span><span>' + fmt(v) + '</span></div>' +
-          '<div class="r"><span>Share of district</span><span>' + Math.round(100 * v / r.tot) + '%</span></div>');
-        x += w;
       });
-      var tt = mk('text', { x: padL + (r.tot / max) * (W - padL - padR) + 9, y: y + rowH / 2 + 4, class: 'vlabel' }, fmt(r.tot));
-      tt.setAttribute('fill', cssv('--ink')); svg.appendChild(tt);
+
+      var dl = mk('text', { x: cx, y: y0 + 48, 'text-anchor': 'middle', class: 'clabel' }, r.name);
+      dl.setAttribute('fill', cssv('--ink')); svg.appendChild(dl);
+      var pl = mk('text', { x: cx, y: y0 + 62, 'text-anchor': 'middle', class: 'alabel' },
+        fmt(r.tot) + ' · ' + Math.round(100 * r.tot / grand) + '% of all reach');
+      pl.setAttribute('fill', cssv('--muted')); svg.appendChild(pl);
+
+      /* the mix strip: the district's six families normalised to 100%, so the
+         composition is readable even where the tallest bar is three pixels */
+      var run = 0;
+      cells.forEach(function (f) {
+        var v = r.parts[f.key] || 0; if (!v) return;
+        var w = (v / r.tot) * groupW;
+        var sg = mk('rect', { x: gx + run, y: stripY, width: Math.max(1, w - 1.5), height: stripH,
+          fill: f.v ? cssv(f.v) : resFill, class: 'bar' });
+        svg.appendChild(sg);
+        bindTip(sg, '<b>' + esc(f.label) + '</b><br><span style="opacity:.8">' + esc(r.name) +
+          ' &middot; share of district</span>' +
+          '<div class="r"><span>Share</span><span>' + Math.round(100 * v / r.tot) + '%</span></div>' +
+          '<div class="r"><span>Contacts</span><span>' + fmt(v) + '</span></div>');
+        run += w;
+      });
     });
-    el('actKeys').innerHTML = FAM.map(function (f) {
-      return '<b><span class="sw" style="background:var(' + f.v + ')"></span>' + f.label + '</b>';
+
+    var sl = mk('text', { x: padL - 9, y: stripY + 9, 'text-anchor': 'end', class: 'alabel' }, 'mix');
+    sl.setAttribute('fill', cssv('--muted')); svg.appendChild(sl);
+    svg.setAttribute('aria-label', 'Activity mix by district, as grouped columns. ' +
+      rows.map(function (r) { return r.name + ' ' + fmt(r.tot); }).join(', ') +
+      '. Within each district the six activity families stand side by side in a fixed order, ' +
+      'palest to darkest. The strip under each group is the same six normalised to 100 per cent.');
+
+    el('actKeys').innerHTML = cells.map(function (f) {
+      var bg = f.v ? 'background:var(' + f.v + ')' :
+        'background:repeating-linear-gradient(45deg,var(--a0) 0 2px,transparent 2px 5px);' +
+        'border:1px solid var(--a0)';
+      return '<b><span class="sw" style="' + bg + '"></span>' + f.label + '</b>';
     }).join('');
-    el('whatTbl').innerHTML = table(['District'].concat(FAM.map(function (f) { return f.label; })).concat(['Total']),
+    el('whatTbl').innerHTML = table(['District'].concat(cells.map(function (f) { return f.label; })).concat(['Total']),
       rows.map(function (r) {
-        return [r.name].concat(FAM.map(function (f) { return fmt(r.parts[f.key] || 0); })).concat([fmt(r.tot)]);
-      }), [0, 1, 1, 1, 1, 1, 1]);
+        return [r.name].concat(cells.map(function (f) { return fmt(r.parts[f.key] || 0); })).concat([fmt(r.tot)]);
+      }), [0, 1, 1, 1, 1, 1, 1, 1]);
   }
 
   /* ── plain tables ───────────────────────────────────────────────── */

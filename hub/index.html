@@ -130,14 +130,19 @@
     <div class="chead">
       <div class="grow">
         <h2>Activity mix by district</h2>
-        <div class="note">Grouped into five activity families plus a residual. Segments are direct-labelled because
-          three of the five fills sit below 3:1 against the light background — the label, not the colour, carries the value.</div>
+        <div class="note">Six bars per district, side by side and always in the same order, so every family is measured
+          from the axis rather than off the top of whatever is beneath it. They are shaded in one colour from palest to
+          darkest by how specialised the support is — the same ordering as the IASC intervention pyramid on the public
+          page. Six separate hues could not be made colour-blind-safe at six slots; lightness is the one channel every
+          kind of colour vision keeps. Figures sit above the bars because the smallest are a few pixels tall, and the
+          strip under each group is the same six normalised to 100%, so a district with 185 contacts still shows its
+          composition at full length.</div>
       </div>
       <button class="tbtn" data-toggle="whatTbl" type="button">Show table</button>
     </div>
     <div class="keys" id="actKeys"></div>
-    <figure><svg id="actChart" role="img" aria-label="Activity mix by district"></svg>
-      <figcaption>Synthetic. Districts ordered by total reach.</figcaption>
+    <figure><svg id="actChart" role="img" aria-label="Activity mix by district, grouped columns"></svg>
+      <figcaption>Synthetic. Districts ordered by total reach. Hover any band for its figure and its share of the district.</figcaption>
     </figure>
     <div class="scroll" id="whatTbl" hidden style="margin-top:14px"></div>
   </section>
