@@ -376,7 +376,13 @@ select{background-image:linear-gradient(45deg,transparent 50%,var(--hc-mute) 50%
 /* Hover was #002a70 -- a blue-purple left over from the palette before the
    Health Cluster one, and the only off-palette colour left in the button set. */
 .btn:not(.ghost):not(.sec):not(.grey):hover{background:var(--wh-dd)}
-.btn.ghost,.btn.sec{background:var(--paper,#fff);border-color:var(--line,var(--grey-3));color:var(--wh-tx)}
+/* The ghost border was --line: 1.35:1 on white, below the 3:1 non-text
+   threshold, so the outline that makes a white button read as a button was
+   effectively absent (flagged twice on 16 Sep 2026, fixed in its own pass).
+   The border now takes the same token as the button's text, --wh-tx: 6.07:1
+   on white, and it is lifted inside the dark blocks by the same rules that
+   lift the text, so the outline never disappears against a dark surface. */
+.btn.ghost,.btn.sec{background:var(--paper,#fff);border-color:var(--wh-tx);color:var(--wh-tx)}
 /* .grey is app.css's QUIETEST variant -- the control you should be least drawn
    to. The filled rule above matched :not(.ghost):not(.sec) at specificity
    (0,3,0), which silently beat `.btn.grey` (0,2,0) in app.css, so every grey
