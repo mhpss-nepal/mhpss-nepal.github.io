@@ -17,6 +17,8 @@
    The map (assets/referral-map.js) shows each matching hospital as a pin at
    its own location; providers and partner organisations are a count on a
    palika -- or on a district when no palika was given. A person is never a point.
+   A row whose place lies outside the districts the map draws is listed under
+   "Outside the affected districts", by the name the row gives, and not counted.
 
    Filters live in the address (?svc=SPEC&cadre=PSYT), so a worker can send
    a colleague "where are the psychiatrists" as a link.
@@ -80,6 +82,20 @@
   });
   function palName(code) { var p = PAL[code]; return p ? (isNe() && p.ne ? p.ne : p.name) : code; }
 
+  /* where a published row sits: a palika the map draws; a district it draws,
+     palika not given; or outside the districts drawn, by the name the row
+     gives (district_name) -- never a district left without a name. A district
+     is its COD-AB pcode (NP0328) or its codes.js code (NUW). */
+  function placeOf(r) {
+    var pc = /^NP\d{7}$/.test(String(r.pcode || "")) ? String(r.pcode) : null;
+    var dist = String(r.district || "");
+    var adm2 = pc ? pc.slice(0, 6) : (/^NP\d{4}$/.test(dist) ? dist : (CODE_TO_ADM2[dist] || null));
+    if (adm2 && DIST_NAME[adm2]) return { adm2: adm2, pcode: pc && PAL[pc] ? pc : null, outside: "" };
+    var named = String(r.district_name || "").trim();
+    if (adm2 || named) return { adm2: "outside", pcode: null, outside: named };
+    return { adm2: null, pcode: null, outside: "" };
+  }
+
   /* ------------------------------------------------------------ entries */
   var partnerRows = [];     // normalised, from the published document
   var partnerDoc = undefined;
@@ -106,15 +122,15 @@
   function normalisePartner(d) {
     var rows = d && Array.isArray(d.rows) ? d.rows : [];
     return rows.map(function (r) {
-      var pc = /^NP\d{7}$/.test(String(r.pcode || "")) ? String(r.pcode) : null;
-      var adm2 = pc ? pc.slice(0, 6) : (CODE_TO_ADM2[r.district] || null);
+      var at = placeOf(r);
       var org = r.org_name || (C.orgByCode && C.orgByCode[r.org] && C.label ? C.label(C.orgByCode[r.org]) : r.org);
       return {
         tier: "partner",
         src: r,
         name: { en: String(org || "") },
-        adm2: adm2,
-        pcode: pc && PAL[pc] ? pc : null,
+        adm2: at.adm2,
+        outside: at.outside,
+        pcode: at.pcode,
         palika: String(r.palika || ""),
         services: Array.isArray(r.activities) ? r.activities.map(String) : [],
         cadres: Array.isArray(r.cadres) ? r.cadres.map(String) : [],
@@ -130,9 +146,7 @@
     if (!d || d.schema !== 1) return [];
     var rows = Array.isArray(d.rows) ? d.rows : [];
     return rows.filter(function (r) { return r && r.consent === true && String(r.name || "").trim(); }).map(function (r, i) {
-      var pc = /^NP\d{7}$/.test(String(r.pcode || "")) ? String(r.pcode) : null;
-      var dist = String(r.district || "");
-      var adm2 = pc ? pc.slice(0, 6) : (/^NP\d{4}$/.test(dist) ? dist : (CODE_TO_ADM2[dist] || null));
+      var at = placeOf(r);
       return {
         tier: "provider",
         id: "pv-" + (String(r.id || i).replace(/[^\w-]/g, "") || i),
@@ -141,8 +155,9 @@
         qualification: String(r.qualification || ""),
         org: String(r.organisation || ""),
         phone: String(r.phone || ""),
-        adm2: adm2,
-        pcode: pc && PAL[pc] ? pc : null,
+        adm2: at.adm2,
+        outside: at.outside,
+        pcode: at.pcode,
         services: Array.isArray(r.services) ? r.services.map(String) : [],
         cadres: r.cadre ? [String(r.cadre)] : [],
         modes: Array.isArray(r.modalities) ? r.modalities.map(String) : [],
@@ -194,12 +209,21 @@
       var op = el("option", null, it[1]); op.value = it[0]; select.appendChild(op);
     });
   }
+  /* the label names the place outside the affected districts that the
+     hospitals list reaches; once a published row sits anywhere else outside,
+     the label drops the name rather than name only some of the places */
+  function outsideLabel() {
+    var own = {}, other = false;
+    officialEntries().forEach(function (e) { if (e.adm2 === "outside" && e.outside) own[e.outside] = true; });
+    providerRows.concat(partnerRows).forEach(function (e) { if (e.adm2 === "outside" && !own[e.outside]) other = true; });
+    return t(other ? "refdir.find.outsideAll" : "refdir.find.outside");
+  }
   function fillAll() {
     fill(sel.svc, "refdir.find.any.svc", SVC.map(function (c) { return [c, codeLabel(C.ACTIVITIES, c)]; }));
     fill(sel.cadre, "refdir.find.any.cadre", CADRE.map(function (c) { return [c, codeLabel(C.CADRES, c)]; }));
     fill(sel.mode, "refdir.find.any.mode", MODE.map(function (c) { return [c, codeLabel(C.MODALITIES, c)]; }));
     fill(sel.dist, "refdir.find.any.dist", DIST.map(function (d) { return [d[0], distName(d[0])]; })
-      .concat([["outside", t("refdir.find.outside")]]));
+      .concat([["outside", outsideLabel()]]));
     fillPalikas();
     ["svc", "cadre", "mode", "dist"].forEach(function (k) { if (sel[k]) sel[k].value = state[k]; });
   }
@@ -240,7 +264,8 @@
   /* ------------------------------------------------------------ render */
   function placeText(e) {
     if (e.tier === "phone") return "";
-    if (e.adm2 === "outside") return t("refdir.find.place.outside", { district: e.outside });
+    if (e.adm2 === "outside") return e.outside ? t("refdir.find.place.outside", { district: e.outside }) : t("refdir.find.outsideAll");
+    if (!e.adm2) return t("refdir.find.place.none");
     var dn = distName(e.adm2);
     if (e.pcode) return t("refdir.find.place.palika", { palika: palName(e.pcode), district: dn });
     if (e.tier === "partner" || e.tier === "provider") return t("refdir.find.place.districtPartner", { district: dn });
@@ -402,6 +427,8 @@
   }
 
   function render() {
+    var oo = sel.dist && sel.dist.querySelector('option[value="outside"]');
+    if (oo) oo.textContent = outsideLabel();
     var all = officialEntries().concat(providerRows, partnerRows);
     var what = all.filter(matchesWhat);
     var shown = what.filter(matchesWhere);
@@ -483,7 +510,7 @@
       bar.hidden = !on;
       bar.textContent = "";
       if (on) {
-        bar.appendChild(el("b", null, state.dist === "outside" ? t("refdir.find.outside") : distName(state.dist)));
+        bar.appendChild(el("b", null, state.dist === "outside" ? outsideLabel() : distName(state.dist)));
         var back = el("button", "fback", t("refdir.find.zoom.back"));
         back.type = "button";
         back.addEventListener("click", function () { chooseDistrict(""); });
