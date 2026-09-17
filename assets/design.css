@@ -83,16 +83,18 @@
      centred block moves its own left edge whenever its width changes, so
      every click slid the text sideways.
      The fix is one frame for every page in the top-navigation family, with
-     narrower things LEFT-ALIGNED inside it rather than re-centred. Text stays
-     readable because the prose measure is capped in ch, not because the whole
-     page is narrow -- which is what let the canvas stay wide after the
-     Ministry-of-Finance comparison and still read as one site. */
+     narrower things LEFT-ALIGNED inside it rather than re-centred.
+     17 September 2026: running text now runs the full width of whatever it
+     stands in -- the section, the card, the figure -- and no longer stops at
+     a prose measure in the middle of a wide canvas. The rule, in the words it
+     was set in: the width follows the canvas the text stands on, never cut
+     off halfway ("jgn dipotong di tengah jalan"). Titles keep their own
+     short measure: a title is set, not run. */
   --frame:1240px;
   --gutter:28px;
-  --measure:82ch;      /* prose line length -- the measure recorded in
-                          the project's design record. Not 74ch:
-                          that was set earlier today without checking the
-                          record, and the record stands. */
+  --measure:none;      /* 17 Sep 2026: no prose measure on this site --
+                          running text fills its container. Was 82ch; page.css
+                          and app.css read this variable, so they follow. */
   --formw:940px;       /* a form column; a 1240px-wide input is not a form */
   --sans:'Mukta',system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans',Arial,sans-serif;
   --r-sm:3px; --r:4px; --r-md:10px; --r-lg:12px;
@@ -107,9 +109,8 @@ a{color:var(--wh-tx)}
    flood-update page at a 1920 viewport: theirs runs 1200px of content with
    360px gutters, ours ran 1180 with 370 -- so the site was not narrower than
    the Ministry's, but both leave a lot of glass empty. The document shell goes
-   to 1320: the tables, the figures and the card row all gain width, while prose
-   keeps its own measure below (a 1320px line of text is unreadable, so the
-   extra width goes to the data, never to the sentences).
+   to 1320: the tables, the figures and the card row all gain width. Since
+   17 Sep 2026 the sentences take the same width as everything around them.
    The coordination hub is a different thing and takes a different width -- see
    the rail section and hub.css. */
 /* The demonstration band. Defined here as well as in hub.css so that the
@@ -195,7 +196,7 @@ a{color:var(--wh-tx)}
                 padding:2px 10px;font-size:11px;font-weight:600}
 h1.title{font-size:clamp(25px,3.6vw,40px);font-weight:700;line-height:1.16;color:var(--wh-d);
          letter-spacing:-.6px;margin:12px 0 0;max-width:22ch}
-.subtitle{margin:13px 0 0;font-size:16px;line-height:1.62;color:var(--hc-mute);max-width:62ch}
+.subtitle{margin:13px 0 0;font-size:16px;line-height:1.62;color:var(--hc-mute);max-width:none}
 
 /* ---------- the figure block: data as the hero ----------------------- */
 .figblock{background:#fff;border:1px solid var(--grey-3);border-radius:var(--r-md);
@@ -246,9 +247,9 @@ a.rc.fill .go{color:#fff}
            font-size:20px;font-weight:700;color:var(--wh-tx);letter-spacing:-.3px}
 .sec2 > h2 .no{flex:0 0 auto;font-size:12px;font-weight:800;color:var(--hc-ink);
                letter-spacing:1px;padding-top:2px}
-.sec2 .intro{margin:0 0 15px;font-size:15px;line-height:1.66;color:var(--hc-mute);max-width:82ch}
+.sec2 .intro{margin:0 0 15px;font-size:15px;line-height:1.66;color:var(--hc-mute);max-width:none}
 .sec2 h3{font-size:15px;font-weight:700;color:var(--hc-ink);margin:20px 0 7px}
-.sec2 p{font-size:14.5px;line-height:1.68;color:var(--hc-ink);max-width:82ch;margin:0 0 11px}
+.sec2 p{font-size:14.5px;line-height:1.68;color:var(--hc-ink);max-width:none;margin:0 0 11px}
 .sec2 p.muted{color:var(--hc-mute)}
 
 /* ---------- tables, because a table is often the honest form --------- */
@@ -293,7 +294,7 @@ a.rc.fill .go{color:#fff}
              padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.14);margin-bottom:20px}
 .gfoot h4{margin:0 0 5px;color:#fff;font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;
           font-weight:700}
-.gfoot p{margin:0 0 10px;color:rgba(255,255,255,.76);max-width:88ch;font-size:13px}
+.gfoot p{margin:0 0 10px;color:rgba(255,255,255,.76);max-width:none;font-size:13px}
 .gfoot a{color:var(--wh-3)}
 .tbc{color:var(--wh-3);font-weight:700}
 
@@ -497,7 +498,7 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
      padding:17px 19px 14px;margin:16px 0 0}
 .fig > h4{margin:0 0 3px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;
           color:var(--hc-mute);font-weight:700}
-.fig > .lede{margin:0 0 14px;font-size:13px;line-height:1.6;color:var(--hc-mute);max-width:86ch}
+.fig > .lede{margin:0 0 14px;font-size:13px;line-height:1.6;color:var(--hc-mute);max-width:none}
 .fig svg{display:block;width:100%;height:auto}
 .fig .figsrc{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--grey-2);
              font-size:11.5px;line-height:1.55;color:var(--hc-mute)}
@@ -582,7 +583,7 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
                    border:1px solid var(--wh-b);line-height:20px}
 .playerlist b{display:block;font-size:14px;color:var(--wh-tx);line-height:1.3}
 .playerlist p{margin:2px 0 0;font-size:12.5px;line-height:1.56;color:var(--hc-mute);
-              max-width:80ch}
+              max-width:none}
 
 /* ---------- figures that cannot reflow: swipe them, as the tables do -- */
 .fscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -608,7 +609,7 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
          padding:11px 14px;margin:14px 0 0;border-radius:0 var(--r) var(--r) 0}
 .insight b{display:block;font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;
            color:var(--wh-tx);font-weight:700;margin-bottom:3px}
-.insight p{margin:0;font-size:12.5px;line-height:1.62;color:var(--hc-ink);max-width:92ch}
+.insight p{margin:0;font-size:12.5px;line-height:1.62;color:var(--hc-ink);max-width:none}
 .insight.blue{border-left-color:var(--hc-ink)}
 .insight.blue b{color:var(--hc-ink)}
 
@@ -710,9 +711,10 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
    only reintroduces the bug of treating a two-line paragraph as if it
    were a label.
 
-   This changes NO width decision. It justifies to the measure the
-   container already has -- the 82ch prose measure in
-   the recorded measure stands.
+   Flush to both margins of the container the text stands in. Until
+   17 Sep 2026 that container was narrowed to an 82ch prose measure;
+   since then the text takes the container's full width, so a paragraph
+   under a full-width card row ends where the card row ends.
    ===================================================================== */
 p, li, blockquote, dd, td, figcaption,
 .note, .callout, .lede, .subtitle, .help, .stand, .insight, .figsrc{

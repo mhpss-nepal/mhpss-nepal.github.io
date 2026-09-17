@@ -14,6 +14,12 @@ Four assertions, each of them a mistake that has actually been made:
      (0,1,1) such a rule silently beats a bare `td` justification; two of
      them were doing exactly that before this gate existed
   4. .mono breaks with `break-word`, never `anywhere`
+  5. running text is not held to a measure: --measure is `none`, and no rule
+     caps the width of a paragraph, list, lede or note. Added 17 Sep 2026,
+     after paragraphs that stopped at 82ch in the middle of a full-width
+     section were pointed at: the width follows the canvas the text stands
+     on ("jgn dipotong di tengah jalan"). Titles keep a short measure -- a
+     title is set, not run -- and pictures keep their own max-width.
 
 See the project's text-setting rules.
 """
@@ -114,6 +120,40 @@ def main():
                 fails.append("%s: overflow-wrap:anywhere splits tokens that did not need "
                              "splitting -- use break-word:  %s" % (name, " ".join(sel.split())[:70]))
     print("  overflow-wrap uses break-word, not anywhere        %s" % ("ok" if not bad_wrap else "FAIL"))
+
+    # 5. width follows the container -- no measure on running text
+    RUN_TAGS = {"p", "li", "dd", "dt", "blockquote", "figcaption", "ul", "ol", "dl"}
+    RUN_CLASSES = {"intro", "lede", "subtitle", "stand", "note", "callout", "help", "insight",
+                   "figsrc", "hlnote", "sec-note", "src", "fempty", "fnot", "fhint", "meta",
+                   "foot", "xs", "empty"}
+    capped = 0
+    dm = re.search(r"--measure\s*:\s*([^;]+);", d)
+    if not dm or dm.group(1).strip() != "none":
+        capped += 1
+        fails.append("assets/design.css: --measure is %s -- running text follows its container, "
+                     "so it has to be none" % (dm.group(1).strip() if dm else "not declared"))
+    for name, txt in files():
+        src = strip_comments(txt)
+        if name.endswith(".html"):
+            src = strip_comments(" ".join(re.findall(r"<style[^>]*>(.*?)</style>", src, re.S)))
+        for sel, body in re.findall(r"([^{}]+)\{([^}]*)\}", src):
+            for mw in re.findall(r"max-width\s*:\s*([^;]+)", body):
+                v = mw.strip()
+                if v in ("none", "100%") or v.startswith("var(--measure"):
+                    continue
+                for one in sel.split(","):
+                    one = " ".join(one.split())
+                    if not one or one.startswith("@"):
+                        continue
+                    subject = re.split(r"[\s>+~]+", one)[-1]
+                    subject = re.sub(r"::?[\w-]+(\([^)]*\))?", "", subject)
+                    tag = re.match(r"^[a-z0-9]*", subject).group(0)
+                    classes = set(re.findall(r"\.([\w-]+)", subject))
+                    if tag in RUN_TAGS or classes & RUN_CLASSES:
+                        capped += 1
+                        fails.append("%s: running text held to a measure -- %s { max-width:%s }"
+                                     % (name, one[:70], v))
+    print("  running text follows its container (no measure)   %s" % ("ok" if not capped else "FAIL"))
 
     if fails:
         print()

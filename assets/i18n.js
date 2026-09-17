@@ -140,6 +140,17 @@
     return { text: en, translated: false, missing: en == null, kept: false };
   }
 
+  /* A date is one unit: "7 September 2026" never breaks after the 7 or
+     before the year. In justified text a date split across two lines leaves
+     a stranded "7" and a line of wide gaps above it (17 Sep 2026). */
+  var MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December";
+  var DATE3 = new RegExp("(\\d{1,2}) (" + MONTHS + ") (\\d{4})", "g");
+  var DATE2 = new RegExp("(\\d{1,2}) (" + MONTHS + ")(?![\\u00a0\\w])", "g");
+  function bindDates(s) {
+    if (typeof s !== "string" || s.indexOf(" ") < 0) return s;
+    return s.replace(DATE3, "$1\u00a0$2\u00a0$3").replace(DATE2, "$1\u00a0$2");
+  }
+
   function t(key, vars) {
     var r = look(key);
     var s = r.text == null ? "" : String(r.text);
@@ -148,6 +159,7 @@
         s = s.replace(new RegExp("\\{" + k + "\\}", "g"), vars[k]);
       });
     }
+    s = bindDates(s);
     return s;
   }
 
@@ -176,8 +188,8 @@
         el.classList.add("i18n-missing");
         return;
       }
-      if (el.hasAttribute("data-i18n-html")) el.innerHTML = r.text;
-      else el.textContent = r.text;
+      if (el.hasAttribute("data-i18n-html")) el.innerHTML = bindDates(r.text);
+      else el.textContent = bindDates(r.text);
       el.classList.toggle("i18n-todo", !r.translated && lang !== "en");
       el.classList.toggle("i18n-kept", !!r.kept && lang !== "en");
       el.classList.toggle("i18n-machine", r.prov === "machine" && lang !== "en");
