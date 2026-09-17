@@ -30,9 +30,9 @@
    ===================================================================== */
 
 const META = {
-  version: "0.2.0-draft",
-  compiled: "2026-09-16",
-  basis: "Data workstream code lists of 15 Sep 2026 and delta list D-S01..D-M07; palika P-codes from OCHA COD-AB NPL v02",
+  version: "0.3.0-draft",
+  compiled: "2026-09-17",
+  basis: "Data workstream code lists of 15 Sep 2026 and delta list D-S01..D-M07; palika P-codes from OCHA COD-AB NPL v02; EDCD review of 17 Sep 2026 (cadre list, service settings, districts); districts from the RDNA Rasuwa-Bhotekoshi Flood 2026 (NDRRMA/NPC) and NDRRMA SitRep #1 of 1 Sep 2026",
   status: "DRAFT — not agreed with EDCD or the MHPSS Technical Working Group",
   /* held open, not decided here: see the block each one concerns */
   questions: ["D-S14", "D-S23", "D-O02", "D-C01", "D-C02", "D-A03", "D-A05"],
@@ -54,6 +54,13 @@ const DISTRICTS = [
   { code: "CHT", name: "Chitwan", province: "Bagmati", np: "चितवन", np_src: "draft" },
   { code: "NAW", name: "Nawalparasi (Bardaghat Susta East)", alias: "Nawalpur", province: "Gandaki", np: "नवलपरासी (बर्दघाट सुस्ता पूर्व)", np_src: "draft" },
   { code: "SIN", name: "Sindhupalchok", province: "Bagmati", np: "सिन्धुपाल्चोक", np_src: "draft", question: "D-S23" },
+  /* Added 17 Sep 2026: Gorkha named by EDCD in the review and listed as a
+     core assessment district in the RDNA (local levels Shahid Lakhan and
+     Gandaki RMs); Tanahun listed in the RDNA "where information available"
+     and in NDRRMA SitRep #1 (missing persons). Their palikas follow once the
+     COD-AB P-codes are handed over. */
+  { code: "GOR", name: "Gorkha", province: "Gandaki", np: "गोरखा", np_src: "draft", src: "EDCD review 17 Sep 2026; RDNA 2026; NDRRMA SitRep #1" },
+  { code: "TAN", name: "Tanahun", province: "Gandaki", np: "तनहुँ", np_src: "draft", src: "RDNA 2026; NDRRMA SitRep #1" },
   { code: "OTH", name: "Other — specify", np: "अन्य — उल्लेख गर्नुहोस्", np_src: "draft" },
 ];
 
@@ -230,6 +237,11 @@ const ACTIVITIES = [
   { code: "COORD", iasc: null, question: "D-A03", iasc_conf: "Low", iasc_rule: "Not an MHPSS service activity; attach no people count. 6.1 only if it is orientation of, or advocacy with, aid agencies. Whether COORD stays in a 4Ws activity list is open.", name: "Coordination meeting",                   group: "Coordination", groupNp: "समन्वय", np: "समन्वय बैठक", np_src: "draft" },
   { code: "TRAIN", iasc: "11.3", iasc_conf: "High",   iasc_rule: "Training / orienting (specify topic).", name: "Training / orientation delivered",       group: "Capacity", groupNp: "क्षमता विकास", np: "तालिम / अभिमुखीकरण सञ्चालन", np_src: "draft" },
   { code: "STAFF", iasc: "11.5", iasc_conf: "High",   iasc_rule: "The manual records support to aid workers as 11.5 and never under codes 7-10. Whether police, army and search-and-rescue staff count as aid workers is not stated in the manual (open).", name: "Support to responders / staff care",     group: "Focused support", groupNp: "केन्द्रित सहयोग", np: "कार्यकर्तालाई सहयोग / स्टाफ केयर", np_src: "draft" },
+  /* "Other (free text)" on every list -- EDCD, 17 Sep 2026. The text travels
+     in activityOther; after one or two months the entries say whether the
+     list or the guidance needs work. Not part of the activity taxonomy,
+     which is being reworked on the IASC layers separately. */
+  { code: "OTH",   iasc: null, iasc_conf: null, iasc_rule: "Not coded until the text is reviewed.", name: "Other — specify", group: "Not stated", groupNp: "उल्लेख नगरिएको", np: "अन्य — उल्लेख गर्नुहोस्", np_src: "draft" },
 ];
 
 /* ---------------------------------------------------------------------
@@ -263,19 +275,31 @@ const ORGS = [
 
 /* Funding tags seen in reports. "Save the Children" sat in the remarks
    column of five TPO Nepal records and was missing here (D-O01). */
+/* Funding tags. Removed from the FIELD form on 17 Sep 2026 (EDCD): funding
+   is collected from the organisations, not from workers on the ground. The
+   list stays for the records already held and for the reconciliation
+   lists; no form offers it. */
 const DONORS = ["UNICEF", "SDC", "UNFPA", "AWO", "Save the Children", "Own funds", "Other", "Not specified"];
 
 /* Cadre of the person delivering — absent from the current form, which is
    why counsellor, psychologist and psychiatrist cannot be counted apart. */
 const CADRES = [
+  /* The list agreed with EDCD on 17 Sep 2026: clinical psychologist added,
+     the senior / non-senior counsellor split dropped. Two points from that
+     meeting are still open and are NOT decided here: whether "psychologist"
+     stays a code of its own (the recording names it, the written list does
+     not) and whether volunteers split into PFA volunteers and other trained
+     volunteers. Until then PSY stays and VOL covers both. */
   { code: "PSC",  name: "Psychosocial counsellor", np: "मनोसामाजिक परामर्शकर्ता", np_src: "draft", np_note: "cadre title -- check against the EDCD/IOM psychosocial counsellor training curriculum" },
-  { code: "SPSC", name: "Senior psychosocial counsellor", np: "वरिष्ठ मनोसामाजिक परामर्शकर्ता", np_src: "draft" },
-  { code: "PSY",  name: "Psychologist", np: "मनोविद्", np_src: "draft", np_note: "मनोवैज्ञानिक is also current -- one has to be chosen and used consistently" },
+  { code: "CPSY", name: "Clinical psychologist", np: "क्लिनिकल मनोविद्", np_src: "draft", np_note: "क्लिनिकल साइकोलोजिस्ट is also in use -- one has to be chosen", src: "EDCD review 17 Sep 2026" },
+  { code: "PSY",  name: "Psychologist", np: "मनोविद्", np_src: "draft", np_note: "मनोवैज्ञानिक is also current -- one has to be chosen and used consistently", question: "EDCD 17 Sep: confirm it stays a separate code" },
   { code: "PSYT", name: "Psychiatrist", np: "मनोचिकित्सक", np_src: "draft" },
   { code: "SW",   name: "Social worker", np: "सामाजिक कार्यकर्ता", np_src: "draft" },
   { code: "HW",   name: "Health worker (non-specialist)", np: "स्वास्थ्यकर्मी (विशेषज्ञ नभएको)", np_src: "draft" },
-  { code: "VOL",  name: "Trained volunteer", np: "तालिम प्राप्त स्वयंसेवक", np_src: "draft" },
-  { code: "OTH",  name: "Other", np: "अन्य", np_src: "draft" },
+  { code: "VOL",  name: "Trained volunteer (including PFA volunteers)", np: "तालिम प्राप्त स्वयंसेवक (PFA स्वयंसेवकसहित)", np_src: "draft", question: "EDCD 17 Sep: confirm whether PFA volunteers and other trained volunteers are two codes" },
+  { code: "OTH",  name: "Other — specify", np: "अन्य — उल्लेख गर्नुहोस्", np_src: "draft" },
+  /* retired 17 Sep 2026 (merged into PSC): kept so records that carry it still resolve; never offered on a form */
+  { code: "SPSC", name: "Senior psychosocial counsellor", np: "वरिष्ठ मनोसामाजिक परामर्शकर्ता", np_src: "draft", retired: true, mergeInto: "PSC" },
 ];
 
 /* Target groups — category codes only. Never a description of a person. */
@@ -289,13 +313,23 @@ const TARGET_GROUPS = [
   { code: "TG-PEX", name: "People with a pre-existing mental health condition", np: "पहिलेदेखि मानसिक स्वास्थ्य समस्या भएका व्यक्ति", np_src: "draft" },
   { code: "TG-RES", name: "Frontline responders (SAR, army, police, volunteers, forensic, health)", np: "अग्रपङ्क्तिका कार्यकर्ता (खोज-उद्धार, सेना, प्रहरी, स्वयंसेवक, फोरेन्सिक, स्वास्थ्य)", np_src: "draft" },
   { code: "TG-PRG", name: "Pregnant and postpartum women", np: "गर्भवती र सुत्केरी महिला", np_src: "draft" },
+  { code: "TG-OTH", name: "Other group — specify", np: "अन्य समूह — उल्लेख गर्नुहोस्", np_src: "draft", src: "EDCD review 17 Sep 2026: Other on every list" },
 ];
 
+/* Service setting — where the activity took place. The four settings agreed
+   with EDCD on 17 Sep 2026, chosen so a field worker can tell them apart
+   and so the form outlives the emergency: holding centres are temporary,
+   facilities are not. Telephone / helpline stays, because the helpline
+   reports on the same form. The earlier codes are retired, not deleted, so
+   a record that carries one still reads. */
 const MODALITIES = [
-  { code: "INP", name: "In person, at a site", np: "प्रत्यक्ष, सेवा स्थलमा", np_src: "draft" },
-  { code: "OUT", name: "In person, outreach / mobile", np: "प्रत्यक्ष, घुम्ती / पहुँच सेवा", np_src: "draft" },
+  { code: "HC",  name: "In person — holding centre", np: "प्रत्यक्ष — होल्डिङ सेन्टर", np_src: "draft", src: "EDCD review 17 Sep 2026" },
+  { code: "COM", name: "In person — outreach in the community", np: "प्रत्यक्ष — समुदायमा पहुँच सेवा", np_src: "draft", src: "EDCD review 17 Sep 2026" },
+  { code: "FAC", name: "Facility — health facility, school, hospital, OCMC, other government facility", np: "संस्था — स्वास्थ्य संस्था, विद्यालय, अस्पताल, OCMC, अन्य सरकारी निकाय", np_src: "draft", src: "EDCD review 17 Sep 2026" },
   { code: "TEL", name: "Telephone / helpline", np: "टेलिफोन / हेल्पलाइन", np_src: "draft" },
-  { code: "OTH", name: "Other", np: "अन्य", np_src: "draft" },
+  { code: "OTH", name: "Other — specify", np: "अन्य — उल्लेख गर्नुहोस्", np_src: "draft" },
+  { code: "INP", name: "In person, at a site (code retired 17 Sep 2026)", np: "प्रत्यक्ष, सेवा स्थलमा", np_src: "draft", retired: true },
+  { code: "OUT", name: "In person, outreach / mobile (code retired 17 Sep 2026)", np: "प्रत्यक्ष, घुम्ती / पहुँच सेवा", np_src: "draft", retired: true },
 ];
 
 const STATUS = [
@@ -310,7 +344,7 @@ const STATUS = [
    that the most specialised label wins, in this order (D-C03).
    OPEN: D-C01 psychiatric nurse and D-C02 community psychosocial worker
    have no code and are entered as OTH until ruled. */
-const CADRE_RANK = ["PSYT", "PSY", "SPSC", "PSC", "SW", "HW", "VOL", "OTH"];
+const CADRE_RANK = ["PSYT", "CPSY", "PSY", "PSC", "SW", "HW", "VOL", "OTH"];
 
 /* Convenience lookups */
 const siteByCode = Object.fromEntries(SITES.map((s) => [s.code, s]));

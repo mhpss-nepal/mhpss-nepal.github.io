@@ -48,8 +48,24 @@
   /* what a person can go to; assessment, coordination, training and IEC
      distribution are activities, not services someone is referred to */
   var SVC = ["PFA", "CNS-I", "CNS-G", "SPEC", "MEDS", "PSED", "RECR", "CFS", "REF", "HELP", "STAFF"];
-  var CADRE = ["PSYT", "PSY", "PSC", "SPSC", "SW", "HW", "VOL"];
-  var MODE = ["INP", "OUT", "TEL"];
+  /* the cadres and the four service settings agreed with EDCD on 17 Sep 2026
+     (assets/codes.js 0.3.0), in the hub's order */
+  var CADRE = ["PSYT", "CPSY", "PSY", "PSC", "SW", "HW", "VOL"];
+  var MODE = ["HC", "COM", "FAC", "TEL"];
+  /* codes retired that day still arrive on rows filed before it. One that was
+     merged into a single code is read as that code. INP -- "in person, at a
+     site" -- was a holding centre or a facility and the row cannot say which:
+     it answers to both filters and is shown as neither. */
+  var WAS = { SPSC: "PSC", OUT: "COM" };
+  var WAS_EITHER = { INP: ["HC", "FAC"] };
+  function today(list) {
+    var out = [];
+    (Array.isArray(list) ? list : []).forEach(function (c) {
+      c = String(c); c = WAS[c] || c;
+      if (out.indexOf(c) < 0) out.push(c);
+    });
+    return out;
+  }
 
   var $ = function (id) { return document.getElementById(id); };
   function t(key, vars) { return window.I18N ? window.I18N.t(key, vars) : key; }
@@ -115,8 +131,8 @@
         pcode: e.pcode && PAL[e.pcode] ? e.pcode : null,
         pin: e.pin && typeof e.pin.lat === "number" ? e.pin : null,
         services: Object.keys(e.services || {}),
-        cadres: Object.keys(e.cadres || {}),
-        modes: Object.keys(e.modes || {})
+        cadres: today(Object.keys(e.cadres || {})),
+        modes: today(Object.keys(e.modes || {}))
       };
     });
   }
@@ -134,8 +150,8 @@
         pcode: at.pcode,
         palika: String(r.palika || ""),
         services: Array.isArray(r.activities) ? r.activities.map(String) : [],
-        cadres: Array.isArray(r.cadres) ? r.cadres.map(String) : [],
-        modes: Array.isArray(r.modalities) ? r.modalities.map(String) : [],
+        cadres: today(r.cadres),
+        modes: today(r.modalities),
         last: r.last_report || ""
       };
     });
@@ -163,8 +179,8 @@
         outside: at.outside,
         pcode: at.pcode,
         services: Array.isArray(r.services) ? r.services.map(String) : [],
-        cadres: r.cadre ? [String(r.cadre)] : [],
-        modes: Array.isArray(r.modalities) ? r.modalities.map(String) : [],
+        cadres: today(r.cadre ? [r.cadre] : []),
+        modes: today(r.modalities),
         checked: /^\d{4}-\d{2}-\d{2}$/.test(String(r.checked || "")) ? String(r.checked) : "",
         via: r.source
       };
@@ -188,8 +204,8 @@
       ["svc", "cadre", "mode", "dist", "pal"].forEach(function (k) { state[k] = q.get(k) || ""; });
     } catch (e) { /* old browser: start with nothing selected */ }
     if (state.svc && SVC.indexOf(state.svc) < 0) state.svc = "";
-    if (state.cadre && CADRE.indexOf(state.cadre) < 0) state.cadre = "";
-    if (state.mode && MODE.indexOf(state.mode) < 0) state.mode = "";
+    if (state.cadre && CADRE.indexOf(state.cadre) < 0) state.cadre = WAS[state.cadre] || "";
+    if (state.mode && MODE.indexOf(state.mode) < 0) state.mode = WAS[state.mode] || "";
     if (state.dist && state.dist !== "outside" && !DIST_NAME[state.dist]) state.dist = "";
     if (state.pal && !PAL[state.pal]) state.pal = "";
     if (state.pal) state.dist = PAL[state.pal].adm2;
@@ -247,11 +263,9 @@
   function has(list, code) { return list.indexOf(code) > -1; }
   function matchesWhat(e) {
     if (state.svc && !has(e.services, state.svc)) return false;
-    if (state.cadre) {
-      var ok = has(e.cadres, state.cadre) || (state.cadre === "PSC" && has(e.cadres, "SPSC"));
-      if (!ok) return false;
-    }
-    if (state.mode && !has(e.modes, state.mode)) return false;
+    if (state.cadre && !has(e.cadres, state.cadre)) return false;
+    if (state.mode && !has(e.modes, state.mode) &&
+        !e.modes.some(function (c) { return (WAS_EITHER[c] || []).indexOf(state.mode) > -1; })) return false;
     return true;
   }
   /* a helpline is reachable from every place, so place never removes it */

@@ -28,6 +28,12 @@
 
    Read on 17 September 2026. A service listed here is not a promise that it
    is open today.
+
+   Codes follow assets/codes.js 0.3.0 (the lists agreed with EDCD on 17 Sep
+   2026): a service at the hospital is FAC, the facility setting, where it was
+   INP; Tribhuvan University Teaching Hospital's "Clinical Psychology" is
+   CPSY, the clinical psychologist the new list adds. The quotations are the
+   same; only the codes they are filed under changed.
    ===================================================================== */
 window.REFERRAL_FACILITIES = {
  "read": "2026-09-17",
@@ -94,7 +100,7 @@ window.REFERRAL_FACILITIES = {
     "PSC": 3
    },
    "modes": {
-    "INP": 0
+    "FAC": 0
    },
    "sources": [
     {
@@ -149,7 +155,7 @@ window.REFERRAL_FACILITIES = {
     "PSYT": 0
    },
    "modes": {
-    "INP": 0
+    "FAC": 0
    },
    "sources": [
     {
@@ -201,7 +207,7 @@ window.REFERRAL_FACILITIES = {
     "PSYT": 0
    },
    "modes": {
-    "INP": 1
+    "FAC": 1
    },
    "sources": [
     {
@@ -262,10 +268,10 @@ window.REFERRAL_FACILITIES = {
    },
    "cadres": {
     "PSYT": 0,
-    "PSY": 3
+    "CPSY": 3
    },
    "modes": {
-    "INP": 0
+    "FAC": 0
    },
    "sources": [
     {
@@ -315,7 +321,7 @@ window.REFERRAL_FACILITIES = {
     "PSYT": 0
    },
    "modes": {
-    "INP": 1
+    "FAC": 1
    },
    "sources": [
     {
@@ -363,7 +369,7 @@ window.REFERRAL_FACILITIES = {
     "PSYT": 0
    },
    "modes": {
-    "INP": 0
+    "FAC": 0
    },
    "sources": [
     {
@@ -425,7 +431,7 @@ window.REFERRAL_FACILITIES = {
     "PSY": 2
    },
    "modes": {
-    "INP": 1,
+    "FAC": 1,
     "TEL": 4
    },
    "sources": [

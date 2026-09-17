@@ -166,8 +166,11 @@ def check():
 # from the District filter.
 ACTIVITY = {"PFA", "CNS-I", "CNS-G", "PSED", "RECR", "CFS", "SPEC", "MEDS", "REF", "HELP",
             "IEC", "ASMT", "COORD", "TRAIN", "STAFF"}          # assets/codes.js ACTIVITIES
-CADRE = {"PSC", "SPSC", "PSY", "PSYT", "SW", "HW", "VOL", "OTH"}  # assets/codes.js CADRES
-MODE = {"INP", "OUT", "TEL", "OTH"}                            # assets/codes.js MODALITIES
+# assets/codes.js 0.3.0 CADRES and MODALITIES, current codes only: a code
+# retired on 17 Sep 2026 (SPSC, INP, OUT) still reads on an old record, but a
+# hospital tagged today is tagged with the list as it stands
+CADRE = {"PSYT", "CPSY", "PSY", "PSC", "SW", "HW", "VOL", "OTH"}
+MODE = {"HC", "COM", "FAC", "TEL", "OTH"}
 
 def check_facilities():
     fails = []
