@@ -18,5 +18,5 @@ referral-directory.html keyed
 resources.html keyed
 videos.html keyed
 contact-us.html keyed
-form/index.html keyed
-form/selfreport.html keyed
+# The field forms moved to the sibling repository `form` on 17 Sep 2026 and
+# are gated there.
