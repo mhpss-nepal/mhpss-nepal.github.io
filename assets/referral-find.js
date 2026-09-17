@@ -478,7 +478,14 @@
     if (res) {
       res.textContent = "";
       res.appendChild(group("official", official, el("p", "fempty", t("refdir.find.none.official"))));
-      res.appendChild(group("provider", provider, el("p", "fempty", providerState())));
+      var pe = el("p", "fempty", providerState());
+      /* until the provider list is published, point to where the staff are */
+      if (providerDoc === null && window.WORKFORCE && document.getElementById("staff")) {
+        pe.appendChild(document.createTextNode(" "));
+        var sa = el("a", null, t("refdir.find.seeStaff")); sa.href = "#staff";
+        pe.appendChild(sa);
+      }
+      res.appendChild(group("provider", provider, pe));
       var pstate = partnerState();
       res.appendChild(group("partner", partner, el("p", "fempty", partner.length ? "" :
         (pstate || t("refdir.find.none.partner")))));

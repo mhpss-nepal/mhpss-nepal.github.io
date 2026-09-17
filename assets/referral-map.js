@@ -11,6 +11,10 @@
        palika was reported -- never as a point
    It knows nothing about filters: assets/referral-find.js decides what is
    shown and calls update(); this file draws it and reports clicks back.
+   A second map on the same page (section 5, assets/workforce-view.js) uses
+   the same drawing with four options of its own: fill(pcode) shades a palika
+   by its number, tip(pcode) writes the hover line, badge(n) and
+   badgeTitle(kind, place, n) write the counts -- so a count can read "<3".
 
    Leaflet 1.9.4 is served from this repository (assets/vendor/leaflet, BSD-2).
    The background tiles come from tile.openstreetmap.org under the OSMF tile
@@ -106,6 +110,13 @@
       var s = { weight: 0.8, color: GREY, opacity: 0.9, fill: true, fillColor: "#ffffff", fillOpacity: 0.01 };
       if (x.r === "decl") { s.fillColor = DEEP; s.fillOpacity = 0.32; s.color = DEEP; s.weight = 1; }
       if (x.r === "ctx") { s.fillColor = "#f6f6f5"; s.fillOpacity = 0.18; }
+      /* a map that shades palikas by a number of its own (section 5) passes
+         opts.fill; the declared-area fill then gives way to it */
+      if (opts.fill) {
+        var f = opts.fill(p);
+        s.fillColor = f ? f.color : "#ffffff"; s.fillOpacity = f ? f.opacity : 0.01;
+        if (x.r === "decl") { s.color = GREY; s.weight = 0.8; }
+      }
       if (hit) { s.color = INK; s.weight = 2.2; }
       if (sel) { s.color = INK; s.weight = 3.6; s.fillOpacity = Math.max(s.fillOpacity, 0.2); }
       return s;
@@ -118,7 +129,8 @@
       var n = opts.countAt ? opts.countAt(x.p) : 0;
       var name = lang() === "ne" && x.ne ? x.ne : x.n;
       var dx = DIST[x.d] && DIST[x.d].x, dname = dx ? (lang() === "ne" && dx.ne ? dx.ne : dx.n) : "";
-      var line = n ? t(n === 1 ? "refdir.find.tip.one" : "refdir.find.tip.many", { n: n }) : t("refdir.find.tip.none");
+      var line = opts.tip ? opts.tip(x.p) :
+        (n ? t(n === 1 ? "refdir.find.tip.one" : "refdir.find.tip.many", { n: n }) : t("refdir.find.tip.none"));
       PAL[x.p].layer.bindTooltip("<b>" + esc(name) + "</b><span>" + esc(dname) + "</span><span class='n'>" + esc(line) + "</span>",
         { sticky: true, direction: "top", className: "lm-tip", offset: [0, -8] }).openTooltip();
     }
@@ -165,8 +177,8 @@
         if (!PAL[p]) return;
         var n = d.palCounts[p], x = PAL[p].x;
         var m = L.marker(x.lab, {
-          icon: L.divIcon({ className: "lm-count", html: "<span>" + n + "</span>", iconSize: [30, 30], iconAnchor: [-4, -4] }),
-          keyboard: true, title: t("refdir.find.badge", { place: x.n, n: n }), zIndexOffset: 1500
+          icon: L.divIcon({ className: "lm-count", html: "<span>" + esc(opts.badge ? opts.badge(n) : n) + "</span>", iconSize: [30, 30], iconAnchor: [-4, -4] }),
+          keyboard: true, title: opts.badgeTitle ? opts.badgeTitle("palika", x, n) : t("refdir.find.badge", { place: x.n, n: n }), zIndexOffset: 1500
         });
         m.on("click", function () { if (opts.onPalika) opts.onPalika(p); });
         m.addTo(counts);
@@ -175,8 +187,8 @@
         if (!DIST[code]) return;
         var n = d.distCounts[code], x = DIST[code].x;
         var m = L.marker(x.lab, {
-          icon: L.divIcon({ className: "lm-count bydist", html: "<span>" + n + "</span>", iconSize: [30, 24], iconAnchor: [-10, 30] }),
-          keyboard: true, title: t("refdir.find.badge.district", { place: x.n, n: n }), zIndexOffset: 1400
+          icon: L.divIcon({ className: "lm-count bydist", html: "<span>" + esc(opts.badge ? opts.badge(n) : n) + "</span>", iconSize: [30, 24], iconAnchor: [-10, 30] }),
+          keyboard: true, title: opts.badgeTitle ? opts.badgeTitle("district", x, n) : t("refdir.find.badge.district", { place: x.n, n: n }), zIndexOffset: 1400
         });
         m.on("click", function () { if (opts.onDistrict) opts.onDistrict(code); });
         m.addTo(counts);
@@ -197,6 +209,16 @@
       }
     }
     function fitPalika(p) { if (PAL[p]) map.fitBounds(PAL[p].layer.getBounds(), { padding: [30, 30], maxZoom: 14 }); }
+    /* several districts at once -- section 5 frames the districts with staff */
+    function fitDistricts(codes) {
+      var b = null;
+      (codes || []).forEach(function (code) {
+        if (!DIST[code]) return;
+        var lb = DIST[code].layer.getBounds();
+        b = b ? b.extend(lb) : L.latLngBounds(lb.getSouthWest(), lb.getNorthEast());
+      });
+      if (b) map.fitBounds(b, PAD); else fitAll();
+    }
     function openPin(id) {
       var it = PIN[id];
       if (!it) return false;
@@ -215,13 +237,13 @@
       var zi = el.querySelector(".leaflet-control-zoom-in"), zo = el.querySelector(".leaflet-control-zoom-out");
       if (zi) { zi.title = t("refdir.find.zoomin"); zi.setAttribute("aria-label", t("refdir.find.zoomin")); }
       if (zo) { zo.title = t("refdir.find.zoomout"); zo.setAttribute("aria-label", t("refdir.find.zoomout")); }
-      el.setAttribute("aria-label", t("refdir.find.maparia"));
+      el.setAttribute("aria-label", t(opts.ariaKey || "refdir.find.maparia"));
     }
     relabel();
     fitAll();
 
     return {
-      map: map, update: update, fitAll: fitAll, fitDistrict: fitDistrict, fitPalika: fitPalika,
+      map: map, update: update, fitAll: fitAll, fitDistrict: fitDistrict, fitPalika: fitPalika, fitDistricts: fitDistricts,
       openPin: openPin, relabel: relabel,
       invalidate: function () { map.invalidateSize(); },
       palikas: function () {

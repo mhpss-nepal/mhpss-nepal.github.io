@@ -59,6 +59,7 @@
     <a href="#find" data-i18n="jump.referral.2"></a>
     <a href="#map" data-i18n="jump.referral.3"></a>
     <a href="#directory" data-i18n="jump.referral.4"></a>
+    <a href="#staff" data-i18n="jump.referral.5"></a>
   </div>
 </div>
 <!--/NAV-->
@@ -327,6 +328,42 @@
     <p class="src" data-i18n="refdir.p002" data-i18n-html></p>
   </section>
 
+  <!-- ============ 5 · staff deployed, by district and palika ============
+       assets/workforce.js (counts only, built by tools/workforce-build.py
+       from the de-identified workforce roster) drawn by assets/workforce-view.js.
+       A number of one or two people is written "<3"; no person, no place of
+       work and nothing below a palika is in the file. -->
+  <section class="sec2" id="staff">
+    <h2 data-i18n="wf.h" data-i18n-html></h2>
+    <p class="intro" data-i18n="wf.intro"></p>
+    <div class="wf" id="wf">
+      <div class="kpis" id="wfKpis"></div>
+      <div class="wfgrid">
+        <div>
+          <div class="fmaphead"><h4 data-i18n="wf.mapH"></h4></div>
+          <div class="lmap wfmap" id="wfMap" role="region" data-i18n-aria="wf.maparia"></div>
+          <div class="mapkey">
+            <span><i class="sh sh1"></i><em data-i18n="wf.key.lt3"></em></span>
+            <span><i class="sh sh2"></i><em data-i18n="wf.key.3"></em></span>
+            <span><i class="sh sh3"></i><em data-i18n="wf.key.10"></em></span>
+            <span><i class="sh sh4"></i><em data-i18n="wf.key.25"></em></span>
+            <span><i class="cnt"></i><em data-i18n="wf.key.count"></em></span>
+            <span><i class="cnt d"></i><em data-i18n="wf.key.dcount"></em></span>
+          </div>
+        </div>
+        <div>
+          <h4 data-i18n="wf.byCadre"></h4>
+          <ul class="hbars wfbars" id="wfCadres"></ul>
+        </div>
+      </div>
+      <h4 class="wfh" data-i18n="wf.tableH"></h4>
+      <div class="tscroll"><table class="t2 wft" id="wfTable"></table></div>
+      <p class="wflegend" data-i18n="wf.legend"></p>
+      <div id="wfDistricts"></div>
+    </div>
+    <p class="src" data-i18n="wf.src" data-i18n-html></p>
+  </section>
+
 </div>
 
 <!--NAV:foot referral-->
@@ -366,6 +403,8 @@
 <script src="assets/referral-geo.js"></script>
 <script src="assets/referral-map.js"></script>
 <script src="assets/referral-find.js"></script>
+<script src="assets/workforce.js"></script>
+<script src="assets/workforce-view.js"></script>
 <script>
 (function () {
   /* The declared list and the map point at each other: hovering a palika in

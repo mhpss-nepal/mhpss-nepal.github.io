@@ -448,3 +448,33 @@ html[lang="ne"] .hlc .np{display:none}
 .fcard .fc-qual{margin:2px 0 0;font-size:13.5px;font-weight:600;color:var(--hc-ink)}
 .fcard .fc-org{margin:2px 0 0;font-size:13px;color:var(--hc-ink)}
 .fcard .fc-org .lab{color:var(--hc-mute)}
+
+/* ---------- Staff deployed (referral-directory.html, section 5) ----------
+   Counts only, from assets/workforce.js. The map is the same drawing as Find a
+   service, shaded by how many staff name a palika; a hidden number is "<3" or
+   "3+", written in the muted ink so it never reads as a count. */
+.wfgrid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:16px 24px;align-items:start;margin:6px 0 4px}
+@media (max-width:900px){ .wfgrid{grid-template-columns:1fr} }
+.wf h4{margin:0 0 8px;font-size:14px;font-weight:700;color:var(--hc-ink)}
+.wf .wfh{margin:20px 0 4px}
+.lmap.wfmap{height:clamp(380px,56vh,580px)}
+.mapkey i.sh{border-color:rgba(0,105,150,.45)}
+.mapkey i.sh1{background:rgba(0,105,150,.16)}
+.mapkey i.sh2{background:rgba(0,105,150,.32)}
+.mapkey i.sh3{background:rgba(0,105,150,.52)}
+.mapkey i.sh4{background:rgba(0,105,150,.74)}
+.mapkey i.cnt{width:16px;height:16px;border-radius:50%;background:var(--hc-ink);border:2px solid #fff;box-shadow:0 0 0 1px var(--hc-ink)}
+.mapkey i.cnt.d{border-radius:4px}
+.wfbars li{grid-template-columns:minmax(120px,170px) minmax(0,1fr)}
+.wft th.n{text-align:right}
+.wft td.n.s{color:var(--hc-mute);font-weight:600}
+.wft td.n.z{color:var(--hc-mute);font-weight:400}
+.wft tfoot td{border-top:2px solid var(--hc-ink);font-weight:700}
+.wft tr.on td{background:#e3eff5}
+.wflegend{font-size:12.5px;line-height:1.6;color:var(--hc-mute);margin:8px 0 0}
+.wfd{border:1px solid var(--grey-3);border-radius:var(--r-md);margin:10px 0 0;background:#fff}
+.wfd > summary{cursor:pointer;padding:11px 14px;font-weight:700;font-size:14px;color:var(--wh-tx)}
+.wfd[open] > summary{border-bottom:1px solid var(--grey-3)}
+.wfd .in{padding:8px 14px 14px}
+.wforgs{font-size:13.5px;line-height:1.7;margin:10px 0 0}
+.wforg{white-space:nowrap}
