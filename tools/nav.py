@@ -76,12 +76,19 @@ JUMP = {
 # the only place page text lives, so a second English copy here could only drift.
 # What is the same in every language -- the group's name, the bilingual pair in
 # the middle, the stacked labels in the band -- is declared with data-i18n-skip.
-MAST = '''<header class="gov">
+MAST = '''<div class="topline">
+  <div class="in">
+    <span class="tl-l" data-i18n="mast.cluster"></span>
+    <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
+         finds one, instead of floating it top-right over the masthead. -->
+    <span data-i18n-toggle class="langslot"></span>
+  </div>
+</div>
+<header class="gov">
   <div class="in">
     <a class="id" href="{home}">
-      <span data-mark="44"></span>
+      <span data-mark="58"></span>
       <span style="min-width:0">
-        <span class="who-line" data-i18n="mast.cluster"></span>
         <b data-i18n-skip>MHPSS Technical Working Group</b>
         <span class="place" data-i18n="mast.place"></span>
       </span>
@@ -91,25 +98,19 @@ MAST = '''<header class="gov">
       <span>मानसिक स्वास्थ्य र मनोसामाजिक सहयोग</span>
     </div>
     <div class="right">
-      <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
-           finds one, instead of floating it top-right over these buttons. -->
-      <span data-i18n-toggle class="langslot"></span>
       <a class="gbtn out" href="{hub}" data-i18n="mast.hub"></a>
       <a class="gbtn crimson" href="{forms}" data-i18n="nav.forms"></a>
     </div>
   </div>
 </header>'''
 
-# The notice band, generated for the eight public pages so its height -- which
-# decides where the masthead and the nav bar fall -- is identical on all of
-# them. The design pages keep their own wording, outside the markers.
-BANNER = ('<div class="synth"><span data-i18n="banner.demo"></span> '
-          '<span data-i18n="banner.demoSub"></span></div>')
+# The demonstration band that stood above the masthead until 17 September
+# 2026 is gone: the Ministry cleared the site to go live that day. What is
+# still to be agreed is said where it applies -- a chip on the item itself --
+# not in a red band over every page.
 
 def top_block(key):
     out = []
-    if key in PUBLIC:
-        out.append(BANNER)
     out.append(MAST.format(home="./", hub="hub/", forms="form/"))
     # the band's labels already carry both languages, stacked
     out.append('<nav class="navband" aria-label="Sections of this site" data-i18n-skip>')
@@ -146,6 +147,10 @@ def top_block(key):
 # names: those belong on the Contact page, and are still to be confirmed.
 FOOT = '''<footer class="gfoot">
   <div class="in">
+    <div class="fid">
+      <span data-mark="46" data-mark-mono></span>
+      <span class="fid-t"><b data-i18n-skip>MHPSS Technical Working Group</b><span data-i18n="mast.cluster"></span></span>
+    </div>
     <div class="cols">
       <div><h4 data-i18n="foot.site"></h4>
         <p><a href="flood-response.html" data-i18n="foot.flood"></a><br>

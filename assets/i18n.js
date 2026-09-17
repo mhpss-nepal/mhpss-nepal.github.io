@@ -140,15 +140,16 @@
     return { text: en, translated: false, missing: en == null, kept: false };
   }
 
-  /* A date is one unit: "7 September 2026" never breaks after the 7 or
-     before the year. In justified text a date split across two lines leaves
-     a stranded "7" and a line of wide gaps above it (17 Sep 2026). */
+  /* A day and its month are one unit: "7 September" never breaks after the
+     7. In justified text a date split there leaves a stranded numeral and a
+     line of wide gaps above it (17 Sep 2026). The year may still go down to
+     the next line: binding all three spread the words of a narrow card too
+     far apart. */
   var MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December";
-  var DATE3 = new RegExp("(\\d{1,2}) (" + MONTHS + ") (\\d{4})", "g");
   var DATE2 = new RegExp("(\\d{1,2}) (" + MONTHS + ")(?![\\u00a0\\w])", "g");
   function bindDates(s) {
     if (typeof s !== "string" || s.indexOf(" ") < 0) return s;
-    return s.replace(DATE3, "$1\u00a0$2\u00a0$3").replace(DATE2, "$1\u00a0$2");
+    return s.replace(DATE2, "$1\u00a0$2");
   }
 
   function t(key, vars) {

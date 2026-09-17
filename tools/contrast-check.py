@@ -71,7 +71,8 @@ TEXT = ["--ink", "--slate", "--muted", "--mute", "--brand-d", "--wh-tx",
         "--good", "--warning", "--critical", "--serious", "--hc-ink", "--hc-mute"]
 FILL = ["--l1", "--l2", "--l3", "--wh-d", "--wh-dd", "--brand-d-fill"]
 SURFACE = ["--paper", "--surface", "--bg"]
-FIXED = [("the demonstration banner", "#ffffff", "#a3201f", 4.5)]
+# the top strip is white text on --wh-dd, which the FILL list already checks
+FIXED = [("the section number square", "#ffffff", "#004969", 4.5)]
 
 def main():
     rows, bad = [], 0

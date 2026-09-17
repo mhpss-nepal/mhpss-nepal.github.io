@@ -12,16 +12,22 @@
 <link rel="stylesheet" href="assets/page.css">
 <link rel="stylesheet" href="assets/design.css">
 </head><body>
-<div class="synth">DEMONSTRATION BUILD · draft instrument <span>· code lists not agreed with EDCD or the MHPSS Technical Working Group</span></div>
 <!-- the mark, so a reference page is recognisably part of the same product
      rather than a loose document. The bar keeps its breadcrumb. -->
 <!--NAV:top method-->
+<div class="topline">
+  <div class="in">
+    <span class="tl-l" data-i18n="mast.cluster"></span>
+    <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
+         finds one, instead of floating it top-right over the masthead. -->
+    <span data-i18n-toggle class="langslot"></span>
+  </div>
+</div>
 <header class="gov">
   <div class="in">
     <a class="id" href="./">
-      <span data-mark="44"></span>
+      <span data-mark="58"></span>
       <span style="min-width:0">
-        <span class="who-line" data-i18n="mast.cluster"></span>
         <b data-i18n-skip>MHPSS Technical Working Group</b>
         <span class="place" data-i18n="mast.place"></span>
       </span>
@@ -31,9 +37,6 @@
       <span>मानसिक स्वास्थ्य र मनोसामाजिक सहयोग</span>
     </div>
     <div class="right">
-      <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
-           finds one, instead of floating it top-right over these buttons. -->
-      <span data-i18n-toggle class="langslot"></span>
       <a class="gbtn out" href="hub/" data-i18n="mast.hub"></a>
       <a class="gbtn crimson" href="form/" data-i18n="nav.forms"></a>
     </div>

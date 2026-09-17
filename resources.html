@@ -16,13 +16,19 @@
 <body>
 
 <!--NAV:top resources-->
-<div class="synth"><span data-i18n="banner.demo"></span> <span data-i18n="banner.demoSub"></span></div>
+<div class="topline">
+  <div class="in">
+    <span class="tl-l" data-i18n="mast.cluster"></span>
+    <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
+         finds one, instead of floating it top-right over the masthead. -->
+    <span data-i18n-toggle class="langslot"></span>
+  </div>
+</div>
 <header class="gov">
   <div class="in">
     <a class="id" href="./">
-      <span data-mark="44"></span>
+      <span data-mark="58"></span>
       <span style="min-width:0">
-        <span class="who-line" data-i18n="mast.cluster"></span>
         <b data-i18n-skip>MHPSS Technical Working Group</b>
         <span class="place" data-i18n="mast.place"></span>
       </span>
@@ -32,9 +38,6 @@
       <span>मानसिक स्वास्थ्य र मनोसामाजिक सहयोग</span>
     </div>
     <div class="right">
-      <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
-           finds one, instead of floating it top-right over these buttons. -->
-      <span data-i18n-toggle class="langslot"></span>
       <a class="gbtn out" href="hub/" data-i18n="mast.hub"></a>
       <a class="gbtn crimson" href="form/" data-i18n="nav.forms"></a>
     </div>
@@ -113,6 +116,10 @@
 <!--NAV:foot resources-->
 <footer class="gfoot">
   <div class="in">
+    <div class="fid">
+      <span data-mark="46" data-mark-mono></span>
+      <span class="fid-t"><b data-i18n-skip>MHPSS Technical Working Group</b><span data-i18n="mast.cluster"></span></span>
+    </div>
     <div class="cols">
       <div><h4 data-i18n="foot.site"></h4>
         <p><a href="flood-response.html" data-i18n="foot.flood"></a><br>

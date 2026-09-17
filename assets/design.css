@@ -90,19 +90,19 @@
      was set in: the width follows the canvas the text stands on, never cut
      off halfway ("jgn dipotong di tengah jalan"). Titles keep their own
      short measure: a title is set, not run. */
-  --frame:1240px;
-  --gutter:28px;
+  --frame:1480px;      /* 17 Sep 2026: 1240 left a third of a 1900px screen empty */
+  --gutter:32px;
   --measure:none;      /* 17 Sep 2026: no prose measure on this site --
                           running text fills its container. Was 82ch; page.css
                           and app.css read this variable, so they follow. */
   --formw:940px;       /* a form column; a 1240px-wide input is not a form */
   --sans:'Mukta',system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans',Arial,sans-serif;
-  --r-sm:3px; --r:4px; --r-md:10px; --r-lg:12px;
-  --sh-card:0 1px 2px rgba(29,29,27,.06);
+  --r-sm:3px; --r:4px; --r-md:6px; --r-lg:8px;   /* crisper corners, 17 Sep 2026 */
+  --sh-card:0 1px 3px rgba(29,29,27,.08);
 }
 
 body{font-family:var(--sans);color:var(--ink,var(--hc-ink));background:var(--paper,#fff)}
-a{color:var(--wh-tx)}
+a{color:var(--wh-tx);text-underline-offset:2px}
 
 /* ---------- masthead: three parts, like a ministry page -------------- */
 /* The shell. Measured 16 September 2026 against the Ministry of Finance's own
@@ -113,13 +113,20 @@ a{color:var(--wh-tx)}
    17 Sep 2026 the sentences take the same width as everything around them.
    The coordination hub is a different thing and takes a different width -- see
    the rail section and hub.css. */
-/* The demonstration band. Defined here as well as in hub.css so that the
-   pages which do not load hub.css get the same 35px, rather than inheriting a
-   line-height from whichever base stylesheet they happen to use. */
-.synth{background:#a3201f;color:#fff;font-size:12.5px;line-height:1.45;font-weight:700;
-  letter-spacing:.02em;text-align:center;padding:7px 16px;
-  padding-top:calc(7px + env(safe-area-inset-top,0px));position:relative;z-index:40}
-.synth span{font-weight:400;opacity:.92}
+/* The top strip: the cluster line on the left, the language switch on the
+   right, on the deep blue -- the utility row a ministry portal carries above
+   its masthead. It replaced the red demonstration band on 17 September 2026,
+   the day the site was cleared to go live. */
+.topline{background:var(--wh-dd);color:#fff;font-size:13.5px;line-height:1.3;
+  padding-top:env(safe-area-inset-top,0px)}
+.topline .in{max-width:var(--frame);margin:0 auto;padding:7px var(--gutter);display:flex;
+  align-items:center;justify-content:space-between;gap:12px 20px;min-height:38px}
+.topline .tl-l{font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:12px;
+  color:#fff}
+.topline #i18nbar{border-color:rgba(255,255,255,.55)}
+.topline #i18nbar button{padding:6px 12px;font-size:12.5px}
+.topline #i18nbar button[aria-pressed="false"]{background:transparent!important;color:#fff!important}
+.topline #i18nbar button[aria-pressed="true"]{background:#fff!important;color:var(--wh-dd)!important}
 .gov{background:#fff;border-bottom:1px solid var(--grey-3)}
 /* The masthead rides the SAME frame as the content, so the emblem block and
    the page title share a left edge. It was 1320 while the content frame was
@@ -128,24 +135,24 @@ a{color:var(--wh-tx)}
    size, which wrapped the identity block onto an extra line and made the
    masthead 111px tall on three pages and 88px on the rest -- so the title
    visibly hopped up and down as you clicked between them. */
-.gov{font-size:15px;line-height:1.35}
-.gov .in{max-width:var(--frame);margin:0 auto;padding:13px var(--gutter);display:flex;align-items:center;
+.gov{font-size:16px;line-height:1.35}
+.gov .in{max-width:var(--frame);margin:0 auto;padding:18px var(--gutter);display:flex;align-items:center;
          gap:18px;flex-wrap:wrap}
-.gov .id{display:flex;align-items:center;gap:11px;text-decoration:none;min-width:0}
+.gov .id{display:flex;align-items:center;gap:14px;text-decoration:none;min-width:0}
 /* mark.js drops an inline SVG into [data-mark]; with no box of its own the
    span took its height from the surrounding line box, which differed between
    page.css and design.css and made the masthead 84px tall here and 50px
    there -- a 26px hop in the logo and the whole nav bar on every click
    between those pages. Pin the box and the mark cannot argue. */
-.gov .id > [data-mark]{flex:0 0 44px;width:44px;height:44px;display:block;line-height:0}
+.gov .id > [data-mark]{flex:0 0 58px;width:58px;height:58px;display:block;line-height:0}
 .gov .id > [data-mark] svg,.gov .id > [data-mark] img{display:block;width:100%;height:100%}
 .gov .id .who-line{font-size:11.5px;color:var(--hc-mute);line-height:1.3}
-.gov .id b{display:block;font-size:19px;font-weight:700;color:var(--wh-d);line-height:1.2;
-           letter-spacing:-.2px}
-.gov .id .place{display:block;font-size:11.5px;color:var(--hc-mute);line-height:1.3}
+.gov .id b{display:block;font-size:26px;font-weight:700;color:var(--wh-dd);line-height:1.15;
+           letter-spacing:-.4px}
+.gov .id .place{display:block;font-size:13.5px;color:var(--hc-mute);line-height:1.3;margin-top:3px}
 .gov .mid{flex:1 1 220px;text-align:center;min-width:0}
-.gov .mid b{display:block;font-size:17px;font-weight:700;color:var(--wh-d);line-height:1.25}
-.gov .mid span{display:block;font-size:11.5px;color:var(--hc-mute);margin-top:1px}
+.gov .mid b{display:block;font-size:20px;font-weight:700;color:var(--wh-d);line-height:1.25}
+.gov .mid span{display:block;font-size:14.5px;color:var(--hc-mute);margin-top:2px}
 .gov .right{display:flex;align-items:center;gap:10px;margin-left:auto}
 
 /* the two-cell language switch, hard-edged */
@@ -156,76 +163,81 @@ a{color:var(--wh-tx)}
 
 /* ---------- the nav band: bilingual, stacked ------------------------- */
 .navband{background:var(--wh-d);border-bottom:3px solid var(--wh)}
-.navband .in{max-width:1320px;margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap}
+.navband .in{max-width:var(--frame);margin:0 auto;padding:0 var(--gutter);display:flex;flex-wrap:wrap}
 .navband a{display:flex;flex-direction:column;justify-content:center;text-decoration:none;
-           color:rgba(255,255,255,.93);padding:9px 15px;min-height:52px;
+           color:rgba(255,255,255,.93);padding:11px 20px;min-height:62px;
            border-right:1px solid rgba(255,255,255,.14)}
 .navband a:first-child{border-left:1px solid rgba(255,255,255,.14)}
-.navband a b{font-size:13.5px;font-weight:700;line-height:1.2;white-space:nowrap}
-.navband a i{font-style:normal;font-size:10.5px;line-height:1.3;color:#cbe9f8;
-             white-space:nowrap}
+.navband a b{font-size:15.5px;font-weight:700;line-height:1.2;white-space:nowrap}
+.navband a i{font-style:normal;font-size:12px;line-height:1.3;color:#cbe9f8;
+             white-space:nowrap;margin-top:1px}
 .navband a:hover{background:rgba(255,255,255,.1);color:#fff}
 .navband a.on{background:var(--wh-dd);box-shadow:inset 0 3px 0 var(--wh)}
 .navband a.on i{color:#cbe9f8}
 @media (max-width:820px){
   .navband .in{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
-  .navband a{flex:0 0 auto;min-height:46px;padding:7px 13px}
+  .navband a{flex:0 0 auto;min-height:52px;padding:8px 15px}
 }
 
 /* ---------- status strip --------------------------------------------- */
-.statusbar{background:var(--grey-1);border-bottom:1px solid var(--grey-3);font-size:12.5px;
+.statusbar{background:var(--grey-1);border-bottom:1px solid var(--grey-3);font-size:14px;
            color:var(--hc-mute)}
-.statusbar .in{max-width:1320px;margin:0 auto;padding:7px 20px;display:flex;gap:7px 18px;
+.statusbar .in{max-width:var(--frame);margin:0 auto;padding:9px var(--gutter);display:flex;gap:7px 18px;
                flex-wrap:wrap;align-items:center}
 .statusbar .live{display:inline-flex;align-items:center;gap:6px;font-weight:700;
-                 color:var(--hc-ink);letter-spacing:.6px;font-size:11.5px}
+                 color:var(--hc-ink);letter-spacing:.6px;font-size:12px}
 .statusbar .live::before{content:"";width:7px;height:7px;border-radius:50%;
                          background:var(--wh-d)}
 .statusbar b{color:var(--hc-ink);font-weight:700}
 .statusbar .sep{color:#6b6b69}
+/* one fact per line on a phone; the separators are for the single-line form */
+@media (max-width:620px){
+  .statusbar .in{flex-direction:column;align-items:flex-start;gap:3px}
+  .statusbar .sep{display:none}
+}
 
 /* ---------- page shell ----------------------------------------------- */
 .page{max-width:var(--frame);margin:0 auto;padding:0 var(--gutter)}
 .sheet{background:var(--grey-1);border:1px solid var(--grey-3);border-radius:var(--r-lg);
-       padding:26px 28px;margin:22px 0}
+       padding:30px 32px;margin:26px 0}
 @media (max-width:620px){ .sheet{padding:20px 17px;border-radius:var(--r-md)} }
 
 /* ---------- headline block ------------------------------------------- */
 .stamp{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--hc-mute)}
 .stamp .tagpill{border:1px solid var(--grey-3);background:#fff;border-radius:20px;
                 padding:2px 10px;font-size:11px;font-weight:600}
-h1.title{font-size:clamp(25px,3.6vw,40px);font-weight:700;line-height:1.16;color:var(--wh-d);
+h1.title{font-size:clamp(30px,3.4vw,48px);font-weight:700;line-height:1.16;color:var(--wh-d);
          letter-spacing:-.6px;margin:12px 0 0;max-width:22ch}
-.subtitle{margin:13px 0 0;font-size:16px;line-height:1.62;color:var(--hc-mute);max-width:none}
+.subtitle{margin:14px 0 0;font-size:18.5px;line-height:1.6;color:var(--hc-mute);max-width:none}
 
 /* ---------- the figure block: data as the hero ----------------------- */
 .figblock{background:#fff;border:1px solid var(--grey-3);border-radius:var(--r-md);
           border-left:4px solid var(--wh-d);padding:17px 20px;margin-top:20px}
-.figblock .cap{font-size:13px;color:var(--hc-mute);font-weight:600}
+.figblock .cap{font-size:14px;color:var(--hc-mute);font-weight:600}
 .figblock .big{font-size:clamp(28px,4.4vw,44px);font-weight:800;color:var(--hc-ink);
                line-height:1.1;margin:5px 0 0;letter-spacing:-1px}
 .figblock .big.pending{font-size:clamp(19px,2.4vw,26px);color:var(--hc-mute);font-weight:700;
                        letter-spacing:-.3px}
 .figblock .breakdown{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
-.bpill{font-size:12px;font-weight:600;padding:4px 11px;border-radius:16px;
+.bpill{font-size:13px;font-weight:600;padding:4px 12px;border-radius:16px;
        background:var(--wh-t);border:1px solid var(--wh-b);color:var(--wh-d)}
 .bpill.crimson{background:var(--flag-t);border-color:var(--flag-b);color:var(--hc-ink)}
 .bpill.plain{background:var(--grey-2);border-color:var(--grey-3);color:var(--hc-mute)}
 
 /* ---------- the varied card row (this is the anti-template move) ----- */
-.rowcards{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));
+.rowcards{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
           margin:20px 0 0}
-.rc{border:1px solid var(--grey-3);border-radius:var(--r-md);padding:17px 18px;background:#fff;
+.rc{border:1px solid var(--grey-3);border-radius:var(--r-md);padding:20px 22px;background:#fff;
     position:relative;box-shadow:var(--sh-card)}
 .rc .ico{position:absolute;top:15px;right:16px;color:var(--wh-3)}
 .rc .ico svg{display:block}
-.rc h3{margin:0 0 4px;font-size:15.5px;font-weight:700;color:var(--hc-ink);
+.rc h3{margin:0 0 5px;font-size:17px;font-weight:700;color:var(--hc-ink);
        padding-right:34px;line-height:1.3}
-.rc .desc{margin:0;font-size:12.5px;line-height:1.5;color:var(--hc-mute)}
-.rc .num{display:block;font-size:24px;font-weight:800;color:var(--wh-d);margin:12px 0 0;
+.rc .desc{margin:0;font-size:14px;line-height:1.55;color:var(--hc-mute)}
+.rc .num{display:block;font-size:28px;font-weight:800;color:var(--wh-d);margin:12px 0 0;
          line-height:1.12;letter-spacing:-.5px}
-.rc .num.sm{font-size:16px;font-weight:700;color:var(--hc-mute);letter-spacing:0}
-.rc .foot{display:block;font-size:11.5px;color:var(--hc-mute);margin-top:6px;line-height:1.45}
+.rc .num.sm{font-size:17px;font-weight:700;color:var(--hc-mute);letter-spacing:0}
+.rc .foot{display:block;font-size:12.5px;color:var(--hc-mute);margin-top:6px;line-height:1.45}
 /* the variants — plain, tinted-outlined, solid filled */
 .rc.tint{background:var(--wh-t);border-color:var(--wh-b)}
 .rc.tint h3{color:var(--wh-dd)} .rc.tint .num{color:var(--wh-d)}
@@ -237,29 +249,32 @@ h1.title{font-size:clamp(25px,3.6vw,40px);font-weight:700;line-height:1.16;color
 a.rc{text-decoration:none;display:block;transition:border-color .12s}
 a.rc:hover{border-color:var(--wh-d)}
 a.rc.fill:hover{border-color:#fff}
-a.rc .go{display:block;margin-top:11px;font-size:12.5px;font-weight:700;color:var(--wh-tx)}
+a.rc .go{display:block;margin-top:12px;font-size:14px;font-weight:700;color:var(--wh-tx)}
 a.rc.fill .go{color:#fff}
 
 /* ---------- document sections ---------------------------------------- */
-.sec2{padding:30px 0;border-top:1px solid var(--grey-3)}
+.sec2{padding:44px 0;border-top:1px solid var(--grey-3);scroll-margin-top:66px}
 .sec2:first-of-type{border-top:0}
-.sec2 > h2{display:flex;align-items:baseline;gap:11px;margin:0 0 14px;
-           font-size:20px;font-weight:700;color:var(--wh-tx);letter-spacing:-.3px}
-.sec2 > h2 .no{flex:0 0 auto;font-size:12px;font-weight:800;color:var(--hc-ink);
-               letter-spacing:1px;padding-top:2px}
-.sec2 .intro{margin:0 0 15px;font-size:15px;line-height:1.66;color:var(--hc-mute);max-width:none}
-.sec2 h3{font-size:15px;font-weight:700;color:var(--hc-ink);margin:20px 0 7px}
-.sec2 p{font-size:14.5px;line-height:1.68;color:var(--hc-ink);max-width:none;margin:0 0 11px}
+.sec2 > h2{display:flex;align-items:center;gap:14px;margin:0 0 18px;
+           font-size:27px;font-weight:700;color:var(--wh-dd);letter-spacing:-.4px;line-height:1.2}
+/* the section number: a filled square, as a government document numbers its
+   parts, in the deep blue with a white numeral (9.74:1) */
+.sec2 > h2 .no{flex:0 0 auto;width:32px;height:32px;border-radius:3px;background:var(--wh-dd);
+               color:#fff;font-size:14px;font-weight:800;line-height:32px;text-align:center;
+               letter-spacing:0;padding:0}
+.sec2 .intro{margin:0 0 18px;font-size:18px;line-height:1.65;color:var(--hc-mute);max-width:none}
+.sec2 h3{font-size:18.5px;font-weight:700;color:var(--hc-ink);margin:24px 0 8px}
+.sec2 p{font-size:16.5px;line-height:1.7;color:var(--hc-ink);max-width:none;margin:0 0 12px}
 .sec2 p.muted{color:var(--hc-mute)}
 
 /* ---------- tables, because a table is often the honest form --------- */
-.t2{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
-.t2 caption{text-align:left;font-size:12px;color:var(--hc-mute);padding:0 0 8px}
-.t2 th{text-align:left;font-weight:700;font-size:11.5px;letter-spacing:.7px;
-       text-transform:uppercase;color:var(--hc-mute);border-bottom:2px solid var(--wh-d);
-       padding:8px 11px 7px;white-space:nowrap}
-.t2 td{padding:9px 11px;border-bottom:1px solid var(--grey-3);vertical-align:top;
-       line-height:1.5}
+.t2{width:100%;border-collapse:collapse;font-size:15px;margin-top:8px}
+.t2 caption{text-align:left;font-size:13.5px;color:var(--hc-mute);padding:0 0 9px}
+.t2 th{text-align:left;font-weight:700;font-size:12px;letter-spacing:.7px;
+       text-transform:uppercase;color:var(--wh-dd);background:var(--wh-t);
+       border-bottom:2px solid var(--wh-d);padding:10px 13px 9px;white-space:nowrap}
+.t2 td{padding:11px 13px;border-bottom:1px solid var(--grey-3);vertical-align:top;
+       line-height:1.55}
 .t2 tbody tr:nth-child(even){background:var(--grey-1)}
 .t2 td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
 .t2 td.pend{color:var(--hc-mute);font-style:italic}
@@ -271,14 +286,14 @@ a.rc.fill .go{color:#fff}
      padding:14px 17px;margin:16px 0 0;display:flex;gap:12px}
 .adv .m{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--wh);
         color:var(--hc-ink);font:800 13px/20px var(--sans);text-align:center}
-.adv p{margin:0;font-size:13.5px;line-height:1.62;color:#ededec;max-width:none}
+.adv p{margin:0;font-size:15px;line-height:1.62;color:#ededec;max-width:none}
 .adv b{color:#fff}
-.src{font-size:12px;color:var(--hc-mute);margin:12px 0 0;line-height:1.55}
+.src{font-size:13.5px;color:var(--hc-mute);margin:14px 0 0;line-height:1.6}
 .src b{color:var(--hc-ink);font-weight:700}
 
 /* ---------- buttons: square-ish, like a portal ----------------------- */
-.gbtn{display:inline-block;text-decoration:none;font:700 13.5px/1.2 var(--sans);
-      padding:11px 18px;border-radius:var(--r);border:1px solid transparent;cursor:pointer}
+.gbtn{display:inline-block;text-decoration:none;font:700 15px/1.2 var(--sans);
+      padding:12px 20px;border-radius:var(--r);border:1px solid transparent;cursor:pointer}
 .gbtn.crimson{background:var(--wh-d);color:#fff}
 .gbtn.crimson:hover{background:var(--wh-dd)}
 .gbtn.blue{background:var(--wh-dd);color:#fff}
@@ -287,14 +302,23 @@ a.rc.fill .go{color:#fff}
 .gbtn.out:hover{border-color:var(--wh-d)}
 
 /* ---------- footer ---------------------------------------------------- */
-.gfoot{background:var(--hc-ink);color:rgba(255,255,255,.76);margin-top:30px;
-       font-size:13px;line-height:1.66;border-top:4px solid var(--wh)}
-.gfoot .in{max-width:1320px;margin:0 auto;padding:30px 20px 34px}
-.gfoot .cols{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));
-             padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.14);margin-bottom:20px}
-.gfoot h4{margin:0 0 5px;color:#fff;font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;
+.gfoot{background:var(--hc-ink);color:rgba(255,255,255,.78);margin-top:48px;
+       font-size:14.5px;line-height:1.66;border-top:5px solid var(--wh)}
+.gfoot .in{max-width:var(--frame);margin:0 auto;padding:36px var(--gutter) 40px}
+/* the identity row: the mark in its single-colour form and the group's name,
+   so the foot of every page says whose site this is */
+.gfoot .fid{display:flex;align-items:center;gap:14px;padding-bottom:24px;margin-bottom:26px;
+            border-bottom:1px solid rgba(255,255,255,.14)}
+.gfoot .fid [data-mark]{flex:0 0 46px;width:46px;height:46px;line-height:0}
+.gfoot .fid [data-mark] svg{display:block;width:100%;height:100%}
+.gfoot .fid-t b{display:block;color:#fff;font-size:19px;font-weight:700;line-height:1.2}
+.gfoot .fid-t span{display:block;color:var(--wh-3);font-size:12.5px;letter-spacing:.8px;
+                   text-transform:uppercase;font-weight:700;margin-top:3px}
+.gfoot .cols{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+             padding-bottom:26px;border-bottom:1px solid rgba(255,255,255,.14);margin-bottom:24px}
+.gfoot h4{margin:0 0 8px;color:#fff;font-size:12.5px;letter-spacing:1.2px;text-transform:uppercase;
           font-weight:700}
-.gfoot p{margin:0 0 10px;color:rgba(255,255,255,.76);max-width:none;font-size:13px}
+.gfoot p{margin:0 0 10px;color:rgba(255,255,255,.78);max-width:none;font-size:14.5px;line-height:1.75}
 .gfoot a{color:var(--wh-3)}
 .tbc{color:var(--wh-3);font-weight:700}
 
@@ -405,7 +429,7 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 
 /* ---------- print ----------------------------------------------------- */
 @media print{
-  .navband,.statusbar,#i18nwrap,#i18nbar,.gov .right{display:none!important}
+  .navband,.statusbar,.topline,.jump,#i18nwrap,#i18nbar,.gov .right{display:none!important}
   .gov,.sheet{border-color:#bbb}
   .sheet{background:#fff}
   .rc,.card{box-shadow:none;break-inside:avoid;border-color:#bbb}
@@ -429,8 +453,8 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 .langslot{display:inline-flex;align-items:center}
 #i18nbar{display:inline-flex;border:1px solid var(--wh-d);border-radius:var(--r);
          overflow:hidden;margin:0}
-#i18nbar button{border:0;background:#fff;color:var(--wh-d);font:700 12.5px/1 var(--sans);
-         padding:9px 13px;cursor:pointer;letter-spacing:.4px}
+#i18nbar button{border:0;background:#fff;color:var(--wh-d);font:700 13px/1 var(--sans);
+         padding:9px 14px;cursor:pointer;letter-spacing:.4px}
 /* i18n.js injects its own stylesheet at runtime, so it lands AFTER this
    file in the cascade and its rule for the active button wins on order
    alone. !important is the honest fix here -- the alternative is editing
@@ -448,11 +472,13 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 @media (max-width:1040px){
   .gov .mid{order:3;flex-basis:100%;text-align:left;border-top:1px solid var(--grey-2);
             padding-top:9px;margin-top:2px}
-  .gov .mid b{font-size:15px}
+  .gov .mid b{font-size:17px}
 }
 @media (max-width:620px){
-  .gov .in{padding:11px 16px;gap:10px 12px}
-  .gov .id b{font-size:17px}
+  .gov .in{padding:12px 16px;gap:10px 12px}
+  .gov .id b{font-size:19px}
+  .gov .id > [data-mark]{flex-basis:46px;width:46px;height:46px}
+  .topline .in{padding:6px 16px}
   .gov .right{width:100%;justify-content:flex-start}
   .gov .right .gbtn{flex:1 1 auto;text-align:center}
 }
@@ -495,18 +521,18 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
    figure. Crimson is reserved for the thing that is missing.
    ===================================================================== */
 .fig{background:#fff;border:1px solid var(--grey-3);border-radius:var(--r-md);
-     padding:17px 19px 14px;margin:16px 0 0}
-.fig > h4{margin:0 0 3px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;
+     padding:20px 22px 16px;margin:18px 0 0}
+.fig > h4{margin:0 0 4px;font-size:13px;letter-spacing:.8px;text-transform:uppercase;
           color:var(--hc-mute);font-weight:700}
-.fig > .lede{margin:0 0 14px;font-size:13px;line-height:1.6;color:var(--hc-mute);max-width:none}
+.fig > .lede{margin:0 0 16px;font-size:14.5px;line-height:1.6;color:var(--hc-mute);max-width:none}
 .fig svg{display:block;width:100%;height:auto}
 .fig .figsrc{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--grey-2);
-             font-size:11.5px;line-height:1.55;color:var(--hc-mute)}
+             font-size:12.5px;line-height:1.55;color:var(--hc-mute)}
 .fig .figsrc b{color:var(--hc-ink);font-weight:700}
 .fig .figsrc a{color:var(--wh-tx)}
 
 /* the unit chart's own legend, under the squares */
-.ukey{display:flex;gap:7px 20px;flex-wrap:wrap;margin:13px 0 0;font-size:12px;
+.ukey{display:flex;gap:7px 20px;flex-wrap:wrap;margin:13px 0 0;font-size:13px;
       color:var(--hc-mute)}
 .ukey span{display:inline-flex;align-items:center;gap:7px}
 .ukey i{width:13px;height:13px;flex:0 0 auto;display:block;background:#fff}
@@ -519,12 +545,12 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 /* ---------- the readiness checklist (replaces the ring) -------------- */
 .gates{background:#fff;border:1px solid var(--grey-3);border-radius:var(--r-md);
        padding:17px 19px}
-.gates h4{margin:0 0 3px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;
+.gates h4{margin:0 0 3px;font-size:13px;letter-spacing:.8px;text-transform:uppercase;
           color:var(--hc-mute);font-weight:700}
 .gates .count{display:flex;align-items:baseline;gap:9px;margin:6px 0 13px}
-.gates .count b{font-size:27px;font-weight:800;color:var(--hc-ink);letter-spacing:-.7px;
+.gates .count b{font-size:32px;font-weight:800;color:var(--hc-ink);letter-spacing:-.7px;
                 line-height:1}
-.gates .count span{font-size:12.5px;color:var(--hc-mute)}
+.gates .count span{font-size:14px;color:var(--hc-mute)}
 .gates ol{list-style:none;margin:0;padding:0}
 .gates li{display:flex;align-items:flex-start;gap:11px;padding:9px 0;
           border-bottom:1px solid var(--grey-2)}
@@ -534,8 +560,8 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
             border-radius:2px;background:#fff;margin-top:2px}
 .gates li.done .box{background:var(--wh-d);border-color:var(--wh-d)}
 .gates .txt{flex:1 1 auto;min-width:0}
-.gates .txt b{display:block;font-size:13.5px;font-weight:700;color:var(--hc-ink);line-height:1.35}
-.gates .txt i{display:block;font-style:normal;font-size:11.5px;line-height:1.5;
+.gates .txt b{display:block;font-size:15px;font-weight:700;color:var(--hc-ink);line-height:1.35}
+.gates .txt i{display:block;font-style:normal;font-size:13px;line-height:1.5;
               color:var(--hc-mute);margin-top:1px}
 .gates .st{flex:0 0 auto;font-size:11px;font-weight:700;letter-spacing:.4px;
            text-transform:uppercase;color:var(--wh-dd);background:var(--wh-t);
@@ -555,11 +581,11 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
    Squares that are elements reflow, and the words stay the size set. */
 .urow{margin-top:15px}
 .urow:first-child{margin-top:2px}
-.ulab{margin:0 0 7px;font-size:13.5px;font-weight:700;color:var(--hc-ink);line-height:1.45}
-.ulab b{font-size:16.5px;font-weight:800;margin-right:4px;font-variant-numeric:tabular-nums}
-.ulab span{font-weight:400;font-size:12px;color:var(--hc-mute);margin-left:5px}
-.units{display:flex;flex-wrap:wrap;gap:5px}
-.u{width:18px;height:18px;display:block;background:#fff;border-radius:2px}
+.ulab{margin:0 0 7px;font-size:15px;font-weight:700;color:var(--hc-ink);line-height:1.45}
+.ulab b{font-size:18px;font-weight:800;margin-right:4px;font-variant-numeric:tabular-nums}
+.ulab span{font-weight:400;font-size:13px;color:var(--hc-mute);margin-left:5px}
+.units{display:flex;flex-wrap:wrap;gap:6px}
+.u{width:22px;height:22px;display:block;background:#fff;border-radius:2px}
 .u.roster{border:1.6px solid var(--wh-d)}
 .u.offlist{border:1.6px solid var(--hc-ink)}
 .u.govlist{border:1.6px dashed var(--hc-ink)}
@@ -574,15 +600,15 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 .playerlist{list-style:none;margin:0;padding:0}
 .playerlist li{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--grey-2)}
 .playerlist li:last-child{border-bottom:0;padding-bottom:0}
-.playerlist .sw{flex:0 0 auto;width:22px;height:22px;border-radius:3px;
-                font:800 12px/22px var(--sans);text-align:center;color:#fff}
+.playerlist .sw{flex:0 0 auto;width:26px;height:26px;border-radius:3px;
+                font:800 13px/26px var(--sans);text-align:center;color:#fff}
 .playerlist .sw.l4{background:var(--wh-dd)}
 .playerlist .sw.l3{background:var(--wh);color:var(--hc-ink)}
 .playerlist .sw.l2{background:var(--wh-b);color:var(--wh-dd)}
 .playerlist .sw.l1{background:var(--wh-t);color:var(--wh-d);
-                   border:1px solid var(--wh-b);line-height:20px}
-.playerlist b{display:block;font-size:14px;color:var(--wh-tx);line-height:1.3}
-.playerlist p{margin:2px 0 0;font-size:12.5px;line-height:1.56;color:var(--hc-mute);
+                   border:1px solid var(--wh-b);line-height:24px}
+.playerlist b{display:block;font-size:15.5px;color:var(--wh-tx);line-height:1.3}
+.playerlist p{margin:2px 0 0;font-size:14px;line-height:1.56;color:var(--hc-mute);
               max-width:none}
 
 /* ---------- figures that cannot reflow: swipe them, as the tables do -- */
@@ -606,10 +632,10 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
    to interpret a figure on their own. It is also the difference between a
    chart and a finding -- anything can draw the chart. */
 .insight{border-left:3px solid var(--wh-d);background:var(--grey-1);
-         padding:11px 14px;margin:14px 0 0;border-radius:0 var(--r) var(--r) 0}
-.insight b{display:block;font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;
+         padding:14px 18px;margin:14px 0 0;border-radius:0 var(--r) var(--r) 0}
+.insight b{display:block;font-size:11.5px;letter-spacing:1.1px;text-transform:uppercase;
            color:var(--wh-tx);font-weight:700;margin-bottom:3px}
-.insight p{margin:0;font-size:12.5px;line-height:1.62;color:var(--hc-ink);max-width:none}
+.insight p{margin:0;font-size:14.5px;line-height:1.62;color:var(--hc-ink);max-width:none}
 .insight.blue{border-left-color:var(--hc-ink)}
 .insight.blue b{color:var(--hc-ink)}
 
@@ -628,11 +654,16 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
    ===================================================================== */
 
 /* the jump strip: the sections of the long Layer 3 page, under the band */
-.jump{background:#fff;border-bottom:1px solid var(--grey-3);font-size:12.5px}
-.jump .in{max-width:1320px;margin:0 auto;padding:8px 20px;display:flex;gap:5px 16px;
+.jump{background:#fff;border-bottom:1px solid var(--grey-3);font-size:14px}
+.jump .in{max-width:var(--frame);margin:0 auto;padding:11px var(--gutter);display:flex;gap:6px 22px;
           flex-wrap:wrap;align-items:baseline}
-.jump .lab{font-size:10px;letter-spacing:1.1px;text-transform:uppercase;
+.jump .lab{font-size:11px;letter-spacing:1.1px;text-transform:uppercase;
            color:var(--hc-mute);font-weight:700}
+/* on a screen with room the strip stays put while the page scrolls under
+   it, and a section jumped to lands below it (scroll-margin on .sec2) */
+@media (min-width:821px){
+  .jump:not(.ref){position:sticky;top:0;z-index:35;box-shadow:0 2px 4px rgba(29,29,27,.06)}
+}
 .jump a{color:var(--wh-tx);text-decoration:none;font-weight:600}
 .jump a:hover{text-decoration:underline}
 @media (max-width:820px){

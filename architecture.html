@@ -12,16 +12,22 @@
 <link rel="stylesheet" href="assets/page.css">
 <link rel="stylesheet" href="assets/design.css">
 </head><body>
-<div class="synth">DEMONSTRATION BUILD · draft for discussion <span>· not agreed with EDCD or the MHPSS Technical Working Group</span></div>
 <!-- the mark, so a reference page is recognisably part of the same product
      rather than a loose document. The bar keeps its breadcrumb. -->
 <!--NAV:top architecture-->
+<div class="topline">
+  <div class="in">
+    <span class="tl-l" data-i18n="mast.cluster"></span>
+    <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
+         finds one, instead of floating it top-right over the masthead. -->
+    <span data-i18n-toggle class="langslot"></span>
+  </div>
+</div>
 <header class="gov">
   <div class="in">
     <a class="id" href="./">
-      <span data-mark="44"></span>
+      <span data-mark="58"></span>
       <span style="min-width:0">
-        <span class="who-line" data-i18n="mast.cluster"></span>
         <b data-i18n-skip>MHPSS Technical Working Group</b>
         <span class="place" data-i18n="mast.place"></span>
       </span>
@@ -31,9 +37,6 @@
       <span>मानसिक स्वास्थ्य र मनोसामाजिक सहयोग</span>
     </div>
     <div class="right">
-      <!-- i18n.js mounts the language switch into [data-i18n-toggle] when it
-           finds one, instead of floating it top-right over these buttons. -->
-      <span data-i18n-toggle class="langslot"></span>
       <a class="gbtn out" href="hub/" data-i18n="mast.hub"></a>
       <a class="gbtn crimson" href="form/" data-i18n="nav.forms"></a>
     </div>
@@ -113,9 +116,9 @@
   <div class="note warn"><h3>Why a personal account is not an option for real data</h3>
     <p>Placing WHO personal data with a third-party provider is a transfer requiring a written agreement with
       specified security undertakings. A personal account has none. <strong>A form with no backend cannot
-      breach that rule, which is why the demonstration form has no backend.</strong> When a backend is
-      authorised, only two functions in <code>store.js</code> change — the record shape, the deterministic id
-      and the validation stay as they are.</p>
+      breach that rule, which is why the first demonstration form had none.</strong> The backend the forms
+      write to since mid-September 2026 is the subject of the first open question below; the record shape,
+      the deterministic id and the validation are the same either way.</p>
     <p>There is a live precedent worth knowing: the Ministry of Finance publishes a Rasuwa flood update on
       GitHub Pages, so the pattern is accepted government practice in Nepal. It also sits on a
       <strong>personal</strong> account, which is precisely the ownership failure mode this architecture
@@ -133,9 +136,10 @@
     a personal project that dies when one person's contract ends.</p>
 
   <h2>Where this stands</h2>
-  <p>Three questions were raised on 14&nbsp;September&nbsp;2026 and remain open <strong>in writing</strong>: hosting a
+  <p>Three questions were raised on 14&nbsp;September 2026 and remain open <strong>in writing</strong>: hosting a
     prototype on a non-WHO account, AI assistance in development, and the procurement route for a domain.
-    Until each has a written answer, this remains a demonstration running on synthetic content only.</p>
+    The public website went live in September 2026 with the three still open; each still needs its written
+    answer.</p>
 
   <footer>Draft, September 2026 · prepared for the WHO Nepal mental health team, the Ministry of Health and Food
     Safety and EDCD · <a href="hub/">back to the hub</a><br>
