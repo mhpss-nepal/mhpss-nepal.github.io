@@ -13,7 +13,9 @@ window.WORKFORCE = {
   "PSYT",
   "CPSY",
   "PSY",
+  "PNUR",
   "PSC",
+  "CPSW",
   "VOL",
   "OTH",
   "NS"
@@ -22,9 +24,11 @@ window.WORKFORCE = {
   "PSYT": 11,
   "CPSY": 8,
   "PSY": 20,
+  "PNUR": "lt3",
   "PSC": 125,
+  "CPSW": "lt3",
   "VOL": 41,
-  "OTH": 13,
+  "OTH": 9,
   "NS": 3
  },
  "districts": [
@@ -33,9 +37,11 @@ window.WORKFORCE = {
    "n": 73,
    "c": {
     "PSYT": 6,
-    "CPSY": 5,
+    "CPSY": "ge3",
     "PSY": 8,
+    "PNUR": "lt3",
     "PSC": 36,
+    "CPSW": 0,
     "VOL": 15,
     "OTH": "lt3",
     "NS": "lt3"
@@ -48,7 +54,9 @@ window.WORKFORCE = {
     "PSYT": 0,
     "CPSY": "lt3",
     "PSY": "ge3",
+    "PNUR": 0,
     "PSC": 21,
+    "CPSW": 0,
     "VOL": 11,
     "OTH": "lt3",
     "NS": 0
@@ -61,7 +69,9 @@ window.WORKFORCE = {
     "PSYT": 0,
     "CPSY": "lt3",
     "PSY": 0,
+    "PNUR": 0,
     "PSC": "ge3",
+    "CPSW": 0,
     "VOL": 0,
     "OTH": 0,
     "NS": 0
@@ -74,7 +84,9 @@ window.WORKFORCE = {
     "PSYT": "lt3",
     "CPSY": "lt3",
     "PSY": 3,
+    "PNUR": 0,
     "PSC": 24,
+    "CPSW": 0,
     "VOL": 6,
     "OTH": "lt3",
     "NS": "lt3"
@@ -95,7 +107,9 @@ window.WORKFORCE = {
     "PSYT": 3,
     "CPSY": "lt3",
     "PSY": "lt3",
+    "PNUR": 0,
     "PSC": 28,
+    "CPSW": 0,
     "VOL": 9,
     "OTH": 4,
     "NS": "lt3"
@@ -109,9 +123,11 @@ window.WORKFORCE = {
     "n": 30,
     "c": {
      "PSYT": "ge3",
-     "CPSY": "ge3",
+     "CPSY": 4,
      "PSY": 4,
+     "PNUR": 0,
      "PSC": 17,
+     "CPSW": 0,
      "VOL": 0,
      "OTH": "lt3",
      "NS": 0
@@ -124,9 +140,11 @@ window.WORKFORCE = {
      "PSYT": "lt3",
      "CPSY": 0,
      "PSY": "lt3",
+     "PNUR": "lt3",
      "PSC": 11,
+     "CPSW": 0,
      "VOL": 0,
-     "OTH": "lt3",
+     "OTH": 0,
      "NS": "lt3"
     }
    },
@@ -137,7 +155,9 @@ window.WORKFORCE = {
      "PSYT": 0,
      "CPSY": 0,
      "PSY": "lt3",
+     "PNUR": 0,
      "PSC": "lt3",
+     "CPSW": 0,
      "VOL": 0,
      "OTH": 0,
      "NS": 0
@@ -150,7 +170,9 @@ window.WORKFORCE = {
      "PSYT": "lt3",
      "CPSY": "lt3",
      "PSY": "lt3",
+     "PNUR": 0,
      "PSC": "ge3",
+     "CPSW": 0,
      "VOL": 15,
      "OTH": 0,
      "NS": 0
@@ -165,7 +187,9 @@ window.WORKFORCE = {
      "PSYT": "lt3",
      "CPSY": 0,
      "PSY": "lt3",
+     "PNUR": "lt3",
      "PSC": "ge3",
+     "CPSW": "lt3",
      "VOL": 0,
      "OTH": 0,
      "NS": "lt3"
@@ -178,7 +202,9 @@ window.WORKFORCE = {
      "PSYT": 0,
      "CPSY": "lt3",
      "PSY": 0,
+     "PNUR": 0,
      "PSC": 7,
+     "CPSW": 0,
      "VOL": "lt3",
      "OTH": 0,
      "NS": 0
@@ -195,7 +221,9 @@ window.WORKFORCE = {
      "PSYT": 0,
      "CPSY": "lt3",
      "PSY": 6,
+     "PNUR": 0,
      "PSC": 10,
+     "CPSW": 0,
      "VOL": 9,
      "OTH": "lt3",
      "NS": 0
@@ -222,7 +250,9 @@ window.WORKFORCE = {
      "PSYT": 0,
      "CPSY": 0,
      "PSY": 0,
+     "PNUR": 0,
      "PSC": 3,
+     "CPSW": 0,
      "VOL": 0,
      "OTH": 0,
      "NS": 0
@@ -235,7 +265,9 @@ window.WORKFORCE = {
      "PSYT": 0,
      "CPSY": 0,
      "PSY": 0,
+     "PNUR": 0,
      "PSC": 5,
+     "CPSW": 0,
      "VOL": 0,
      "OTH": 0,
      "NS": 0
@@ -248,7 +280,9 @@ window.WORKFORCE = {
      "PSYT": 0,
      "CPSY": "lt3",
      "PSY": 0,
+     "PNUR": 0,
      "PSC": "ge3",
+     "CPSW": 0,
      "VOL": 0,
      "OTH": 0,
      "NS": 0
@@ -271,7 +305,9 @@ window.WORKFORCE = {
      "PSYT": "lt3",
      "CPSY": "lt3",
      "PSY": 3,
+     "PNUR": 0,
      "PSC": 22,
+     "CPSW": 0,
      "VOL": 6,
      "OTH": "lt3",
      "NS": "lt3"

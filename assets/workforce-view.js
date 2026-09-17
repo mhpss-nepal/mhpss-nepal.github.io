@@ -52,7 +52,8 @@
     var x = PAL[code]; return x ? (isNe() && x.ne ? x.ne : x.n) : code;
   }
 
-  var CAD = Array.isArray(W.cadre_order) ? W.cadre_order : ["PSYT", "CPSY", "PSY", "PSC", "VOL", "OTH", "NS"];
+  var CAD = Array.isArray(W.cadre_order) ? W.cadre_order :
+    ["PSYT", "CPSY", "PSY", "PNUR", "MO", "HW", "PSC", "CPSW", "SW", "FCHV", "VOL", "OTH", "NS"];
 
   /* a count as written on the page */
   function show(v) { return v === "lt3" ? "<3" : v === "ge3" ? "3+" : String(v); }

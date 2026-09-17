@@ -29,9 +29,12 @@ Trishuli Hospital, whose printed address is in Bidur (assets/referral-facilities
 A holding centre or a school named without its palika counts in its district,
 "palika not stated". Palika codes are COD-AB's, as assets/referral-geo.js draws them.
 
-CADRES follow the list agreed with EDCD on 17 September 2026 (codes.js 0.3.0):
-senior psychosocial counsellors are counted with psychosocial counsellors, and a
-psychologist whose label as written says clinical psychologist is CPSY.
+CADRES follow the list agreed with EDCD on 17 September 2026 (codes.js 0.3.0) and
+the twelve codes approved that afternoon: senior psychosocial counsellors are
+counted with psychosocial counsellors, a psychologist whose label as written says
+clinical psychologist is CPSY, and a person the roster filed as Other or not stated
+whose label names a psychiatric nurse, a community psychosocial worker, an mhGAP
+medical officer, an FCHV, a social worker or a health worker takes that code.
 """
 import io, json, os, re, sys, datetime
 
@@ -39,7 +42,19 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "assets", "workforce.js")
 GEO = os.path.join(ROOT, "assets", "referral-geo.js")
 FLOOR = 3
-CADRES = ["PSYT", "CPSY", "PSY", "PSC", "VOL", "OTH", "NS"]
+# codes.js CADRE_RANK (the twelve codes approved on 17 Sep 2026), then "not stated";
+# a cadre nobody on the lists holds is left out of the table rather than drawn as zeros
+CADRES = ["PSYT", "CPSY", "PSY", "PNUR", "MO", "HW", "PSC", "CPSW", "SW", "FCHV", "VOL", "OTH", "NS"]
+# a person the roster could only file as Other or not stated, whose label as written
+# names one of the codes added on 17 Sep 2026
+LABELLED = [
+    (r"psychiatric\s*nurs|mental\s*health\s*nurs", "PNUR"),
+    (r"\bcpsw\b|community\s*psycho\s*-?\s*social\s*worker", "CPSW"),
+    (r"mhgap|medical\s*officer", "MO"),
+    (r"\bfchv\b|female\s*community\s*health\s*volunteer", "FCHV"),
+    (r"social\s*worker", "SW"),
+    (r"health\s*worker|\banm\b|\bahw\b", "HW"),
+]
 
 DISTRICT = {                      # districts as the roster derives them -> COD-AB
     "Nuwakot": "NP0328", "Rasuwa": "NP0329", "Dhading": "NP0330", "Kathmandu": "NP0327",
@@ -81,6 +96,10 @@ def cadre_of(code, written):
         return "PSC"
     if code == "PSY" and re.search(r"clinical", written or "", re.I) and re.search(r"p(?:s)?ycholog", written or "", re.I):
         return "CPSY"
+    if code in ("OTH", "NOT STATED", ""):
+        for pat, new in LABELLED:
+            if re.search(pat, written or "", re.I):
+                return new
     if code in ("PSYT", "PSY", "PSC", "VOL", "OTH"):
         return code
     return "NS"
@@ -233,6 +252,8 @@ def build(path):
         people.append({"c": cad, "orgs": orgs or [("", False)], "d": dists, "p": pals, "out": outside})
 
     n_people = len(people)
+    ctot = {c: sum(1 for x in people if x["c"] == c) for c in CADRES}
+    CAD = [c for c in CADRES if ctot[c] > 0]     # the columns the page draws
     rows = [d for d in ORDER if any(d in x["d"] for x in people)]
     has_out = any(x["out"] for x in people)
     none_row = [x for x in people if not x["d"] and not x["out"]]
@@ -241,26 +262,25 @@ def build(path):
     vals, rtot = {}, {}
     for d in rows:
         grp = [x for x in people if d in x["d"]]
-        vals[d] = {c: sum(1 for x in grp if x["c"] == c) for c in CADRES}
+        vals[d] = {c: sum(1 for x in grp if x["c"] == c) for c in CAD}
         rtot[d] = len(grp)
     if has_out:
         grp = [x for x in people if x["out"]]
-        vals["outside"] = {c: sum(1 for x in grp if x["c"] == c) for c in CADRES}
+        vals["outside"] = {c: sum(1 for x in grp if x["c"] == c) for c in CAD}
         rtot["outside"] = len(grp)
     if none_row:
-        vals["none"] = {c: sum(1 for x in none_row if x["c"] == c) for c in CADRES}
+        vals["none"] = {c: sum(1 for x in none_row if x["c"] == c) for c in CAD}
         rtot["none"] = len(none_row)
     trows = rows + (["outside"] if has_out else []) + (["none"] if none_row else [])
-    ctot = {c: sum(1 for x in people if x["c"] == c) for c in CADRES}
-    col_shown = {c: ctot[c] >= FLOOR or ctot[c] == 0 for c in CADRES}
-    mark, hidden, thid = protect(vals, trows, CADRES, rtot, col_shown)
+    col_shown = {c: ctot[c] >= FLOOR or ctot[c] == 0 for c in CAD}
+    mark, hidden, thid = protect(vals, trows, CAD, rtot, col_shown)
     dtable = []
     for r in trows:
         row = {"d": r, "n": "ge3" if r in thid else total(rtot[r])}
         if r not in hidden:
-            row["c"] = {c: cell(mark[(r, c)], vals[r][c]) for c in CADRES}
+            row["c"] = {c: cell(mark[(r, c)], vals[r][c]) for c in CAD}
         dtable.append(row)
-    dmark = {r: {c: mark[(r, c)] for c in CADRES} for r in trows}
+    dmark = {r: {c: mark[(r, c)] for c in CAD} for r in trows}
 
     # palika blocks, one per district on the map
     blocks = {}
@@ -272,20 +292,20 @@ def build(path):
         prow_vals, prtot = {}, {}
         for p in pcs:
             g2 = [x for x in grp if p in x["p"]]
-            prow_vals[p] = {c: sum(1 for x in g2 if x["c"] == c) for c in CADRES}
+            prow_vals[p] = {c: sum(1 for x in g2 if x["c"] == c) for c in CAD}
             prtot[p] = len(g2)
         un = [x for x in grp if not any(p[:6] == d for p in x["p"])]
         if un:
-            prow_vals["unnamed"] = {c: sum(1 for x in un if x["c"] == c) for c in CADRES}
+            prow_vals["unnamed"] = {c: sum(1 for x in un if x["c"] == c) for c in CAD}
             prtot["unnamed"] = len(un)
         prows = pcs + (["unnamed"] if un else [])
-        pshown = {c: (d not in hidden and dmark[d][c] is None) for c in CADRES}
-        pm, phidden, pthid = protect(prow_vals, prows, CADRES, prtot, pshown)
+        pshown = {c: (d not in hidden and dmark[d][c] is None) for c in CAD}
+        pm, phidden, pthid = protect(prow_vals, prows, CAD, prtot, pshown)
         out = []
         for p in prows:
             row = {"p": p, "n": "ge3" if p in pthid else total(prtot[p])}
             if p not in phidden:
-                row["c"] = {c: cell(pm[(p, c)], prow_vals[p][c]) for c in CADRES}
+                row["c"] = {c: cell(pm[(p, c)], prow_vals[p][c]) for c in CAD}
             out.append(row)
         blocks[d] = out
 
@@ -311,8 +331,8 @@ def build(path):
         "built": datetime.date.today().isoformat(),
         "floor": FLOOR,
         "people": n_people,
-        "cadre_order": CADRES,
-        "cadres": {c: total(ctot[c]) for c in CADRES},
+        "cadre_order": CAD,
+        "cadres": {c: total(ctot[c]) for c in CAD},
         "districts": dtable,
         "palikas": blocks,
         "organisations": orgs,

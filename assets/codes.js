@@ -81,6 +81,17 @@ const PALIKAS = [
   { pcode: "NP0329403", name: "Uttargaya Rural Municipality", np: "उत्तरगया गाउँपालिका", type: "RM", wards: 5, district: "RAS", province: "Bagmati", src: "[S3][S5][S6][S8]; pcode COD-AB NPL v02" },
   { pcode: "NP0329402", name: "Gosaikunda Rural Municipality", np: "गोसाईकुण्ड गाउँपालिका", type: "RM", wards: 6, district: "RAS", province: "Bagmati", src: "[S3][S5][S6][S8]; pcode COD-AB NPL v02" },
   { pcode: "NP0329404", name: "Kalika Rural Municipality", np: "कालिका गाउँपालिका", type: "RM", wards: 5, district: "RAS", province: "Bagmati", src: "[S3][S5][S6][S8]; pcode COD-AB NPL v02" },
+  /* Added 17 Sep 2026 from the official list of affected local levels in the
+     RDNA Rasuwa-Bhotekoshi Flood 2026 (NDRRMA / NPC). P-codes as the COD-AB
+     NPL v02 file names them (read the same day); ward counts and Devanagari
+     spellings are drafts until the data workstream's code-list ruling
+     confirms them. Shivapuri RM (Nuwakot, NDRRMA SitRep #1) is NOT added:
+     COD-AB carries two units of that name in Nuwakot (NP0328410, NP0328596)
+     and does not say which is the rural municipality -- a ruling first. */
+  { pcode: "NP0329401", name: "Aamachhodingmo Rural Municipality", np: "आमाछोदिङमो गाउँपालिका", type: "RM", district: "RAS", province: "Bagmati", np_src: "draft", src: "RDNA 2026; NDRRMA SitRep #1; pcode COD-AB NPL v02 (17 Sep)" },
+  { pcode: "NP0436408", name: "Shahid Lakhan Rural Municipality", np: "शहीद लखन गाउँपालिका", type: "RM", district: "GOR", province: "Gandaki", np_src: "draft", src: "RDNA 2026; pcode COD-AB NPL v02 (17 Sep)" },
+  { pcode: "NP0436409", name: "Gandaki Rural Municipality", np: "गण्डकी गाउँपालिका", type: "RM", district: "GOR", province: "Gandaki", np_src: "draft", src: "RDNA 2026; pcode COD-AB NPL v02 (17 Sep)" },
+  { pcode: "NP0335401", name: "Ichchhakamana Rural Municipality", alias: "Ichchha Kamana", np: "इच्छाकामना गाउँपालिका", type: "RM", district: "CHT", province: "Bagmati", np_src: "draft", src: "RDNA 2026; pcode COD-AB NPL v02 (17 Sep), spelt Ichchha Kamana there" },
   { pcode: "NP0328301", name: "Bidur Municipality", np: "विदुर नगरपालिका", type: "M", wards: 13, district: "NUW", province: "Bagmati", src: "[S3][S4][S5][S6]; pcode COD-AB NPL v02" },
   { pcode: "NP0328302", name: "Belkotgadhi Municipality", np: "बेलकोटगढी नगरपालिका", type: "M", wards: 13, district: "NUW", province: "Bagmati", src: "[S3][S5][S6][S8]; pcode COD-AB NPL v02" },
   { pcode: "NP0328402", name: "Kispang Rural Municipality", np: "किस्पाङ गाउँपालिका", type: "RM", wards: 5, district: "NUW", province: "Bagmati", src: "[S3][S5][S6][S8]; pcode COD-AB NPL v02" },
@@ -284,22 +295,32 @@ const DONORS = ["UNICEF", "SDC", "UNFPA", "AWO", "Save the Children", "Own funds
 /* Cadre of the person delivering — absent from the current form, which is
    why counsellor, psychologist and psychiatrist cannot be counted apart. */
 const CADRES = [
-  /* The list agreed with EDCD on 17 Sep 2026: clinical psychologist added,
-     the senior / non-senior counsellor split dropped. Two points from that
-     meeting are still open and are NOT decided here: whether "psychologist"
-     stays a code of its own (the recording names it, the written list does
-     not) and whether volunteers split into PFA volunteers and other trained
-     volunteers. Until then PSY stays and VOL covers both. */
-  { code: "PSC",  name: "Psychosocial counsellor", np: "मनोसामाजिक परामर्शकर्ता", np_src: "draft", np_note: "cadre title -- check against the EDCD/IOM psychosocial counsellor training curriculum" },
-  { code: "CPSY", name: "Clinical psychologist", np: "क्लिनिकल मनोविद्", np_src: "draft", np_note: "क्लिनिकल साइकोलोजिस्ट is also in use -- one has to be chosen", src: "EDCD review 17 Sep 2026" },
-  { code: "PSY",  name: "Psychologist", np: "मनोविद्", np_src: "draft", np_note: "मनोवैज्ञानिक is also current -- one has to be chosen and used consistently", question: "EDCD 17 Sep: confirm it stays a separate code" },
-  { code: "PSYT", name: "Psychiatrist", np: "मनोचिकित्सक", np_src: "draft" },
-  { code: "SW",   name: "Social worker", np: "सामाजिक कार्यकर्ता", np_src: "draft" },
-  { code: "HW",   name: "Health worker (non-specialist)", np: "स्वास्थ्यकर्मी (विशेषज्ञ नभएको)", np_src: "draft" },
-  { code: "VOL",  name: "Trained volunteer (including PFA volunteers)", np: "तालिम प्राप्त स्वयंसेवक (PFA स्वयंसेवकसहित)", np_src: "draft", question: "EDCD 17 Sep: confirm whether PFA volunteers and other trained volunteers are two codes" },
-  { code: "OTH",  name: "Other — specify", np: "अन्य — उल्लेख गर्नुहोस्", np_src: "draft" },
+  /* The cadre list approved by the Coordinator on 17 Sep 2026 (afternoon):
+     EDCD's list of the morning review, plus the cadres Nepal's own system
+     names and EDCD's list left out (psychiatric nurse, CPSW, FCHV, the
+     mhGAP-trained prescriber). The IASC 4Ws form has no cadre item -- this
+     field is our addition -- so each code carries the two frames the world
+     counts in: `layer` = the IASC pyramid layer that delivers it
+     (specialised / focused / community; the 4Ws activity codes 9 and 10
+     draw the same specialist / non-specialist line) and `atlas` = the WHO
+     Mental Health Atlas workforce category, so the dashboard can roll up
+     either way without touching the codes. Two points are still with EDCD
+     and are NOT decided here: whether PSY stays a code of its own, and
+     whether VOL splits into PFA volunteers and other trained volunteers. */
+  { code: "PSYT", name: "Psychiatrist", np: "मनोचिकित्सक", np_src: "draft", layer: "specialised", iasc_code: "10", atlas: "psychiatrist" },
+  { code: "CPSY", name: "Clinical psychologist", np: "क्लिनिकल मनोविद्", np_src: "draft", np_note: "क्लिनिकल साइकोलोजिस्ट is also in use -- one has to be chosen", layer: "specialised", iasc_code: "10", atlas: "psychologist", src: "EDCD review 17 Sep 2026" },
+  { code: "PSY",  name: "Psychologist (non-clinical)", np: "मनोविद्", np_src: "draft", np_note: "मनोवैज्ञानिक is also current -- one has to be chosen and used consistently", layer: "specialised", iasc_code: "10", atlas: "psychologist", question: "EDCD 17 Sep: confirm it stays a separate code" },
+  { code: "PNUR", name: "Psychiatric / mental health nurse", np: "मानसिक स्वास्थ्य नर्स", np_src: "draft", layer: "specialised", iasc_code: "10", atlas: "mental health nurse", src: "Nepal cadre (district hospital deployments); data workstream ruling R-W1; approved 17 Sep 2026" },
+  { code: "MO",   name: "Medical officer / doctor, mhGAP-trained (prescriber)", np: "मेडिकल अफिसर / चिकित्सक (mhGAP तालिमप्राप्त)", np_src: "draft", layer: "focused", iasc_code: "9", atlas: "other medical doctor", src: "Nepal mhGAP prescriber cadre; approved 17 Sep 2026 as an optional split of HW" },
+  { code: "HW",   name: "Health worker, non-specialist (nurse, ANM, AHW, HA)", np: "स्वास्थ्यकर्मी, विशेषज्ञ नभएको (नर्स, अनमी, अहेब, हे.अ.)", np_src: "draft", layer: "focused", iasc_code: "9", atlas: "nurse / other health worker" },
+  { code: "PSC",  name: "Psychosocial counsellor (NHTC-certified)", np: "मनोसामाजिक परामर्शकर्ता", np_src: "draft", np_note: "cadre title -- check against the NHTC psychosocial counsellor training curriculum", layer: "focused", iasc_code: null, atlas: "other paid mental health worker" },
+  { code: "CPSW", name: "Community psychosocial worker", np: "सामुदायिक मनोसामाजिक कार्यकर्ता", np_src: "draft", layer: "focused", iasc_code: null, atlas: "other paid mental health worker", src: "Nepal cadre; data workstream ruling R-W1; approved 17 Sep 2026" },
+  { code: "SW",   name: "Social worker", np: "सामाजिक कार्यकर्ता", np_src: "draft", layer: "focused", iasc_code: null, atlas: "social worker" },
+  { code: "FCHV", name: "Female community health volunteer", np: "महिला सामुदायिक स्वास्थ्य स्वयंसेविका", np_src: "draft", layer: "community", iasc_code: null, atlas: null, src: "Nepal government cadre; approved 17 Sep 2026" },
+  { code: "VOL",  name: "Trained volunteer (including PFA volunteers)", np: "तालिम प्राप्त स्वयंसेवक (PFA स्वयंसेवकसहित)", np_src: "draft", layer: "community", iasc_code: null, atlas: null, question: "EDCD 17 Sep: confirm whether PFA volunteers and other trained volunteers are two codes" },
+  { code: "OTH",  name: "Other — specify", np: "अन्य — उल्लेख गर्नुहोस्", np_src: "draft", layer: null, iasc_code: null, atlas: null },
   /* retired 17 Sep 2026 (merged into PSC): kept so records that carry it still resolve; never offered on a form */
-  { code: "SPSC", name: "Senior psychosocial counsellor", np: "वरिष्ठ मनोसामाजिक परामर्शकर्ता", np_src: "draft", retired: true, mergeInto: "PSC" },
+  { code: "SPSC", name: "Senior psychosocial counsellor", np: "वरिष्ठ मनोसामाजिक परामर्शकर्ता", np_src: "draft", retired: true, mergeInto: "PSC", layer: "focused", iasc_code: null, atlas: "other paid mental health worker" },
 ];
 
 /* Target groups — category codes only. Never a description of a person. */
@@ -344,7 +365,7 @@ const STATUS = [
    that the most specialised label wins, in this order (D-C03).
    OPEN: D-C01 psychiatric nurse and D-C02 community psychosocial worker
    have no code and are entered as OTH until ruled. */
-const CADRE_RANK = ["PSYT", "CPSY", "PSY", "PSC", "SW", "HW", "VOL", "OTH"];
+const CADRE_RANK = ["PSYT", "CPSY", "PSY", "PNUR", "MO", "HW", "PSC", "CPSW", "SW", "FCHV", "VOL", "OTH"];
 
 /* Convenience lookups */
 const siteByCode = Object.fromEntries(SITES.map((s) => [s.code, s]));

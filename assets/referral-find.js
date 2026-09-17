@@ -52,8 +52,9 @@
      distribution are activities, not services someone is referred to */
   var SVC = ["PFA", "CNS-I", "CNS-G", "SPEC", "MEDS", "PSED", "RECR", "CFS", "REF", "HELP", "STAFF"];
   /* the cadres and the four service settings agreed with EDCD on 17 Sep 2026
-     (assets/codes.js 0.3.0), in the hub's order */
-  var CADRE = ["PSYT", "CPSY", "PSY", "PSC", "SW", "HW", "VOL"];
+     (assets/codes.js 0.3.0), in the hub's order -- CADRE_RANK without Other;
+     the twelve-code cadre list was approved the same afternoon */
+  var CADRE = ["PSYT", "CPSY", "PSY", "PNUR", "MO", "HW", "PSC", "CPSW", "SW", "FCHV", "VOL"];
   var MODE = ["HC", "COM", "FAC", "TEL"];
   /* codes retired that day still arrive on rows filed before it. One that was
      merged into a single code is read as that code. INP -- "in person, at a

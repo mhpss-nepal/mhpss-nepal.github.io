@@ -169,7 +169,7 @@ ACTIVITY = {"PFA", "CNS-I", "CNS-G", "PSED", "RECR", "CFS", "SPEC", "MEDS", "REF
 # assets/codes.js 0.3.0 CADRES and MODALITIES, current codes only: a code
 # retired on 17 Sep 2026 (SPSC, INP, OUT) still reads on an old record, but a
 # hospital tagged today is tagged with the list as it stands
-CADRE = {"PSYT", "CPSY", "PSY", "PSC", "SW", "HW", "VOL", "OTH"}
+CADRE = {"PSYT", "CPSY", "PSY", "PNUR", "MO", "HW", "PSC", "CPSW", "SW", "FCHV", "VOL", "OTH"}
 MODE = {"HC", "COM", "FAC", "TEL", "OTH"}
 
 def check_facilities():
