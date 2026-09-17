@@ -230,7 +230,10 @@
         setState(o.state, o.panel, "live.schema");
         return;
       }
-      setState(o.state, o.panel, "live.published", { when: when(d.computed_at) }, true);
+      /* The hub can publish in demonstration mode (small numbers not
+         suppressed, for review). Whatever the page shows then says so. */
+      setState(o.state, o.panel, d.mode === "demonstration" ? "live.publishedDemo" : "live.published",
+               { when: when(d.computed_at) }, true);
       if (o.body) o.body.innerHTML = o.kind === "referral" ? referralBody(d) : floodBody(d);
       document.dispatchEvent(new CustomEvent("publicstats:" + docId, { detail: d }));
     }

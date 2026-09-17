@@ -348,6 +348,9 @@
     var g = el("div", "fgroup");
     g.setAttribute("data-tier", tier);
     var h = el("h3", null, t("refdir.find.tier." + tier));
+    if (tier === "partner" && partnerDoc && partnerDoc.mode === "demonstration") {
+      h.appendChild(el("span", "fdemo", t("refdir.find.demo")));
+    }
     var n = el("span", "n", String(list.length));
     h.appendChild(n);
     g.appendChild(h);
