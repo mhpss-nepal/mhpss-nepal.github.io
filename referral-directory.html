@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Referral Directory — MHPSS Technical Working Group Nepal</title>
-<meta name="description" content="Where to refer someone for mental health and psychosocial support in the Rasuwa–Bhotekoshi flood response: helplines, the declared affected area, and which organisation provides which service in which palika.">
+<meta name="description" content="Where to refer someone for mental health and psychosocial support in the Rasuwa–Bhotekoshi flood response: helplines, a way to find services by type, provider and place, the declared affected area, and which organisation provides which service in which palika.">
 <meta name="theme-color" content="#006996">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,8 +55,9 @@
 <div class="jump" aria-label="Sections of this page">
   <div class="in"><span class="lab" data-i18n="jump.label"></span>
     <a href="#helplines" data-i18n="jump.referral.1"></a>
-    <a href="#map" data-i18n="jump.referral.2"></a>
-    <a href="#directory" data-i18n="jump.referral.3"></a>
+    <a href="#find" data-i18n="jump.referral.2"></a>
+    <a href="#map" data-i18n="jump.referral.3"></a>
+    <a href="#directory" data-i18n="jump.referral.4"></a>
   </div>
 </div>
 <!--/NAV-->
@@ -102,14 +103,29 @@
 <!--/NAV-->
   </section>
 
-  <!-- ============ 2 · the map ============ -->
-  <section class="sec2" id="map">
-    <h2 data-i18n="refdir.p017" data-i18n-html></h2>
-    <p class="intro" data-i18n="refdir.p006"></p>
-    <div class="fig">
-      <h4 data-i18n="refdir.p021"></h4>
-      <div class="mapgrid">
+  <!-- ============ 2 · find a service ============ -->
+  <!-- Filters over two tiers that are never merged: hospitals in the words of
+       their own websites (assets/referral-facilities.js) and partner rows
+       published by the Technical Working Group (public_stats). The map is the
+       generated one; the counts are drawn over it by assets/referral-find.js,
+       on palikas, never as points. -->
+  <section class="sec2" id="find">
+    <h2 data-i18n="refdir.find.h" data-i18n-html></h2>
+    <p class="intro" data-i18n="refdir.find.intro"></p>
+    <form class="finder" role="search" onsubmit="return false">
+      <label class="fld"><span class="fl" data-i18n="refdir.find.svc"></span><select id="fSvc"></select></label>
+      <label class="fld"><span class="fl" data-i18n="refdir.find.cadre"></span><select id="fCadre"></select></label>
+      <label class="fld"><span class="fl" data-i18n="refdir.find.mode"></span><select id="fMode"></select></label>
+      <label class="fld"><span class="fl" data-i18n="refdir.find.dist"></span><select id="fDist"></select></label>
+      <label class="fld"><span class="fl" data-i18n="refdir.find.pal"></span><select id="fPal"></select></label>
+      <button type="button" class="btn grey fclear" id="fClear" data-i18n="refdir.find.clear"></button>
+    </form>
+    <p class="fsum" id="fSum" role="status" aria-live="polite"></p>
+    <div class="findgrid">
+      <div class="fig findmap">
+        <h4 data-i18n="refdir.find.maph"></h4>
         <div class="map">
+          <div class="mapstage">
 <!--MAP:svg-->
 <div class="mapwrap">
 <svg viewBox="0 0 1000 751" role="img" data-i18n-aria="map.aria" aria-label="Map of the affected districts">
@@ -217,15 +233,32 @@
 <span class="dlab ctx" style="left:18.4%;top:75.6%" data-i18n-skip>Nawalparasi East</span>
 </div>
 <!--/MAP-->
+            <div class="fbadges" id="fBadges"></div>
+            <div class="fzoom" id="fZoom" hidden></div>
+            <div class="ftip" id="fTip" hidden></div>
+          </div>
           <div class="mapkey">
             <span><i class="decl"></i><em data-i18n="map.key.decl"></em></span>
             <span><i></i><em data-i18n="map.key.other"></em></span>
             <span><i class="dist"></i><em data-i18n="map.key.dist"></em></span>
             <span><i class="dctx"></i><em data-i18n="map.key.ctx"></em></span>
-            <span id="keyServed" hidden><i class="served"></i><em data-i18n="map.key.served"></em></span>
+            <span id="keyHit" hidden><i class="fb"></i><em data-i18n="refdir.find.key.hit"></em></span>
+            <span id="keyDhit" hidden><i class="fb bydist"></i><em data-i18n="refdir.find.key.dhit"></em></span>
           </div>
+          <p class="fhint" data-i18n="refdir.find.hint"></p>
         </div>
-        <div>
+      </div>
+      <div class="fres" id="fRes"></div>
+    </div>
+    <p class="src" data-i18n="refdir.find.scope" data-i18n-html></p>
+  </section>
+
+  <!-- ============ 3 · the declared area ============ -->
+  <section class="sec2" id="map">
+    <h2 data-i18n="refdir.p017" data-i18n-html></h2>
+    <p class="intro" data-i18n="refdir.p006"></p>
+    <div class="fig">
+      <h4 data-i18n="refdir.p021"></h4>
 <!--MAP:list-->
 <ul class="palist">
   <li class="dhrow"><span class="dh" data-i18n-skip>Rasuwa</span></li>
@@ -250,8 +283,6 @@
   <li class="decl" data-pcode="NP0440406"><span class="en" data-i18n-skip>Devghat</span><span class="ty" data-i18n="map.type.rm"></span><span class="np" lang="ne" data-i18n-skip>देवघाट गाउँपालिका</span></li>
 </ul>
 <!--/MAP-->
-        </div>
-      </div>
       <div class="insight">
         <b data-i18n="refdir.p022"></b>
         <p data-i18n="refdir.p005"></p>
@@ -260,7 +291,7 @@
     </div>
   </section>
 
-  <!-- ============ 3 · the directory (public_stats) ============ -->
+  <!-- ============ 4 · the partner directory (public_stats) ============ -->
   <section class="sec2" id="directory">
     <h2 data-i18n="refdir.p016" data-i18n-html></h2>
     <p class="intro" data-i18n="refdir.p003"></p>
@@ -325,49 +356,43 @@
 <script src="assets/i18n.js"></script>
 <script src="assets/fb-config.js"></script>
 <script src="assets/public-read.js"></script>
+<script src="assets/referral-facilities.js"></script>
+<script src="assets/referral-find.js"></script>
 <script>
 (function () {
-  /* The map and the list beside it point at each other: hovering or tapping
-     a palika in either lights it in both. */
+  /* The declared list and the map point at each other: hovering a palika in
+     either lights it in both. */
   function light(code, on) {
     document.querySelectorAll('[data-pcode="' + code + '"]').forEach(function (el) {
       el.classList.toggle("on", on);
     });
   }
+  /* mouse only: a focus listener on an SVG path makes Chrome put all 81
+     palikas in the tab order, ahead of the filters' own results. The palika
+     filter is the keyboard's way to a palika. */
   document.querySelectorAll(".map .pal, .palist li[data-pcode]").forEach(function (el) {
     var code = el.getAttribute("data-pcode");
     el.addEventListener("mouseenter", function () { light(code, true); });
     el.addEventListener("mouseleave", function () { light(code, false); });
-    el.addEventListener("focus", function () { light(code, true); });
-    el.addEventListener("blur", function () { light(code, false); });
   });
 
-  /* The directory, from public_stats/referral_directory. Every palika it
-     lists is outlined on the map, so the two can never say different things. */
+  /* The partner rows are drawn in section 2 by referral-find.js; this panel
+     keeps the live state line and says where the rows went. */
   document.addEventListener("publicstats:referral_directory", function (e) {
-    var d = e.detail;
-    document.querySelectorAll(".map .pal.served").forEach(function (el) { el.classList.remove("served"); });
-    var served = 0;
-    if (d && Array.isArray(d.rows)) {
-      d.rows.forEach(function (r) {
-        if (!r || !/^NP\d{7}$/.test(String(r.pcode || ""))) return;
-        document.querySelectorAll('.map .pal[data-pcode="' + r.pcode + '"]').forEach(function (el) {
-          if (!el.classList.contains("served")) served++;
-          el.classList.add("served");
-        });
-      });
-    }
-    var k = document.getElementById("keyServed");
-    if (k) k.hidden = !served;
+    var body = document.getElementById("dirBody");
+    if (!body) return;
+    body.innerHTML = e.detail ? '<p data-i18n="refdir.dir.published"></p>'
+                              : '<p data-i18n="live.ref.none" data-i18n-html></p>';
+    if (window.I18N) window.I18N.apply(body);
   });
   if (!window.PUBLIC_STATS) return;
   window.PUBLIC_STATS.render("referral_directory", {
     state: document.getElementById("dirState"),
-    body: document.getElementById("dirBody"),
+    body: null,
     panel: document.getElementById("dirPanel"),
     kind: "referral"
   });
-})();
+})()
 </script>
 </body>
 </html>

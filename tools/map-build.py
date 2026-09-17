@@ -43,6 +43,8 @@ import io, json, math, os, re, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 REFPAGE = os.path.join(ROOT, "referral-directory.html")
+FACILITIES = os.path.join(ROOT, "assets", "referral-facilities.js")
+FINDER = os.path.join(ROOT, "assets", "referral-find.js")
 FLOODPAGE = os.path.join(ROOT, "flood-response.html")
 
 # (COD-AB adm3_pcode, COD-AB name, Nepali name as printed in the reports of the Gazette notice)
@@ -124,6 +126,7 @@ def check():
                          % (label, len(found), len(codes), extra, miss))
         else:
             print("  %-32s %d declared palikas, all on the list" % (label, len(found)))
+    fails += check_facilities()
     if fails:
         print("\n  DRIFTED:")
         for f in fails:
@@ -132,6 +135,107 @@ def check():
         return 1
     print("\n  True: the map and the list draw exactly the Government's declared palikas.")
     return 0
+
+# ------------------------------------------------- the hospitals and helplines
+# The Referral Directory's official-source tier (assets/referral-facilities.js)
+# is drawn on this map, so it is checked with it. What the check holds it to:
+# every tag quoted from a named page with a date; a place the map can draw, or
+# "outside" said out loud; no person named; and the finder's own district
+# table the same as this file's, so a district added here cannot be missing
+# from the District filter.
+ACTIVITY = {"PFA", "CNS-I", "CNS-G", "PSED", "RECR", "CFS", "SPEC", "MEDS", "REF", "HELP",
+            "IEC", "ASMT", "COORD", "TRAIN", "STAFF"}          # assets/codes.js ACTIVITIES
+CADRE = {"PSC", "SPSC", "PSY", "PSYT", "SW", "HW", "VOL", "OTH"}  # assets/codes.js CADRES
+MODE = {"INP", "OUT", "TEL", "OTH"}                            # assets/codes.js MODALITIES
+
+def check_facilities():
+    fails = []
+    if not os.path.exists(FACILITIES):
+        return ["assets/referral-facilities.js is missing"]
+    raw = io.open(FACILITIES, encoding="utf-8").read()
+    m = re.search(r"window\.REFERRAL_FACILITIES\s*=\s*(\{.*\})\s*;\s*$", raw, re.S)
+    if not m:
+        return ["referral-facilities.js: not one JSON object after window.REFERRAL_FACILITIES ="]
+    try:
+        data = json.loads(m.group(1))
+    except ValueError as e:
+        return ["referral-facilities.js is not strict JSON: %s" % e]
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", str(data.get("read", ""))):
+        fails.append("referral-facilities.js: 'read' must be the date the pages were read, YYYY-MM-DD")
+    page = io.open(REFPAGE, encoding="utf-8").read()
+    drawn = set(re.findall(r'<path class="pal[^"]*" data-pcode="(NP\d{7})"', page))
+    adm2 = set(d for d, _, _ in DISTRICTS)
+    ids = set()
+    person = re.compile(r"(?<![A-Za-z])(Dr|Prof)\.?\s+[A-Z]|डा\.\s*\S|प्रा\.\s*\S")
+    for e in data.get("entries", []):
+        eid = e.get("id", "?")
+        where = "referral-facilities.js %s" % eid
+        if eid in ids:
+            fails.append("%s: id used twice" % where)
+        ids.add(eid)
+        if e.get("kind") not in ("hospital", "helpline"):
+            fails.append("%s: kind must be hospital or helpline" % where)
+        if not (e.get("name") or {}).get("en"):
+            fails.append("%s: no English name" % where)
+        srcs = e.get("sources") or []
+        quotes = e.get("quotes") or []
+        if not srcs:
+            fails.append("%s: no source page" % where)
+        for s in srcs:
+            if not str(s.get("url", "")).startswith("https://"):
+                fails.append("%s: a source is not an https address" % where)
+        for q in quotes:
+            if not isinstance(q.get("src"), int) or not (0 <= q["src"] < len(srcs)):
+                fails.append("%s: a quote points at no source" % where)
+            if not str(q.get("text", "")).strip():
+                fails.append("%s: an empty quote" % where)
+        for ph in e.get("phones") or []:
+            if not isinstance(ph.get("src"), int) or not (0 <= ph["src"] < len(srcs)):
+                fails.append("%s: a phone number points at no source" % where)
+        for field, allowed in (("services", ACTIVITY), ("cadres", CADRE), ("modes", MODE)):
+            for code, qi in (e.get(field) or {}).items():
+                if code not in allowed:
+                    fails.append("%s: %s code %s is not in codes.js" % (where, field, code))
+                qis = qi if isinstance(qi, list) else [qi]
+                if not qis or any(not isinstance(x, int) or not (0 <= x < len(quotes)) for x in qis):
+                    fails.append("%s: %s %s is not backed by a quote" % (where, field, code))
+        if not (e.get("services") or {}):
+            fails.append("%s: lists no service" % where)
+        dist, pc = e.get("district"), e.get("pcode")
+        if e.get("kind") == "helpline":
+            if dist or pc:
+                fails.append("%s: a helpline has no place on the map" % where)
+            if "TEL" not in (e.get("modes") or {}):
+                fails.append("%s: a helpline is reached by telephone" % where)
+        else:
+            if dist == "outside":
+                if not e.get("outside"):
+                    fails.append("%s: outside the map, but not said where" % where)
+                if pc:
+                    fails.append("%s: outside the map cannot carry a palika drawn on it" % where)
+            elif dist not in adm2:
+                fails.append("%s: district %s is not drawn on the map" % (where, dist))
+            if pc and pc not in drawn:
+                fails.append("%s: palika %s is not drawn on the map" % (where, pc))
+            if pc and dist and dist != "outside" and pc[:6] != dist:
+                fails.append("%s: palika %s is not in district %s" % (where, pc, dist))
+        text = json.dumps(e, ensure_ascii=False)
+        if person.search(text):
+            fails.append("%s: looks like a person is named (Dr/Prof) -- hospitals are listed, never people" % where)
+    for n in data.get("not_listed", []):
+        if n.get("why") not in ("no-psychiatry", "unreachable"):
+            fails.append("referral-facilities.js not_listed %s: reason must be no-psychiatry or unreachable" % n.get("name"))
+    if os.path.exists(FINDER):
+        fj = io.open(FINDER, encoding="utf-8").read()
+        table = re.findall(r'\["(NP\d{4})",\s*"([^"]+)"\]', fj.split("var DIST_NAME", 1)[0])
+        if [(d, l) for d, l, _ in DISTRICTS] != table:
+            fails.append("referral-find.js DIST table differs from DISTRICTS in tools/map-build.py")
+    else:
+        fails.append("assets/referral-find.js is missing")
+    if not fails:
+        print("  %-32s %d entries, every tag quoted, every place drawable"
+              % ("referral-facilities.js", len(data.get("entries", []))))
+    return fails
 
 # ---------------------------------------------------------------- build
 def mapshaper(src, outdir):

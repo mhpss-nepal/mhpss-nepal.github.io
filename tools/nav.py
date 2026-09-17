@@ -70,7 +70,7 @@ REFKEYS = [k for k, _ in REFERENCE]
 # jump.<page>.<n> in the dictionary.
 JUMP = {
     "flood":    ["#overview", "#summary", "#helplines", "#tools", "#guidance", "#coordination"],
-    "referral": ["#helplines", "#map", "#directory"],
+    "referral": ["#helplines", "#find", "#map", "#directory"],
 }
 
 # Every visible string in these blocks is a dictionary key (assets/i18n-strings.js)

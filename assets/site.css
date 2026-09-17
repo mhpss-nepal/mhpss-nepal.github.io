@@ -283,3 +283,103 @@ body{background:#fff}
 
 /* numeral columns in the published tables: the header sits over its numbers */
 .live3 .t2 th.n{text-align:right}
+
+/* ---------- Find a service (referral-directory.html, section 2) ----------
+   Filters, then the generated map with counts drawn over it, then the list.
+   Counts sit on a palika -- or on a district when a hospital's address names
+   no palika -- never on a point. Every colour is a design.css token; the
+   count badge is Neutral Black with a white ring, so it reads on the white
+   palikas and on the Pantone 299 C fill of the declared ones alike. */
+.finder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) auto;gap:10px 12px;
+  align-items:end;margin:4px 0 8px}
+@media (max-width:1100px){ .finder{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (max-width:640px){ .finder{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.finder .fld{display:flex;flex-direction:column;gap:4px;min-width:0;margin:0}
+.finder .fl{font-size:11.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+  color:var(--hc-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finder select{font:inherit;font-size:14px;line-height:1.3;padding:8px 10px;min-height:40px;
+  border:1px solid #939391;border-radius:var(--r);background:#fff;color:var(--hc-ink);
+  width:100%;min-width:0}
+.finder select:focus-visible{outline:3px solid var(--wh-d);outline-offset:1px}
+.finder select:disabled{color:var(--hc-mute);background:var(--grey-1)}
+.finder .fclear{min-height:40px;white-space:nowrap}
+@media (max-width:640px){ .finder .fclear{grid-column:1/-1} }
+.fsum{margin:4px 0 14px;font-size:15px;font-weight:700;color:var(--hc-ink)}
+.findgrid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:1000px){ .findgrid{grid-template-columns:minmax(0,1fr)} }
+.findmap{margin:0}
+.mapstage{position:relative}
+.fbadges{position:absolute;inset:0;pointer-events:none}
+.fbadge{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;
+  min-width:26px;height:26px;padding:0 7px;border-radius:13px;border:2px solid #fff;
+  background:var(--hc-ink);color:#fff;font:700 13px/22px "Mukta",sans-serif;cursor:pointer;
+  box-shadow:0 0 0 1px var(--hc-ink)}
+/* a district-level count rides inside the district's name (pointer events
+   back on for it: the name itself lets clicks through to the map) */
+.dlab .dcount{pointer-events:auto;position:absolute;left:calc(100% - 7px);top:-12px;min-width:20px;height:18px;
+  padding:0 5px;border:1px solid #fff;border-radius:3px;background:var(--hc-ink);color:#fff;
+  font:700 11.5px/16px "Mukta",sans-serif;text-align:center;cursor:pointer}
+.dlab .dcount:hover{background:var(--wh-dd)}
+.dlab .dcount:focus-visible{outline:3px solid var(--wh-d);outline-offset:1px}
+@media (max-width:520px){ .dlab .dcount{min-width:16px;height:15px;top:-10px;left:calc(100% - 5px);font-size:10px;line-height:13px;padding:0 3px} }
+.fbadge:hover{background:var(--wh-dd)}
+.fbadge:focus-visible{outline:3px solid var(--wh-d);outline-offset:2px}
+.map .pal{cursor:pointer}
+.map .pal.hit{stroke:var(--hc-ink);stroke-width:2.4}
+.map .pal.decl.hit{stroke:#fff}
+.map .pal.sel{stroke:var(--hc-ink);stroke-width:3.4}
+.map .pal.decl.sel{stroke:#fff}
+.map .dist.hit{stroke-width:3}
+.map .dist.sel{stroke-width:3.6}
+.ftip{position:absolute;z-index:3;transform:translate(-50%,calc(-100% - 14px));pointer-events:none;
+  background:var(--hc-ink);color:#fff;padding:6px 10px;border-radius:var(--r);font-size:12.5px;
+  line-height:1.4;white-space:nowrap}
+.ftip b,.ftip span{display:block}
+.ftip .n{color:#dadada}
+.mapkey i.fb{width:16px;height:16px;border-radius:8px;background:var(--hc-ink);border:2px solid #fff;
+  box-shadow:0 0 0 1px var(--hc-ink)}
+.mapkey i.fb.bydist{width:20px;height:15px;border:0;border-radius:3px;box-shadow:none}
+.fhint{margin:8px 0 0;font-size:13px;color:var(--hc-mute)}
+.fres{min-width:0}
+.fgroup{margin:0 0 18px}
+.fgroup h3{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 8px;
+  padding-bottom:6px;border-bottom:2px solid var(--hc-ink);font-size:15px;line-height:1.3;color:var(--hc-ink)}
+.fgroup h3 .n{flex:0 0 auto;font-size:13px;font-weight:800;color:var(--hc-mute);font-variant-numeric:tabular-nums}
+.fcards{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.fcard{border:1px solid var(--grey-3);border-radius:var(--r);padding:10px 12px;background:#fff}
+.fcard .fc-h b{display:block;font-size:15.5px;line-height:1.3;color:var(--hc-ink)}
+.fcard .fc-h .np{display:block;font-size:13.5px;color:var(--hc-mute)}
+.fcard .fc-place{margin:3px 0 7px;font-size:13px;color:var(--hc-mute)}
+.fchips{list-style:none;margin:0 0 6px;padding:0;display:flex;flex-wrap:wrap;gap:5px}
+.fchips li{font-size:12.5px;line-height:1.35;padding:2px 9px;border-radius:11px;background:var(--wh-t);
+  color:var(--wh-dd);border:1px solid var(--wh-b)}
+.fcard .fc-meta,.fcard .fc-tel,.fcard .fc-src{margin:5px 0 0;font-size:13.5px;color:var(--hc-ink)}
+.fcard .fc-meta .how{color:var(--hc-mute)}
+.fcard .fc-tel a{font-weight:700;color:var(--wh-d);font-variant-numeric:tabular-nums}
+.fcard .fc-tel .lab{color:var(--hc-mute)}
+.fc-says{margin-top:7px;font-size:13px}
+.fc-says summary{cursor:pointer;color:var(--wh-d);font-weight:700}
+.fc-says .fc-page{display:block;margin:8px 0 0;font-weight:600}
+.fc-says ul{margin:3px 0 0;padding-left:18px}
+.fc-says li{margin:3px 0}
+.fc-says .ctx{color:var(--hc-mute)}
+.fc-read{margin:6px 0 0;font-size:12.5px;color:var(--hc-mute)}
+.fempty{margin:0;font-size:13.5px;color:var(--hc-mute)}
+.fnot{margin:6px 0 0;font-size:13px;color:var(--hc-mute)}
+/* section 3: the declared list stands alone now, in two columns where there is room */
+#map .palist{column-gap:36px}
+@media (min-width:900px){ #map .palist{column-count:2} #map .palist li{break-inside:avoid} }
+@media (min-width:1001px){ .findmap{position:sticky;top:12px} }
+@media (max-width:520px){ .fbadge{min-width:20px;height:20px;padding:0 5px;border-radius:10px;font-size:11px;line-height:16px} }
+/* a chosen district fills the map; the district names laid over the whole
+   map would sit in the wrong places, so they step aside while it is zoomed */
+.mapstage.zoomed .dlab{display:none}
+.fzoom{position:absolute;left:8px;top:8px;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;
+  max-width:calc(100% - 16px);padding:5px 8px;border:1px solid var(--grey-3);border-radius:var(--r);
+  background:rgba(255,255,255,.95);font-size:13px;line-height:1.35;color:var(--hc-ink)}
+.fzoom b{font-weight:800}
+.fzoom .fback{font:inherit;font-size:12.5px;font-weight:700;padding:3px 9px;border:1px solid var(--wh-d);
+  border-radius:var(--r);background:#fff;color:var(--wh-d);cursor:pointer}
+.fzoom .fback:hover{background:var(--wh-t)}
+.fzoom .fback:focus-visible{outline:3px solid var(--wh-d);outline-offset:1px}
+.fzoom .fdl{color:var(--hc-mute);font-size:12.5px}
