@@ -9,7 +9,8 @@
      provider  individual providers from the Epidemiology and Disease Control
                Division's provider list, or registered by a partner and marked
                as not yet checked (public_stats/provider_directory; a row is
-               shown only when it says the provider agreed to be listed)
+               shown only when it says the provider agreed to be listed, and
+               which of the two it came from)
      partner   organisations as partners report them, published by the
                Technical Working Group (public_stats/referral_directory,
                read by assets/public-read.js; nothing until published)
@@ -141,11 +142,14 @@
   }
   /* A provider row is shown only when it says, in so many words, that the
      provider agreed to be listed: a public page with a person's name and
-     number on it is a decision each person takes, not the list's owner. */
+     number on it is a decision each person takes, not the list's owner.
+     It must also say where it came from -- the provider list, or a partner's
+     registration -- so the page never calls a row "on the provider list"
+     that nobody said was. */
   function normaliseProvider(d) {
     if (!d || d.schema !== 1) return [];
     var rows = Array.isArray(d.rows) ? d.rows : [];
-    return rows.filter(function (r) { return r && r.consent === true && String(r.name || "").trim(); }).map(function (r, i) {
+    return rows.filter(function (r) { return r && r.consent === true && String(r.name || "").trim() && (r.source === "list" || r.source === "registration"); }).map(function (r, i) {
       var at = placeOf(r);
       return {
         tier: "provider",
@@ -162,7 +166,7 @@
         cadres: r.cadre ? [String(r.cadre)] : [],
         modes: Array.isArray(r.modalities) ? r.modalities.map(String) : [],
         checked: /^\d{4}-\d{2}-\d{2}$/.test(String(r.checked || "")) ? String(r.checked) : "",
-        via: r.source === "registration" ? "registration" : "list"
+        via: r.source
       };
     });
   }
