@@ -2,17 +2,16 @@
 """
 MHPSS Nepal -- the site's navigation, written once and generated into every page
 -------------------------------------------------------------------------------
-Two shapes, on purpose, because they are two different things and should not be
-mistaken for each other at a glance:
-
-  TOP BAND   the public website (the Layer 3 page and the reference pages).
-             A masthead and a solid bilingual nav band across the top.
-  SIDE RAIL  the Layer 2 coordination hub. A dark rail down the left.
+The public website's masthead and bilingual nav band, its footer and its
+helplines block, generated into every page. The coordination hub's dark side
+rail -- a deliberately different shape, so that the working dashboard is never
+mistaken for the public site -- has been generated in the hub's own repository
+since 17 September 2026.
 
 Before this, the nav band's seven items were all anchors into one page, so the
-whole site looked like a single scrolling document; and the four hub pages each
-had a different hand-written bar. Both are now generated from the tables below,
-so a link added here appears on every page and cannot drift.
+whole site looked like a single scrolling document. The band is now generated
+from the tables below, so a link added here appears on every page and cannot
+drift.
 
   apply    rewrite the block between the markers in every page
   check    fail if any page's block differs from what apply would write
@@ -20,7 +19,6 @@ so a link added here appears on every page and cannot drift.
 
 Markers, written once into each page by hand:
   <!--NAV:top KEY-->  ... <!--/NAV-->
-  <!--NAV:rail KEY--> ... <!--/NAV-->
   <!--NAV:foot KEY--> ... <!--/NAV-->   the website footer
   <!--NAV:help KEY--> ... <!--/NAV-->   the helplines, on two public pages
 """
@@ -216,53 +214,8 @@ def help_block(key):
     out.append('<p class="hlnote" data-i18n="hl.note"></p>')
     return "\n".join(out)
 
-# ------------------------------------------------------------------- the hub
-RAIL = [
-    ("group", "Dashboard", None),
-    ("hubindex",    "Coordination view",   "./"),
-    ("hubcoverage", "Coverage &amp; 4Ws",  "coverage.html"),
-    ("hubinbox",    "Field inbox",         "inbox.html"),
-    ("hubaccess",   "Access",              "access.html"),
-    ("group", "Elsewhere", None),
-    ("outforms",  "Field forms",   "../form/"),
-    ("outpublic", "Public page",   "../"),
-    ("outmethod", "Method",        "../method.html"),
-]
-# the sections of the coordination view itself, shown only on that page
-HUBSECTIONS = [
-    ("#coverage", "Coverage"), ("#who", "Who is doing what"), ("#when", "Over time"),
-    ("#what", "Activities"),   ("#people", "Workforce"),      ("#helpline", "Helplines"),
-    ("#layers", "Architecture"),
-]
-
-def rail_block(key):
-    out = ['<aside class="rail" aria-label="Coordination hub">',
-           '  <a class="railid" href="./">',
-           '    <span data-mark="30"></span>',
-           '    <span><b>MHPSS Nepal</b><i>Layer 2 &middot; coordination</i></span>',
-           '  </a>',
-           '  <nav>']
-    for k, label, href in RAIL:
-        if k == "group":
-            out.append('    <span class="rgrp">%s</span>' % label)
-            continue
-        on = ' class="on" aria-current="page"' if k == key else ''
-        out.append('    <a%s href="%s">%s</a>' % (on, href, label))
-        if k == "hubindex" and key == "hubindex":
-            out.append('    <span class="rsub">')
-            for h, l in HUBSECTIONS:
-                out.append('      <a href="%s">%s</a>' % (h, l))
-            out.append('    </span>')
-    out.append('  </nav>')
-    # i18n.js mounts the language switch here. Without a slot it floats top
-    # right, where on these pages it lands on top of the synthetic-data banner.
-    out.append('  <span data-i18n-toggle class="railtoggle"></span>')
-    out.append('  <p class="rfoot">Draft. Synthetic data only.</p>')
-    out.append('</aside>')
-    return "\n".join(out)
-
 # ------------------------------------------------------------------- machinery
-MARK = re.compile(r'<!--NAV:(top|rail|foot|help) ([a-z0-9]+)-->.*?<!--/NAV-->', re.S)
+MARK = re.compile(r'<!--NAV:(top|foot|help) ([a-z0-9]+)-->.*?<!--/NAV-->', re.S)
 
 def pages():
     found = []
@@ -284,7 +237,7 @@ def render(kind, key):
         return foot_block(key)
     if kind == "help":
         return help_block(key)
-    return rail_block(key)
+    raise ValueError("no navigation of kind %r" % kind)
 
 def band_words():
     path = os.path.join(ROOT, "assets", "i18n-strings.js")

@@ -1,189 +1,133 @@
-# MHPSS Coordination Hub — Nepal
+# MHPSS Technical Working Group, Nepal — public website
 
-Draft information-management instruments for the **mental health and psychosocial
-support (MHPSS)** side of the Rasuwa–Bhote Koshi flood response, for discussion
-with the WHO Nepal mental health team, the Ministry of Health and Food Safety
-and the Epidemiology and Disease Control Division (EDCD).
+The public website of the MHPSS Technical Working Group, Nepal, for the
+Rasuwa–Bhotekoshi flood response: helplines, where to find a service, the declared
+affected area, resources, a way to make contact, and the response summary a
+coordinator publishes. It is written for affected people and field partners.
 
 **→ [mhpss-nepal.github.io](https://mhpss-nepal.github.io/)**
 
+Draft, September 2026, for discussion with the WHO Nepal mental health team,
+स्वास्थ्य तथा खाद्य स्वच्छता मन्त्रालय / Ministry of Health and Food Safety, and the
+Epidemiology and Disease Control Division (EDCD). **Not yet agreed with EDCD or the
+MHPSS Technical Working Group.**
+
 ---
 
-> ## ⚠ Everything you see running is synthetic
->
-> The hub is populated by a deterministic synthetic dataset generated on
-> 15 September 2026 (`gen.js` → `data/demo.js`). **No figure, name, site total or
-> date shown on the site is response data.** Nothing here may be quoted,
-> screenshotted as evidence, or cited in any report.
->
-> The charts carry a `SYNTHETIC` watermark inside the SVG so that a cropped
-> screenshot still says so.
+## One site, three repositories
 
-**No personal data, and none is to be added.** No names, telephone numbers or
-email addresses of service users or of staff appear in this repository, in any
-branch, however briefly. See [`data/README.md`](data/README.md).
+Since 17 September 2026 the site is served from three repositories of the
+`mhpss-nepal` organisation, each at its own path on the same address:
+
+| Repository | Served at | What it holds |
+|---|---|---|
+| **`mhpss-nepal.github.io`** — this one | [`/`](https://mhpss-nepal.github.io/) | the public website (Layer 3) |
+| `hub` | [`/hub/`](https://mhpss-nepal.github.io/hub/) | the coordination hub (Layer 2) and the shared code the hub and the forms load |
+| `form` | [`/form/`](https://mhpss-nepal.github.io/form/) | the field forms and the printable QR card sheet (Layer 1) |
+
+This repository registers no service worker and loads no file from `/hub/`. Its
+`assets/` holds its own `site.css`, `page.css`, `public-read.js`,
+`referral-facilities.js` and `referral-find.js`, and copies of the shared files as
+they were when the hub and the forms moved out (`design.css`, `app.css`, `codes.js`,
+`i18n.js`, `i18n-strings.js`, `icons.js`, `mark.js`, `brand.*`, `fb-config.js`).
+
+## The pages
+
+| Page | What it is |
+|---|---|
+| [`index.html`](index.html) | **Home** — the MHPSS Technical Working Group, its mission and membership (to be agreed), what it does, the helplines |
+| [`flood-response.html`](flood-response.html) | **Flood Response** — the event as its sources state it, the published response summary, helplines, field tools, programme guidance (none yet), and how the response is coordinated |
+| [`bps.html`](bps.html) · [`iec.html`](iec.html) · [`videos.html`](videos.html) | **BPS+ · IEC · Videos** — honestly empty until real, approved Nepal material exists |
+| [`referral-directory.html`](referral-directory.html) | **Referral Directory** — helplines; *Find a service* by service, provider, place and way of reaching it, on a map; the declared affected area; the published directory of partner organisations |
+| [`resources.html`](resources.html) · [`contact-us.html`](contact-us.html) | **Resources · Contact** — sourced items only; roles, names to be confirmed |
+| [`architecture.html`](architecture.html) · [`method.html`](method.html) · [`access-explained.html`](access-explained.html) · [`layer3.html`](layer3.html) | **How this system works** — the architecture, the governance position, the data model and who can see what; reached from the footer, not the menu |
+
+## Where the content comes from
+
+- **The response summary and the partner directory** read `public_stats`: figures a
+  coordinator publishes on purpose, never the register itself
+  ([`assets/public-read.js`](assets/public-read.js)). Until something is published,
+  both say so. A document published in the hub's demonstration mode is labelled as
+  such on the page.
+- **Hospitals and helplines in *Find a service*** come from
+  [`assets/referral-facilities.js`](assets/referral-facilities.js): every listing
+  quotes the hospital's or the service's own website, with the page and the date it
+  was read. It covers the district and provincial hospitals of the districts on the
+  map and five referral hospitals in Kathmandu and Lalitpur; private hospitals and
+  clinics are not listed. A listing does not mean a service is open today.
+- **The map** draws the palikas the Government declared disaster crisis areas, on
+  OCHA COD-AB Nepal v02 boundaries (Survey Department of Nepal, UN RCO Nepal; HDX
+  dataset `cod-ab-npl`, CC BY-IGO), generated by [`tools/map-build.py`](tools/map-build.py).
+  Counts are shown by palika or by district, never as a point.
+
+**No personal data, and none is to be added.** The site lists services, never
+people. No names, telephone numbers or email addresses of service users or of staff
+appear in this repository, in any branch, however briefly.
 
 **No unpublished operational figures.** The measured defect counts, partner reach
-figures and duplication analysis of the current reporting workbook live in the
-data inventory shared privately with WHO, the Ministry and EDCD. They are
-deliberately absent here: they are unpublished figures attributed to named
-partners, and they are not ours to publish.
+figures and duplication analysis of the current reporting workbook live in the data
+inventory shared privately with WHO, the Ministry and EDCD. They are deliberately
+absent here: they are unpublished figures attributed to named partners, and they are
+not ours to publish.
 
----
+## Checks before every deploy
 
-## Why this exists
+Each of these has been made to fail on purpose.
 
-A national 5W already exists. It is run by NDRRMA, it is government-owned, and
-Protection–MHPSS is already one of its clusters. The mental health side runs a
-separate reporting sheet that does not feed it.
+| Check | Refuses |
+|---|---|
+| `python3 tools/nav.py check` | a page whose navigation, footer or helplines block differs from what the generator writes |
+| `python3 tools/map-build.py check` | a map or list that does not draw exactly the declared palikas; a hospital listing whose tag has no quotation, a quotation or number with no source, a place the map does not draw, or anything that reads as a person's name |
+| `python3 tools/roster-fig.py check` | a site unit chart that no longer matches the site list |
+| `python3 tools/i18n-check.py` | English on a keyed page with no key, or a key with no Nepali on an enforced page |
+| `python3 tools/text-setting-check.py` | running text that is not justified, or that is hyphenated |
+| `python3 tools/contrast-check.py` | a colour token that does not clear WCAG AA on its own surface |
+| `tools/justify-sweep.py` · `tools/contrast-sweep.py` | the same two rules measured in a browser on every page: justification at two widths, contrast in light and dark (these need Playwright) |
 
-**So the gap is not the instrument. The gap is the connection.**
+## Running it locally
 
-What the current sheet cannot do — and what a 4Ws exists to do — is say *which
-sites are at zero*. It cannot, because the holding-centre roster is written in
-Devanagari while every reported location is written in Roman script, and the two
-have no key between them. That single missing key is what this repository is
-built to supply.
-
-## What is here
-
-| Address | What it is | Layer |
-|---|---|---|
-| [`/`](index.html) | **Home** — the MHPSS Technical Working Group, its mission and membership (to be agreed), what it does, the helplines | 3 · public |
-| [`flood-response.html`](flood-response.html) | **Flood Response** — the event as its sources state it, the published response summary, helplines, field tools, programme guidance (none yet), and how the response is coordinated | 3 · public |
-| [`bps.html`](bps.html) · [`iec.html`](iec.html) · [`videos.html`](videos.html) | **BPS+ · IEC · Videos** — honestly empty until real, approved Nepal material exists | 3 · public |
-| [`referral-directory.html`](referral-directory.html) | **Referral Directory** — helplines, the declared affected area on COD-AB boundaries, and the published palika-level directory | 3 · public |
-| [`resources.html`](resources.html) · [`contact-us.html`](contact-us.html) | **Resources · Contact** — sourced items only; roles, names to be confirmed | 3 · public |
-| [`form/`](form/index.html) | **Layer 1.** The field forms and the printable QR card sheet | 1 |
-| [`hub/`](hub/index.html) | **Layer 2.** Coordination view, coverage and 4Ws, field inbox, access | 2 |
-| [`architecture.html`](architecture.html) · [`method.html`](method.html) · [`access-explained.html`](access-explained.html) · [`layer3.html`](layer3.html) | How this system works — reached from the footer, not the menu | reference |
-| [`assets/public-read.js`](assets/public-read.js) | The public pages' only read: `public_stats`, aggregates a coordinator publishes | 3 |
-| [`assets/codes.js`](assets/codes.js) | Controlled vocabularies — sites, organisations, activities, cadres | 1–2 |
-| [`assets/store.js`](assets/store.js) | Local storage, deterministic ids, validation, export | 1–2 |
-| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | Field-by-field mapping to the IASC 4Ws model | 1–2 |
-| [`gen.js`](gen.js) | Generates the synthetic demonstration dataset | 2 |
-| [`tools/`](tools/) | The deploy gates: navigation, bilingual, offline, QR, figures, map, text setting, contrast | all |
-
-### The form
-
-One row per activity, per site, per day. Coded sites and activities; sex and age
-disaggregation with a live cross-check against the total; both calendars stored
-separately; works with no signal; exports CSV or JSON.
-
-It has **no beneficiary fields and none are to be added.** Resubmitting the same
-site, date, activity and organisation updates that report rather than creating a
-second one, so a double tap or a re-sync cannot inflate a figure.
-
-### The hub
-
-Five doors following the pattern of the Sadar Hati Integrated Hub — one per
-architecture layer, plus the architecture concept and the method register. The
-layer badge on each door says who it is for, so nobody has to guess which page
-they are supposed to open.
-
-### The coordination view and the dashboard
-
-- **Coverage gaps** — which roster sites have *no* report in the period. This is
-  what a 4Ws is for: not who is present, but which sites are at zero.
-- **Duplication check** — site-days with more than one organisation reporting,
-  with the three readings distinguished: different activities, one organisation
-  under two funding tags, or genuinely the same activity twice.
-- **4Ws matrix** — by organisation: districts, sites, activities, reach, first
-  and last report.
-- **Workforce** — cadre by district. Cadre and district only; no contact details.
-
-## Running it
-
-No build step, no dependencies, no server, no network.
+No build step. Serve the folder and open it:
 
 ```bash
-open index.html                 # macOS — or just double-click it
-python3 -m http.server 8080     # if you prefer a local URL
+python3 -m http.server 8080
 ```
 
-Everything works offline, including from a USB stick. That is deliberate: upper
-Rasuwa is helicopter-only and is not expected to change for two to three months,
-so a tool that needs a connection is a tool that does not reach the north at all.
+The generated parts are committed. After changing the tables they come from, run
+`python3 tools/nav.py apply` (navigation, footer, helplines),
+`python3 tools/roster-fig.py apply` (the site unit chart) or
+`python3 tools/map-build.py build <npl_admin3.geojson>` (the map; needs mapshaper).
 
-Scripts are classic `<script>` tags rather than ES modules, because browsers
-refuse module imports over `file://` — and opening the file directly has to work.
+## Language
 
-To regenerate the demonstration data (deterministic — the same seed gives the
-same dataset on every machine):
-
-```bash
-node gen.js
-```
-
-## The governance position
-
-Three questions were raised on 14 September 2026 and remain open:
-
-1. Hosting a prototype on a non-WHO account
-2. AI assistance in development
-3. The procurement route for a domain
-
-**Until each has a written answer, this is an internal demonstration**, and the
-demonstration runs on synthetic content only. That is not caution for its own
-sake: placing WHO personal data with a third-party provider is a transfer
-requiring a written agreement with specified security undertakings, and a
-personal account has none.
-
-A form with no backend cannot breach that rule, which is why this one has no
-backend. When a backend is authorised, only two functions in `store.js` change —
-the record shape, the deterministic id and the validation stay as they are.
-
-### Where this is going
-
-| Stage | | |
-|---|---|---|
-| **0** | Fix the form | The revised instrument on the government's own matrix. No infrastructure. |
-| **1** | Offline demonstrator | *This repository.* Synthetic data, running from a laptop. |
-| **2** | Proof of concept | Real submissions from a few partners, on WHO-provisioned infrastructure, one cycle. Then a decision. |
-| **3** | Government handover | Public layer at EDCD, a named secretariat in writing, one full update cycle run by the owner. |
-
-**This organisation account exists to make stage 3 possible.** A GitHub
-Organization can add owners and be transferred; a personal account cannot. The
-account is deliberately named for the function, not for a ministry — it does not
-present itself as WHO, the Ministry of Health and Food Safety, or EDCD, and it
-should not be made to.
+Pages carry an English and Nepali switch. Nepali comes from a translator: where a
+Nepali string is still awaited the English shows, short machine drafts are announced
+as such, and clinical wording stays in English. `python3 tools/i18n-check.py
+--worksheet` writes the worksheet for the translator.
 
 ## Known gaps
 
 Stated rather than smoothed over.
 
-- **IASC 4Ws activity codes are applied in part.** The 2012 code list (Table 2:
-  11 codes, 45 subcodes) is in hand. Eight activities carry their subcode as a
-  direct match; five carry a rule instead, because the subcode depends on the
-  cadre or the content, and no subcode is written for them. Whether helpline
-  contact and coordination meeting belong in a 4Ws activity list, and whether
-  the 2012 codes or the updated set in a May 2024 draft toolkit (not obtained)
-  should be the basis, are open.
-- **No Bikram Sambat conversion.** Nepali month lengths vary year to year and
-  cannot be computed from a formula. A verified calendar table for 2082–2085
-  from a Government of Nepal source is needed first.
 - **The site list is not agreed.** It is derived from the holding-centre roster
-  sheet, the list of centres from the District Administration Office, Nuwakot,
-  of 29 Bhadra 2083, and sites appearing in submitted reports. EDCD and the
-  MHPSS Technical Working Group have not signed it off.
-- **The activity list is not agreed.** Consolidated from what partners have
-  actually submitted, not from an agreed taxonomy.
-- **No accessibility audit** has been run beyond colour-contrast validation of
-  the chart palette.
-- **Most text is not yet in Nepali.** Pages carry a language switch and fall
-  back to English where a Nepali string is still awaited; machine drafts are
-  announced as such, and clinical wording stays in English.
+  sheet, the list of centres from the District Administration Office, Nuwakot, of
+  29 Bhadra 2083, and sites appearing in submitted reports. EDCD and the MHPSS
+  Technical Working Group have not signed it off.
+- **The activity list is not agreed.** Consolidated from what partners have actually
+  submitted, not from an agreed taxonomy.
+- **Three hospital websites could not be opened** on 17 September 2026 — Dhading,
+  Damauli and Madhyabindu. They are not listed until their own pages can be read.
+- **No accessibility audit** has been run beyond the contrast checks above and
+  keyboard checks of *Find a service*.
+- **Most text is not yet in Nepali.**
 
 ## Attribution
 
-Colours sampled from who.int on 15 September 2026. The chart palette is anchored
-on that blue and validated for colour-vision deficiency separation and contrast
-in both light and dark modes.
+Colours from the Health Cluster's Visual Identity Guidelines (Pantone 299 C and
+Neutral Black C), read on 16 September 2026.
 
-**No emblem is used.** WHO emblem use requires express written permission, and
-the Nepal national emblem belongs to the Ministry. Institutional naming verified
-against `mohp.gov.np` and `edcd.gov.np` on 15 September 2026 — Ministry of Health
-and Food Safety · Department of Health Services · Epidemiology and Disease
-Control Division · Non-Communicable Disease & Mental Health Section.
-
-Prepared with AI assistance.
+**No emblem is used.** WHO emblem use requires express written permission, and the
+national emblem belongs to the Government of Nepal. Institutional naming verified
+against `mohp.gov.np` and `edcd.gov.np` on 15 September 2026 — स्वास्थ्य तथा खाद्य
+स्वच्छता मन्त्रालय / Ministry of Health and Food Safety · Department of Health
+Services · Epidemiology and Disease Control Division · Non-Communicable Disease &
+Mental Health Section.

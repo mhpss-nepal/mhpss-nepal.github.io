@@ -15,7 +15,7 @@ Four assertions, each of them a mistake that has actually been made:
      them were doing exactly that before this gate existed
   4. .mono breaks with `break-word`, never `anywhere`
 
-See claude/text-setting-rules.md.
+See the project's text-setting rules.
 """
 import os, re, sys, glob
 
@@ -119,7 +119,7 @@ def main():
         print()
         for f in fails:
             print("  FAIL  %s" % f)
-        print("\n  Text setting is not right yet. See claude/text-setting-rules.md.")
+        print("\n  Text setting is not right yet. See the project's text-setting rules.")
         return 1
     print("\n  True: running text is set justified with no hyphenation, and nothing")
     print("  in the cascade takes it away again.")

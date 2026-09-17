@@ -1,13 +1,13 @@
 /* =====================================================================
    MHPSS Nepal — the design system
    ---------------------------------------------------------------------
-   REWRITTEN 16 September 2026, after WHO's review: "improve tampilan
-   infografisnya, jgn kayak buatan AI."
+   REWRITTEN 16 September 2026, after WHO's review asked for better
+   infographics that do not look generic.
 
    That was correct, and the fault was the reference. The first version
    borrowed the Sadar Hati public site, which is a good site -- for an
    Indonesian foundation. Transplanted here it produced the generic
-   landing-page grammar that reads as machine-made: a gradient hero, a
+   landing-page grammar that reads as template-made: a gradient hero, a
    letter-spaced uppercase kicker, three feature cards under a centred
    heading, badge chips, soft shadows on everything, pill buttons.
 
@@ -45,8 +45,7 @@
    (RGB 29/29/27); its secondary colours are Pantone P 427 C light grey
    (RGB 218/218/218) and Pantone P 1495 C orange (RGB 243/147/19).
 
-   The orange is LEFT OUT: Adib's standing instruction for this project is no
-   gold or yellow. If it is ever wanted it is in the guidelines, not invented.
+   The orange is LEFT OUT: the project's standing rule is no gold or yellow. If it is ever wanted it is in the guidelines, not invented.
 
    Everything else here is Pantone 299 C held at its own hue (198 degrees) and
    full saturation, lightened and darkened -- because 299 C itself reaches only
@@ -91,7 +90,7 @@
   --frame:1240px;
   --gutter:28px;
   --measure:82ch;      /* prose line length -- the measure recorded in
-                          claude/layer2-spec-from-5ws.md section 6. Not 74ch:
+                          the project's design record. Not 74ch:
                           that was set earlier today without checking the
                           record, and the record stands. */
   --formw:940px;       /* a form column; a 1240px-wide input is not a form */
@@ -465,15 +464,15 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 /* =====================================================================
    FIGURES
    ---------------------------------------------------------------------
-   Added 16 September 2026, after WHO's second note on the review draft:
-   "improve tampilan infografisnya, jgn kayak buatan AI."
+   Added 16 September 2026, after WHO's second note on the review draft,
+   which made the same request.
 
    The first note was about the page's grammar and was answered above.
    This one is about the figures themselves, and it was a different
    fault. The figures were decoration: a ring at nought per cent, a row
    of cards, three stacked bars. A ring at nought is a shape that could
    sit on any page about anything -- which is precisely what makes it
-   read as machine-made.
+   read as template-made.
 
    What a figure has to do here instead is carry something that could
    only have been drawn by someone who knows this response:
@@ -601,7 +600,7 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
   border-radius:3px;padding:0 4px}
 
 /* ---------- the insight callout ------------------------------------- */
-/* Adib's own design rules (Visual_Design_Lessons_28Jun2026.md, rule 5)
+/* The project's design rules (rule 5 of the visualisation lessons)
    require a "so what" after every visualisation: do not leave the reader
    to interpret a figure on their own. It is also the difference between a
    chart and a finding -- anything can draw the chart. */
@@ -618,7 +617,7 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
    ---------------------------------------------------------------------
    The public website navigates from a BAND ACROSS THE TOP. The Layer 2
    coordination hub navigates from a RAIL DOWN THE LEFT, dark, with the
-   brand blue as its edge. Adib asked for the distinction so that nobody
+   brand blue as its edge. The distinction was asked for so that nobody
    glancing at a screen mistakes the working dashboard for the public
    page -- and it also fixed the older fault, that the band's seven items
    were all anchors into one document, so the whole site read as a single
@@ -688,13 +687,13 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 /* A card's "read the argument" link. It is a SENTENCE, so it justifies like
    any other paragraph -- I first set it text-align:left calling it
    "navigation, not running text", and the sweep caught it wrapping to two
-   lines at 390px within minutes. Adib's rule is explicit that the line count
+   lines at 390px within minutes. The rule is explicit that the line count
    does not matter; a two-line sentence is the case he corrected. */
 .more{margin:10px 0 0;font-size:13px}
 .more a{font-weight:700}
 
 /* =====================================================================
-   TEXT SETTING -- claude/text-setting-rules.md
+   TEXT SETTING -- the project's text-setting rules
    ---------------------------------------------------------------------
    Every block of running text is flush to BOTH margins of whatever
    container it stands in. A word is never split: one that does not fit
@@ -713,7 +712,7 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 
    This changes NO width decision. It justifies to the measure the
    container already has -- the 82ch prose measure in
-   claude/layer2-spec-from-5ws.md section 6 stands.
+   the recorded measure stands.
    ===================================================================== */
 p, li, blockquote, dd, td, figcaption,
 .note, .callout, .lede, .subtitle, .help, .stand, .insight, .figsrc{

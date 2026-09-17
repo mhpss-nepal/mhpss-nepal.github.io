@@ -2,7 +2,7 @@
 """
 MHPSS Nepal -- text-setting sweep.
 
-The check from claude/text-setting-rules.md, run over every page at two
+The check from the project's text-setting rules, run over every page at two
 widths. It reports any GENUINELY MULTI-LINE block of running text that is
 not justified, or that has hyphenation turned on.
 

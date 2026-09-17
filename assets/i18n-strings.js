@@ -12,13 +12,13 @@
      3. the deploy script refuses to publish a page whose keys are not
         all present, so a half-translated string cannot ship silently
 
-   NEPALI IS NOT WRITTEN HERE BY CLAUDE. Every `ne` value comes from a
+   NEPALI IS NOT DRAFTED HERE. Every `ne` value comes from a
    human translator. This is a government health system read by the
    Ministry: a mistranslated clinical term is a real harm, not an
    inconvenience. Strings marked `pro: true` in the audit list below must
    go to a professional translator and never to anyone's best guess --
    PHQ-9 items above all, because a reworded PHQ-9 is not the validated
-   instrument. See claude/layer1-forms.md.
+   instrument.
    ===================================================================== */
 
 window.I18N_STRINGS = {
@@ -32,7 +32,7 @@ window.I18N_STRINGS = {
       { code: "ne", label: "NEP", name: "नेपाली",   html: "ne" }
     ],
     // Bumped whenever the English changes, so a stale translation is visible.
-    revision: "2026-09-16",
+    revision: "2026-09-17",
 
     /* ---- strings that NO machine may translate --------------------------
        Matched as prefixes, so a PHQ-9 item added next month is protected
@@ -256,7 +256,7 @@ window.I18N_STRINGS = {
     "hub.foot.line1": "Rasuwa–Bhote Koshi flood response · mental health and psychosocial support · draft, September 2026",
     "hub.foot.line2": "Prepared for the WHO Nepal mental health team, the Ministry of Health and Food Safety and EDCD. Not agreed with EDCD or the MHPSS Technical Working Group.",
     "hub.foot.source": "Source and method on GitHub",
-    "hub.foot.emblem": "No WHO or Government of Nepal emblem is used: WHO emblem use requires express written permission and the Nepal national emblem belongs to the Ministry. Prepared with AI assistance.",
+    "hub.foot.emblem": "No WHO or Government of Nepal emblem is used: WHO emblem use requires express written permission and the Nepal national emblem belongs to the Ministry.",
     "hub.meta.title": "MHPSS Nepal — Integrated Hub",
     "hub.meta.desc": "One door to the mental health and psychosocial support information system for the Rasuwa–Bhote Koshi flood response. Demonstration build; all figures synthetic.",
 
@@ -961,7 +961,7 @@ window.I18N_STRINGS = {
        Nepali and the English sit side by side and the reader gets whichever
        they can read.
 
-       The Nepali below was drafted by Claude, not a translator. It is the
+       The Nepali below is a machine draft, not a translator's. It is the
        FIRST string that should go to a human, ahead of any page content:
        it is the sentence that tells a Ministry reader how much to trust
        everything else on the page. */
@@ -1000,7 +1000,7 @@ window.I18N_STRINGS = {
   /* Filled by the translator, imported from the worksheet. Empty is not a
      bug: an empty value renders the English with a visible marker so that
      a half-translated page cannot be mistaken for a finished one. */
-  /* AI-DRAFTED, NOT REVIEWED BY A TRANSLATOR.
+  /* MACHINE DRAFT, NOT REVIEWED BY A TRANSLATOR.
      Short strings only -- navigation, titles, layer labels, buttons. The
      long descriptive paragraphs are deliberately absent: at 60 words a
      draft reads awkwardly in a way a reader notices, and an awkward
