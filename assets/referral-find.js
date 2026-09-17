@@ -2,17 +2,21 @@
    MHPSS Nepal -- "Find a service" on the Referral Directory
    ---------------------------------------------------------------------
    Layer 3. Four filters -- service, provider, how to access, place -- over
-   two tiers of entries that are never merged into one count:
+   three tiers of entries that are never merged into one count:
 
      official  hospitals and helplines, in the words of their own websites
                (assets/referral-facilities.js, every tag quoted and dated)
+     provider  individual providers from the Epidemiology and Disease Control
+               Division's provider list, or registered by a partner and marked
+               as not yet checked (public_stats/provider_directory; a row is
+               shown only when it says the provider agreed to be listed)
      partner   organisations as partners report them, published by the
                Technical Working Group (public_stats/referral_directory,
                read by assets/public-read.js; nothing until published)
 
    The map (assets/referral-map.js) shows each matching hospital as a pin at
-   its own location, and partner organisations as a count on a palika -- or on
-   a district when no palika was reported. A partner row is never a point.
+   its own location; providers and partner organisations are a count on a
+   palika -- or on a district when no palika was given. A person is never a point.
 
    Filters live in the address (?svc=SPEC&cadre=PSYT), so a worker can send
    a colleague "where are the psychiatrists" as a link.
@@ -79,6 +83,8 @@
   /* ------------------------------------------------------------ entries */
   var partnerRows = [];     // normalised, from the published document
   var partnerDoc = undefined;
+  var providerRows = [];    // normalised, from public_stats/provider_directory
+  var providerDoc = undefined, providerErr = "";
 
   function officialEntries() {
     return (F.entries || []).map(function (e) {
@@ -117,6 +123,35 @@
       };
     });
   }
+  /* A provider row is shown only when it says, in so many words, that the
+     provider agreed to be listed: a public page with a person's name and
+     number on it is a decision each person takes, not the list's owner. */
+  function normaliseProvider(d) {
+    if (!d || d.schema !== 1) return [];
+    var rows = Array.isArray(d.rows) ? d.rows : [];
+    return rows.filter(function (r) { return r && r.consent === true && String(r.name || "").trim(); }).map(function (r, i) {
+      var pc = /^NP\d{7}$/.test(String(r.pcode || "")) ? String(r.pcode) : null;
+      var dist = String(r.district || "");
+      var adm2 = pc ? pc.slice(0, 6) : (/^NP\d{4}$/.test(dist) ? dist : (CODE_TO_ADM2[dist] || null));
+      return {
+        tier: "provider",
+        id: "pv-" + (String(r.id || i).replace(/[^\w-]/g, "") || i),
+        src: r,
+        name: { en: String(r.name || "") },
+        qualification: String(r.qualification || ""),
+        org: String(r.organisation || ""),
+        phone: String(r.phone || ""),
+        adm2: adm2,
+        pcode: pc && PAL[pc] ? pc : null,
+        services: Array.isArray(r.services) ? r.services.map(String) : [],
+        cadres: r.cadre ? [String(r.cadre)] : [],
+        modes: Array.isArray(r.modalities) ? r.modalities.map(String) : [],
+        checked: /^\d{4}-\d{2}-\d{2}$/.test(String(r.checked || "")) ? String(r.checked) : "",
+        via: r.source === "registration" ? "registration" : "list"
+      };
+    });
+  }
+
   /* the palika an entry sits in, for the map: the hospital's pin, else the
      palika it was reported with */
   function palikaOf(e) {
@@ -208,7 +243,7 @@
     if (e.adm2 === "outside") return t("refdir.find.place.outside", { district: e.outside });
     var dn = distName(e.adm2);
     if (e.pcode) return t("refdir.find.place.palika", { palika: palName(e.pcode), district: dn });
-    if (e.tier === "partner") return t("refdir.find.place.districtPartner", { district: dn });
+    if (e.tier === "partner" || e.tier === "provider") return t("refdir.find.place.districtPartner", { district: dn });
     return t("refdir.find.place.district", { district: dn });
   }
 
@@ -229,6 +264,14 @@
       h.appendChild(np);
     }
     li.appendChild(h);
+    if (e.tier === "provider") {
+      if (e.qualification) li.appendChild(el("p", "fc-qual", e.qualification));
+      if (e.org) {
+        var og = el("p", "fc-org"); og.appendChild(el("span", "lab", t("refdir.find.org") + " "));
+        var ob = el("span", null, e.org); ob.setAttribute("data-i18n-skip", ""); og.appendChild(ob);
+        li.appendChild(og);
+      }
+    }
     var place = placeText(e);
     if (place) li.appendChild(el("p", "fc-place", place));
 
@@ -245,6 +288,14 @@
     }
 
     var s = e.src || {};
+    /* a number is shown only when it looks like one: digits and the usual separators */
+    if (e.tier === "provider" && /^[+\d\s().\/\u2013-]+$/.test(e.phone) && e.phone.replace(/\D/g, "").length >= 4) {
+      var pp = el("p", "fc-tel");
+      var pa = el("a", null, e.phone); pa.href = "tel:" + e.phone.replace(/[^\d+]/g, "");
+      pa.setAttribute("data-i18n-skip", "");
+      pp.appendChild(pa);
+      li.appendChild(pp);
+    }
     if (Array.isArray(s.phones) && s.phones.length) {
       var ph = el("p", "fc-tel");
       s.phones.forEach(function (p, i) {
@@ -268,7 +319,10 @@
       li.appendChild(go);
     }
 
-    if (e.tier === "partner") {
+    if (e.tier === "provider") {
+      li.appendChild(el("p", "fc-src", e.via === "registration" ? t("refdir.find.selfreg")
+        : (e.checked ? t("refdir.find.checked", { date: when(e.checked) }) : t("refdir.find.fromlist"))));
+    } else if (e.tier === "partner") {
       if (e.last) li.appendChild(el("p", "fc-src", t("refdir.find.last", { date: when(e.last) })));
     } else if (Array.isArray(s.quotes) && s.quotes.length) {
       var det = el("details", "fc-says");
@@ -310,7 +364,8 @@
     var g = el("div", "fgroup");
     g.setAttribute("data-tier", tier);
     var h = el("h3", null, t("refdir.find.tier." + tier));
-    if (tier === "partner" && partnerDoc && partnerDoc.mode === "demonstration") {
+    if ((tier === "partner" && partnerDoc && partnerDoc.mode === "demonstration") ||
+        (tier === "provider" && providerDoc && providerDoc.mode === "demonstration")) {
       h.appendChild(el("span", "fdemo", t("refdir.find.demo")));
     }
     var n = el("span", "n", String(list.length));
@@ -334,24 +389,37 @@
     return "";
   }
 
+  function providerState() {
+    if (providerErr) return t("live.error");
+    if (providerDoc === undefined) return t("live.checking");
+    if (providerDoc === null) return t("refdir.find.none.providerUnpublished");
+    if (providerDoc.schema !== 1) return t("live.schema");
+    return t("refdir.find.none.provider");
+  }
+
   function count(kind, n) {
     return t("refdir.find.count." + kind + "." + (n === 0 ? "none" : n === 1 ? "one" : "many"), { n: n });
   }
 
   function render() {
-    var all = officialEntries().concat(partnerRows);
+    var all = officialEntries().concat(providerRows, partnerRows);
     var what = all.filter(matchesWhat);
     var shown = what.filter(matchesWhere);
     var official = shown.filter(function (e) { return e.tier === "official"; });
+    var provider = shown.filter(function (e) { return e.tier === "provider"; });
     var partner = shown.filter(function (e) { return e.tier === "partner"; });
     var phone = shown.filter(function (e) { return e.tier === "phone"; });
 
     /* the summary line, read aloud when it changes */
     var sum = $("fSum");
     if (sum) {
+      /* hospitals and partner organisations are places; a provider is a person */
       var places = official.length + partner.length;
-      if (!places && !phone.length) {
+      if (!places && !provider.length && !phone.length) {
         sum.textContent = t("refdir.find.sum0");
+      } else if (providerRows.length) {
+        sum.textContent = t("refdir.find.sumProviders", { places: count("place", places),
+          providers: count("provider", provider.length), phones: count("phone", phone.length) });
       } else {
         sum.textContent = t("refdir.find.sum", { places: count("place", places), phones: count("phone", phone.length) });
       }
@@ -362,6 +430,7 @@
     if (res) {
       res.textContent = "";
       res.appendChild(group("official", official, el("p", "fempty", t("refdir.find.none.official"))));
+      res.appendChild(group("provider", provider, el("p", "fempty", providerState())));
       var pstate = partnerState();
       res.appendChild(group("partner", partner, el("p", "fempty", partner.length ? "" :
         (pstate || t("refdir.find.none.partner")))));
@@ -445,7 +514,7 @@
   }
   function countAt(code) {
     var n = 0;
-    officialEntries().concat(partnerRows).filter(matchesWhat).forEach(function (e) {
+    officialEntries().concat(providerRows, partnerRows).filter(matchesWhat).forEach(function (e) {
       if (e.tier !== "phone" && palikaOf(e) === code) n++;
     });
     return n;
@@ -523,6 +592,19 @@
     partnerRows = normalisePartner(ev.detail);
     render();
   });
+  /* individual providers: their own document, read the same way */
+  var previewingProviders = false;
+  if (window.PUBLIC_STATS && window.PUBLIC_STATS.configured) {
+    window.PUBLIC_STATS.watch("provider_directory", function (data) {
+      if (previewingProviders) return;
+      providerDoc = data; providerErr = ""; providerRows = normaliseProvider(data); render();
+    }, function (msg) {
+      if (previewingProviders) return;
+      providerErr = msg || "error"; render();
+    });
+  } else {
+    providerErr = "not configured";
+  }
   var ds = $("dirState");
   if (ds && window.MutationObserver) {
     new MutationObserver(function () { render(); }).observe(ds, { attributes: true, attributeFilter: ["data-i18n-live"] });
@@ -541,6 +623,9 @@
   /* for whoever builds the publish step: paint a partner document that has
      not been published, with no network, to see what the filters will do */
   window.REFERRAL_FIND = {
-    preview: function (doc) { previewing = true; partnerDoc = doc; partnerRows = normalisePartner(doc); render(); }
+    preview: function (doc) { previewing = true; partnerDoc = doc; partnerRows = normalisePartner(doc); render(); },
+    previewProviders: function (doc) {
+      previewingProviders = true; providerErr = ""; providerDoc = doc; providerRows = normaliseProvider(doc); render();
+    }
   };
 })();

@@ -442,3 +442,7 @@ html[lang="ne"] .hlc .np{display:none}
 .fcard.flash{box-shadow:0 0 0 3px var(--wh)}
 .mapkey i.pin{width:12px;height:16px;border:0;border-radius:6px 6px 6px 0;transform:rotate(-45deg);background:var(--wh-dd)}
 @media (max-width:640px){ .lm-pin svg{transform:scale(.8);transform-origin:50% 100%} }
+/* the providers tier: a person's qualification and organisation under the name */
+.fcard .fc-qual{margin:2px 0 0;font-size:13.5px;font-weight:600;color:var(--hc-ink)}
+.fcard .fc-org{margin:2px 0 0;font-size:13px;color:var(--hc-ink)}
+.fcard .fc-org .lab{color:var(--hc-mute)}
