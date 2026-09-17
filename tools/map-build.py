@@ -9,10 +9,13 @@ it by the deploy guard. A palika drawn as declared that is not on the
 Government's list -- or one on the list and not drawn -- is exactly the kind
 of public error nobody notices by looking.
 
-  build <npl_admin3.geojson>   regenerate both blocks from OCHA COD-AB
-                               (cloud-side: needs mapshaper on PATH)
-  check                        parse the two pages and compare them with
-                               the list (runs anywhere, no GIS libraries)
+  build <npl_admin3.geojson>   regenerate both blocks, and the interactive
+                               map's boundaries (assets/referral-geo.js),
+                               from OCHA COD-AB (cloud-side: needs mapshaper)
+  geo <npl_admin3.geojson>     regenerate assets/referral-geo.js only
+  check                        parse the two pages, the boundaries file and
+                               the hospitals, and compare them with the list
+                               (runs anywhere, no GIS libraries)
 
 WHAT "AFFECTED AREA" MEANS HERE -- decided 16 September 2026
   Declared palikas: the Government's declaration of disaster crisis areas.
@@ -46,6 +49,7 @@ REFPAGE = os.path.join(ROOT, "referral-directory.html")
 FACILITIES = os.path.join(ROOT, "assets", "referral-facilities.js")
 FINDER = os.path.join(ROOT, "assets", "referral-find.js")
 FLOODPAGE = os.path.join(ROOT, "flood-response.html")
+GEO = os.path.join(ROOT, "assets", "referral-geo.js")
 
 # (COD-AB adm3_pcode, COD-AB name, Nepali name as printed in the reports of the Gazette notice)
 DECLARED = [
@@ -76,10 +80,20 @@ DISTRICTS = [
     ("NP0327", "Kathmandu",        "context"),
     ("NP0447", "Nawalparasi East", "context"),
 ]
+# District names in Nepali, as the Gazette notice's report (Prasashan, 29 Aug
+# 2026), the Department of Health Services' flood report no. 19 and Bharatpur
+# Hospital's own website print them. Nawalparasi East has no Nepali name in a
+# source read, so it stays in English on the Nepali page.
+DISTRICT_NE = {"NP0329": "रसुवा", "NP0328": "नुवाकोट", "NP0330": "धादिङ", "NP0436": "गोरखा",
+               "NP0440": "तनहुँ", "NP0335": "चितवन", "NP0327": "काठमाडौं"}
+GEO_SIMPLIFY_M = 30   # the interactive map: boundaries simplified to 30 metres
+
 # Label nudges, in percent of the drawing, where two district centres sit so
 # close that the names collide on a phone (measured at 390px, 16 Sep 2026).
 NUDGE = {"NP0328": (3.5, -2.5), "NP0330": (-4.0, 1.5)}
 W = 1000  # viewBox width; the height follows the shape
+
+GEO_DATA = None
 
 def district_of(pcode):
     return pcode[:6]
@@ -126,6 +140,13 @@ def check():
                          % (label, len(found), len(codes), extra, miss))
         else:
             print("  %-32s %d declared palikas, all on the list" % (label, len(found)))
+    global GEO_DATA
+    geo = check_geo()
+    if isinstance(geo, list):
+        fails += geo
+    else:
+        fails += geo[0]
+        GEO_DATA = (geo[1], geo[2])
     fails += check_facilities()
     if fails:
         print("\n  DRIFTED:")
@@ -219,6 +240,39 @@ def check_facilities():
                 fails.append("%s: palika %s is not drawn on the map" % (where, pc))
             if pc and dist and dist != "outside" and pc[:6] != dist:
                 fails.append("%s: palika %s is not in district %s" % (where, pc, dist))
+        pin = e.get("pin")
+        if e.get("kind") == "hospital":
+            if not isinstance(pin, dict):
+                fails.append("%s: a hospital needs a pin (its location)" % where)
+            else:
+                la, lo = pin.get("lat"), pin.get("lon")
+                if not all(isinstance(v, (int, float)) for v in (la, lo)) or not (26 < la < 31 and 80 < lo < 89):
+                    fails.append("%s: pin is not a latitude/longitude in Nepal" % where)
+                elif not re.match(r"^(node|way|relation)/\d+$", str(pin.get("osm", ""))):
+                    fails.append("%s: pin has no OpenStreetMap feature it was read from" % where)
+                elif not re.match(r"^\d{4}-\d{2}-\d{2}$", str(pin.get("read", ""))):
+                    fails.append("%s: pin has no date it was read" % where)
+                elif GEO_DATA is not None:
+                    g, pal = GEO_DATA
+                    pp = pin.get("pcode")
+                    if pp not in pal:
+                        fails.append("%s: pin palika %s has no boundary in referral-geo.js" % (where, pp))
+                    elif not inside(g, pal[pp], lo, la):
+                        fails.append("%s: the pin is not inside %s, the palika it names" % (where, pp))
+                    elif pc and pp != pc:
+                        fails.append("%s: the pin falls in %s but the address names %s" % (where, pp, pc))
+                    elif dist not in (None, "outside") and pp[:6] != dist:
+                        fails.append("%s: the pin falls outside district %s" % (where, dist))
+                    elif dist == "outside" and pal[pp].get("dn") != e.get("outside"):
+                        fails.append("%s: the pin falls in %s, not in %s" % (where, pal[pp].get("dn"), e.get("outside")))
+                    sm = pin.get("site_map")
+                    if sm:
+                        dy = (la - sm["lat"]) * 111320
+                        dx = (lo - sm["lon"]) * 111320 * math.cos(math.radians(la))
+                        if math.hypot(dx, dy) > 30:
+                            fails.append("%s: the pin is %.0f m from the map on the hospital's own website" % (where, math.hypot(dx, dy)))
+        elif pin:
+            fails.append("%s: a helpline has no pin" % where)
         text = json.dumps(e, ensure_ascii=False)
         if person.search(text):
             fails.append("%s: looks like a person is named (Dr/Prof) -- hospitals are listed, never people" % where)
@@ -233,9 +287,83 @@ def check_facilities():
     else:
         fails.append("assets/referral-find.js is missing")
     if not fails:
-        print("  %-32s %d entries, every tag quoted, every place drawable"
-              % ("referral-facilities.js", len(data.get("entries", []))))
+        print("  %-32s %d entries, every tag quoted, every place drawable, %d pins inside their palikas"
+              % ("referral-facilities.js", len(data.get("entries", [])), sum(1 for e in data.get("entries", []) if e.get("pin"))))
     return fails
+
+# ------------------------------------------------ the interactive map's data
+def load_geo():
+    raw = io.open(GEO, encoding="utf-8").read()
+    m = re.search(r"window\.REFERRAL_GEO\s*=\s*(\{.*\})\s*;\s*$", raw, re.S)
+    if not m:
+        raise ValueError("not one JSON object after window.REFERRAL_GEO =")
+    return json.loads(m.group(1))
+
+def geo_rings(g, shape):
+    """TopoJSON-style arcs -> [[ring of (lon, lat)], ...] per polygon."""
+    if "_abs" not in g:
+        sx, sy = g["transform"]["scale"]; tx, ty = g["transform"]["translate"]
+        out = []
+        for arc in g["arcs"]:
+            x = y = 0; pts = []
+            for dx, dy in arc:
+                x += dx; y += dy
+                pts.append((x * sx + tx, y * sy + ty))
+            out.append(pts)
+        g["_abs"] = out
+    def arc(i):
+        return g["_abs"][i] if i >= 0 else list(reversed(g["_abs"][~i]))
+    def ring(ix):
+        pts = []
+        for i in ix:
+            a = arc(i)
+            pts.extend(a if not pts else a[1:])
+        return pts
+    polys = [shape["a"]] if shape["t"] == "Polygon" else shape["a"]
+    return [[ring(r) for r in poly] for poly in polys]
+
+def inside(g, shape, lon, lat):
+    hit = False
+    for poly in geo_rings(g, shape):
+        for pts in poly:
+            n = len(pts)
+            for i in range(n):
+                x1, y1 = pts[i]; x2, y2 = pts[(i + 1) % n]
+                if (y1 > lat) != (y2 > lat) and lon < (x2 - x1) * (lat - y1) / (y2 - y1) + x1:
+                    hit = not hit
+    return hit
+
+def check_geo():
+    fails = []
+    if not os.path.exists(GEO):
+        return ["assets/referral-geo.js is missing -- run: tools/map-build.py geo <npl_admin3.geojson>"]
+    try:
+        g = load_geo()
+    except ValueError as e:
+        return ["referral-geo.js: %s" % e]
+    pal = {x["p"]: x for x in g.get("pal", [])}
+    dist = {x["d"]: x for x in g.get("dist", [])}
+    decl = sorted(p for p, x in pal.items() if x.get("r") == "decl")
+    if decl != sorted(p for p, _, _ in DECLARED):
+        fails.append("referral-geo.js: declared palikas %d, list %d" % (len(decl), len(DECLARED)))
+    if sorted(dist) != sorted(d for d, _, _ in DISTRICTS):
+        fails.append("referral-geo.js: districts %s differ from DISTRICTS" % sorted(dist))
+    for d, label, role in DISTRICTS:
+        x = dist.get(d)
+        if x and (x.get("n") != label or x.get("r") != role):
+            fails.append("referral-geo.js: district %s is %s/%s, the list says %s/%s" % (d, x.get("n"), x.get("r"), label, role))
+        if x and x.get("ne") != DISTRICT_NE.get(d):
+            fails.append("referral-geo.js: Nepali name of %s differs from DISTRICT_NE" % d)
+    for p, x in pal.items():
+        if x.get("r") != "pin" and x.get("d") not in dist:
+            fails.append("referral-geo.js: palika %s is drawn but its district is not" % p)
+        lab = x.get("lab")
+        if not lab or not inside(g, x, lab[1], lab[0]):
+            fails.append("referral-geo.js: the count point of %s is not inside it" % p)
+    if not fails:
+        print("  %-32s %d palikas (%d declared), %d districts, simplified to %s m"
+              % ("referral-geo.js", sum(1 for x in pal.values() if x.get("r") != "pin"), len(decl), len(dist), g.get("simplified_m")))
+    return fails, g, pal
 
 # ---------------------------------------------------------------- build
 def mapshaper(src, outdir):
@@ -371,8 +499,73 @@ def build(src):
           % (W, H, len(pal["features"]), len(DECLARED), len("".join(svg))))
     return 0
 
+# ------------------------------------------------ the interactive map's data
+def build_geo(src):
+    """assets/referral-geo.js: the drawn districts' palikas and outlines, as
+    shared arcs (quantised, delta-encoded, TopoJSON's scheme), simplified to
+    GEO_SIMPLIFY_M metres, with a point inside every palika and district for
+    its count; plus, not drawn, the palika of each hospital pin outside them,
+    so the check can prove the pin is where its address says."""
+    fac = io.open(FACILITIES, encoding="utf-8").read()
+    data = json.loads(re.search(r"window\.REFERRAL_FACILITIES\s*=\s*(\{.*\})\s*;\s*$", fac, re.S).group(1))
+    keep = [d for d, _, _ in DISTRICTS]
+    pinpal = sorted(set((e.get("pin") or {}).get("pcode") for e in data["entries"] if e.get("pin")) - {None})
+    extra = [p for p in pinpal if p[:6] not in keep]
+    tmp = tempfile.mkdtemp(); out = os.path.join(tmp, "geo.json")
+    cmd = ["mapshaper", src,
+           "-filter", "%s.indexOf(adm2_pcode) > -1 || %s.indexOf(adm3_pcode) > -1" % (json.dumps(keep), json.dumps(extra)),
+           "-filter-fields", "adm3_pcode,adm3_name,adm2_pcode,adm2_name",
+           "-simplify", "interval=%d" % GEO_SIMPLIFY_M, "keep-shapes", "-clean",
+           "-rename-layers", "pal",
+           "-filter", "%s.indexOf(adm2_pcode) > -1" % json.dumps(keep), "+", "name=pal8", "target=pal",
+           "-dissolve", "adm2_pcode", "copy-fields=adm2_name", "+", "name=dist", "target=pal8",
+           "-points", "inner", "+", "name=labs", "target=pal",
+           "-points", "inner", "+", "name=dlabs", "target=dist",
+           "-o", "format=topojson", "quantization=100000", "target=pal,dist,labs,dlabs", out]
+    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    t = json.load(open(out))
+    sx, sy = t["transform"]["scale"]; tx, ty = t["transform"]["translate"]
+    def pt(c):
+        return [round(c[1] * sy + ty, 5), round(c[0] * sx + tx, 5)]   # [lat, lon]
+    labs = {gm["properties"]["adm3_pcode"]: pt(gm["coordinates"]) for gm in t["objects"]["labs"]["geometries"]}
+    dlabs = {gm["properties"]["adm2_pcode"]: pt(gm["coordinates"]) for gm in t["objects"]["dlabs"]["geometries"]}
+    declared = {p: np for p, _, np in DECLARED}
+    role = {d: r for d, _, r in DISTRICTS}; label = {d: l for d, l, _ in DISTRICTS}
+    pal = []
+    for gm in sorted(t["objects"]["pal"]["geometries"], key=lambda x: x["properties"]["adm3_pcode"]):
+        pr = gm["properties"]; p = pr["adm3_pcode"]; d = pr["adm2_pcode"]
+        r = "pin" if d not in role else ("decl" if p in declared else ("ctx" if role[d] == "context" else "aff"))
+        pal.append({"p": p, "n": pr["adm3_name"], "ne": declared.get(p), "d": d, "dn": pr["adm2_name"], "r": r,
+                    "t": gm["type"], "a": gm["arcs"], "lab": labs[p]})
+    dist = []
+    for gm in sorted(t["objects"]["dist"]["geometries"], key=lambda x: x["properties"]["adm2_pcode"]):
+        d = gm["properties"]["adm2_pcode"]
+        dist.append({"d": d, "n": label[d], "ne": DISTRICT_NE.get(d), "r": role[d], "t": gm["type"], "a": gm["arcs"], "lab": dlabs[d]})
+    doc = {"source": "OCHA COD-AB Nepal v02 (Survey Department of Nepal, UN RCO Nepal), valid from 2024-03-14, HDX dataset cod-ab-npl, CC BY-IGO",
+           "simplified_m": GEO_SIMPLIFY_M, "transform": t["transform"], "arcs": t["arcs"], "pal": pal, "dist": dist}
+    head = ("/* =====================================================================\n"
+            "   MHPSS Nepal -- boundaries for the interactive map on the Referral Directory\n"
+            "   ---------------------------------------------------------------------\n"
+            "   GENERATED by tools/map-build.py geo from OCHA COD-AB Nepal v02. Do not\n"
+            "   edit by hand: tools/map-build.py check compares it with the declared\n"
+            "   list, the districts and every hospital pin.\n"
+            "   Shared arcs, quantised and delta-encoded (TopoJSON's scheme); pal.r is\n"
+            "   decl (declared disaster crisis area), aff (other palika of an affected\n"
+            "   district), ctx (district with reported activity, not declared affected)\n"
+            "   or pin (not drawn: the palika a hospital pin outside the drawn districts\n"
+            "   falls in). lab is a point inside the shape, [lat, lon].\n"
+            "   ===================================================================== */\n")
+    io.open(GEO, "w", encoding="utf-8").write(head + "window.REFERRAL_GEO = " +
+                                               json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + ";\n")
+    print("geo: %d palikas (%d not drawn), %d districts, %d arcs, %d bytes"
+          % (len(pal), len(extra), len(dist), len(t["arcs"]), os.path.getsize(GEO)))
+    return 0
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "check"
     if mode == "build":
-        sys.exit(build(sys.argv[2]))
+        r = build(sys.argv[2])
+        sys.exit(r or build_geo(sys.argv[2]))
+    if mode == "geo":
+        sys.exit(build_geo(sys.argv[2]))
     sys.exit(check())

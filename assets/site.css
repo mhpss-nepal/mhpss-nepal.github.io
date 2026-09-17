@@ -140,7 +140,8 @@
 /* ---------- the map ----------------------------------------------- */
 .mapgrid{display:grid;gap:18px;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);align-items:start}
 @media (max-width:900px){ .mapgrid{grid-template-columns:1fr} }
-.map svg{display:block;width:100%;height:auto}
+/* the generated drawing only: Leaflet sizes its own SVG layers */
+.mapwrap svg{display:block;width:100%;height:auto}
 /* palika fills. Declared vs not is carried by a 6:1 fill difference, not a
    tint -- graphical objects need 3:1 against their neighbours too. */
 .map .pal{fill:#fff;stroke:#939391;stroke-width:.7;vector-effect:non-scaling-stroke}
@@ -305,8 +306,7 @@ body{background:#fff}
 .finder .fclear{min-height:40px;white-space:nowrap}
 @media (max-width:640px){ .finder .fclear{grid-column:1/-1} }
 .fsum{margin:4px 0 14px;font-size:15px;font-weight:700;color:var(--hc-ink)}
-.findgrid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
-@media (max-width:1000px){ .findgrid{grid-template-columns:minmax(0,1fr)} }
+.findgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;align-items:start}
 .findmap{margin:0}
 .mapstage{position:relative}
 .fbadges{position:absolute;inset:0;pointer-events:none}
@@ -369,7 +369,6 @@ body{background:#fff}
 /* section 3: the declared list stands alone now, in two columns where there is room */
 #map .palist{column-gap:36px}
 @media (min-width:900px){ #map .palist{column-count:2} #map .palist li{break-inside:avoid} }
-@media (min-width:1001px){ .findmap{position:sticky;top:12px} }
 @media (max-width:520px){ .fbadge{min-width:20px;height:20px;padding:0 5px;border-radius:10px;font-size:11px;line-height:16px} }
 /* a chosen district fills the map; the district names laid over the whole
    map would sit in the wrong places, so they step aside while it is zoomed */
@@ -389,3 +388,57 @@ body{background:#fff}
 /* on the Nepali page the helpline's name is already in Nepali, so the printed
    Nepali line under it would say the same thing twice */
 html[lang="ne"] .hlc .np{display:none}
+
+/* ---------- the interactive map (assets/referral-map.js, Leaflet) ----------
+   Full width above the list. A hospital is a pin at its own location; a
+   partner organisation is a count on a palika, never a point. The generated
+   drawing stays underneath for a browser that runs no scripts. */
+.fmaphead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px}
+.fmaphead h4{margin:0}
+.fbig{min-height:34px;white-space:nowrap}
+.lmap{height:clamp(440px,64vh,660px);border:1px solid var(--grey-3);border-radius:var(--r-md);
+  background:#eef0f0;z-index:0;overflow:hidden}
+.findmap.big .lmap{height:calc(100vh - 150px);min-height:480px}
+@media (max-width:640px){ .lmap{height:440px} .findmap.big .lmap{height:calc(100vh - 120px)} }
+.map:not(.live) .lmap{display:none}
+/* design.css sizes every figure's svg to its box; Leaflet's layers size themselves */
+.fig .lmap svg{width:auto;height:auto}
+.map.live .mapwrap{display:none}
+.fres .fcards{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.leaflet-container{font-family:"Mukta","Noto Sans Devanagari","Noto Sans",system-ui,sans-serif;font-size:13px}
+.leaflet-container a{color:var(--wh-d)}
+.leaflet-control-attribution{background:#fff !important;color:var(--hc-ink) !important;font-size:11px;line-height:1.5}
+.leaflet-control-attribution a{color:var(--wh-d) !important}
+.leaflet-bar a{color:var(--hc-ink)}
+.lm-dlab{pointer-events:none}
+.lm-dlab span{position:absolute;left:0;top:0;transform:translate(-50%,-50%);white-space:nowrap;
+  font:800 12px/1.2 "Mukta",sans-serif;letter-spacing:.6px;text-transform:uppercase;color:var(--hc-ink);
+  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 5px #fff,0 0 7px #fff}
+.lm-dlab.ctx span{color:var(--hc-mute)}
+.lm-count{display:flex;align-items:center;justify-content:center;background:none;border:0}
+.lm-count span{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;
+  padding:0 7px;border-radius:13px;border:2px solid #fff;background:var(--hc-ink);color:#fff;
+  font:700 13px/1 "Mukta",sans-serif;box-shadow:0 0 0 1px var(--hc-ink);cursor:pointer}
+.lm-count.bydist span{border-radius:4px;min-width:22px;height:20px;font-size:12px}
+.lm-count:focus-visible span,.lm-pin:focus-visible svg{outline:3px solid var(--wh);outline-offset:2px}
+.lm-count:hover span{background:var(--wh-dd)}
+.lm-pin{background:none;border:0}
+.lm-pin svg{display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));transition:transform .12s}
+.lm-pin:hover svg{transform:scale(1.12);transform-origin:50% 100%}
+.lm-tip{background:var(--hc-ink);color:#fff;border:0;border-radius:var(--r);padding:6px 10px;
+  font:13px/1.4 "Mukta",sans-serif;box-shadow:none}
+.lm-tip b,.lm-tip span{display:block}
+.lm-tip .n{color:#dadada}
+.lm-tip.leaflet-tooltip-top:before{border-top-color:var(--hc-ink)}
+.lm-popwrap .leaflet-popup-content{margin:10px 12px;font:13.5px/1.45 "Mukta",sans-serif;color:var(--hc-ink)}
+.lm-pop b{display:block;font-size:15px;line-height:1.3}
+.lm-pop .np{display:block;color:var(--hc-mute)}
+.lm-pop p{margin:4px 0 8px;color:var(--hc-mute);font-size:13px}
+.lm-inlist,.fc-map{font:inherit;font-size:13px;font-weight:700;padding:4px 10px;border:1px solid var(--wh-d);
+  border-radius:var(--r);background:#fff;color:var(--wh-d);cursor:pointer}
+.lm-inlist:hover,.fc-map:hover{background:var(--wh-t)}
+.lm-inlist:focus-visible,.fc-map:focus-visible{outline:3px solid var(--wh-d);outline-offset:1px}
+.fc-map{margin-top:7px}
+.fcard.flash{box-shadow:0 0 0 3px var(--wh)}
+.mapkey i.pin{width:12px;height:16px;border:0;border-radius:6px 6px 6px 0;transform:rotate(-45deg);background:var(--wh-dd)}
+@media (max-width:640px){ .lm-pin svg{transform:scale(.8);transform-origin:50% 100%} }

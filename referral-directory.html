@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="assets/app.css">
 <link rel="stylesheet" href="assets/design.css">
 <link rel="stylesheet" href="assets/site.css">
@@ -106,9 +107,10 @@
   <!-- ============ 2 · find a service ============ -->
   <!-- Filters over two tiers that are never merged: hospitals in the words of
        their own websites (assets/referral-facilities.js) and partner rows
-       published by the Technical Working Group (public_stats). The map is the
-       generated one; the counts are drawn over it by assets/referral-find.js,
-       on palikas, never as points. -->
+       published by the Technical Working Group (public_stats). The map is
+       assets/referral-map.js over OpenStreetMap: a hospital is a pin at its own
+       location, a partner organisation a count on a palika, never a point. The
+       generated drawing below stays as the map for a browser without scripts. -->
   <section class="sec2" id="find">
     <h2 data-i18n="refdir.find.h" data-i18n-html></h2>
     <p class="intro" data-i18n="refdir.find.intro"></p>
@@ -123,9 +125,13 @@
     <p class="fsum" id="fSum" role="status" aria-live="polite"></p>
     <div class="findgrid">
       <div class="fig findmap">
-        <h4 data-i18n="refdir.find.maph"></h4>
+        <div class="fmaphead">
+          <h4 data-i18n="refdir.find.maph"></h4>
+          <button type="button" class="btn grey fbig" id="fBig" aria-pressed="false" hidden data-i18n="refdir.find.bigger"></button>
+        </div>
         <div class="map">
           <div class="mapstage">
+            <div class="lmap" id="fMap" role="region" data-i18n-aria="refdir.find.maparia" aria-label="Map of hospitals and partner organisations"></div>
 <!--MAP:svg-->
 <div class="mapwrap">
 <svg viewBox="0 0 1000 751" role="img" data-i18n-aria="map.aria" aria-label="Map of the affected districts">
@@ -233,15 +239,14 @@
 <span class="dlab ctx" style="left:18.4%;top:75.6%" data-i18n-skip>Nawalparasi East</span>
 </div>
 <!--/MAP-->
-            <div class="fbadges" id="fBadges"></div>
             <div class="fzoom" id="fZoom" hidden></div>
-            <div class="ftip" id="fTip" hidden></div>
           </div>
           <div class="mapkey">
             <span><i class="decl"></i><em data-i18n="map.key.decl"></em></span>
             <span><i></i><em data-i18n="map.key.other"></em></span>
             <span><i class="dist"></i><em data-i18n="map.key.dist"></em></span>
             <span><i class="dctx"></i><em data-i18n="map.key.ctx"></em></span>
+            <span id="keyPin" hidden><i class="pin"></i><em data-i18n="refdir.find.key.pin"></em></span>
             <span id="keyHit" hidden><i class="fb"></i><em data-i18n="refdir.find.key.hit"></em></span>
             <span id="keyDhit" hidden><i class="fb bydist"></i><em data-i18n="refdir.find.key.dhit"></em></span>
           </div>
@@ -357,6 +362,9 @@
 <script src="assets/fb-config.js"></script>
 <script src="assets/public-read.js"></script>
 <script src="assets/referral-facilities.js"></script>
+<script src="assets/vendor/leaflet/leaflet.js"></script>
+<script src="assets/referral-geo.js"></script>
+<script src="assets/referral-map.js"></script>
 <script src="assets/referral-find.js"></script>
 <script>
 (function () {
