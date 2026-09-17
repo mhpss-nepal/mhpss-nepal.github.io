@@ -634,6 +634,7 @@ window.I18N_STRINGS = {
     "refdir.find.badge.districtAll": "{place} district: {n} matching. Show only this district",
     "refdir.find.zoom.back": "Whole map",
     "refdir.find.zoom.districtLevel": "Also {n} for the whole district, with no palika given",
+    "refdir.find.zoom.districtOnly": "{n} for the whole district, with no palika given",
     "refdir.find.key.hit": "How many places match in a palika",
     "refdir.find.key.dhit": "How many match in a district, beside its name",
     "refdir.find.not.nopsy": "Not listed: {names}, whose own service lists do not mention psychiatry.",

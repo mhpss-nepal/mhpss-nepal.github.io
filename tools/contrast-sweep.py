@@ -17,9 +17,8 @@ from playwright.sync_api import sync_playwright
 import json, sys
 B = sys.argv[1] if len(sys.argv)>1 else "http://127.0.0.1:9063"
 PAGES=["/","/flood-response.html","/bps.html","/iec.html","/referral-directory.html",
-       "/resources.html","/videos.html","/contact-us.html","/method.html","/architecture.html","/access-explained.html","/layer3.html",
-       "/hub/","/hub/coverage.html","/hub/inbox.html","/hub/access.html",
-       "/form/","/form/4ws-report.html","/form/phq9.html","/form/selfreport.html"]
+       "/resources.html","/videos.html","/contact-us.html","/method.html","/architecture.html","/access-explained.html","/layer3.html"]
+# the hub and the forms: swept in their own repositories since 17 Sep 2026
 JS = """() => {
   const lum = c => { const m=c.match(/[\\d.]+/g); if(!m) return null;
     if (m.length>3 && +m[3]===0) return null;

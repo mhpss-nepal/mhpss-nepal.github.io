@@ -452,7 +452,11 @@
         back.type = "button";
         back.addEventListener("click", function () { chooseDistrict(""); });
         bar.appendChild(back);
-        if (dc[state.dist]) bar.appendChild(el("span", "fdl", t("refdir.find.zoom.districtLevel", { n: dc[state.dist] })));
+        if (dc[state.dist]) {
+          var withPalikas = Object.keys(pc).some(function (c) { return PAL[c].adm2 === state.dist; });
+          bar.appendChild(el("span", "fdl", t(withPalikas ? "refdir.find.zoom.districtLevel" : "refdir.find.zoom.districtOnly",
+            { n: dc[state.dist] })));
+        }
       }
     }
 

@@ -20,17 +20,16 @@ import sys, subprocess, time, json
 from playwright.sync_api import sync_playwright
 
 PORT = 9071
-# The twenty-three real pages. coordination/* and dashboard/index.html are
+# The real pages of this repository. coordination/* and dashboard/index.html are
 # deliberately NOT here: they are redirect stubs that meta-refresh in 0s, so
 # loading them measures their destination and reports it under the stub's
 # name -- which is how this sweep first appeared to be checking twenty pages
 # when four of them were the same four pages twice.
 PAGES = ["index.html","flood-response.html","bps.html","iec.html","referral-directory.html",
          "resources.html","videos.html","contact-us.html",
-         "method.html","architecture.html","access-explained.html","layer3.html",
-         "form/index.html","form/4ws-report.html","form/contact.html","form/phq9.html",
-         "form/referral.html","form/selfreport.html","form/cards.html",
-         "hub/index.html","hub/coverage.html","hub/inbox.html","hub/access.html"]
+         "method.html","architecture.html","access-explained.html","layer3.html"]
+# The hub and the field forms moved to their own repositories on 17 Sep 2026
+# (hub, form) and are swept there.
 
 # Deliberately ragged, per the rules doc: labels, numerals, monospace.
 # A selector here means "this element is set, not justified", and the sweep
