@@ -386,3 +386,6 @@ body{background:#fff}
 /* a partner listing published in the hub's demonstration mode is marked as such */
 .fgroup h3 .fdemo{flex:0 0 auto;margin-left:auto;margin-right:8px;padding:1px 7px;border-radius:3px;
   background:var(--hc-ink);color:#fff;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase}
+/* on the Nepali page the helpline's name is already in Nepali, so the printed
+   Nepali line under it would say the same thing twice */
+html[lang="ne"] .hlc .np{display:none}
