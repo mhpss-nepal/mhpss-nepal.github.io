@@ -42,8 +42,11 @@
   DIST.forEach(function (d) { DIST_NAME[d[0]] = d[1]; });
   var DIST_NE = {};
   (G.dist || []).forEach(function (x) { if (x.ne) DIST_NE[x.d] = x.ne; });
-  /* partner rows carry the codes.js district code; the map speaks COD-AB */
-  var CODE_TO_ADM2 = { RAS: "NP0329", NUW: "NP0328", DHA: "NP0330", KTM: "NP0327", CHT: "NP0335", NAW: "NP0447" };
+  /* partner rows carry the codes.js district code; the map speaks COD-AB.
+     GOR and TAN joined codes.js on 17 Sep 2026 (0.3.0); their COD-AB codes
+     are the ones assets/referral-geo.js draws for Gorkha and Tanahun */
+  var CODE_TO_ADM2 = { RAS: "NP0329", NUW: "NP0328", DHA: "NP0330", KTM: "NP0327", CHT: "NP0335", NAW: "NP0447",
+    GOR: "NP0436", TAN: "NP0440" };
 
   /* what a person can go to; assessment, coordination, training and IEC
      distribution are activities, not services someone is referred to */
