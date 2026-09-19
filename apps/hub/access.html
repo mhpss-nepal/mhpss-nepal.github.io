@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Access — MHPSS Nepal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Lora + Manrope. design.css declares Georgia / system fallbacks, so a
+     failed font request costs typography and never legibility -- which
+     matters on the field forms, where there may be no signal at all. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Manrope:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/design.css">
+<link rel="stylesheet" href="assets/brand.css">
+<style>
+  .who-needs{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin:0 0 22px}
+  .wn-c{background:var(--paper); border:1px solid var(--line); border-radius:var(--r); padding:16px 18px}
+  .wn-c.open{border-left:3px solid var(--ok)}
+  .wn-c.gated{border-left:3px solid var(--who)}
+  .wn-c h3{font:700 14px/1.3 inherit; margin:0 0 6px}
+  .wn-c p{font-size:12.5px; color:var(--slate); margin:0; line-height:1.5}
+  .wn-c .tag{display:inline-block; font:700 10px/1.3 inherit; letter-spacing:.06em;
+    text-transform:uppercase; padding:2px 7px; border-radius:3px; margin-bottom:8px}
+  .wn-c.open .tag{color:var(--ok); background:var(--ok-t)}
+  .wn-c.gated .tag{color:var(--who-d); background:var(--who-t)}
+  table.rl{width:100%; border-collapse:collapse; font-size:13px; margin:0 0 6px}
+  table.rl th{text-align:left; font:700 11px/1.3 inherit; letter-spacing:.04em;
+    text-transform:uppercase; color:var(--slate); padding:8px 10px; border-bottom:1px solid var(--line)}
+  table.rl td{padding:9px 10px; border-bottom:1px solid var(--line-s); vertical-align:top}
+  table.rl tr:last-child td{border-bottom:0}
+  table.rl .em{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; word-break:break-all}
+  .rp{display:inline-block; font:700 10.5px/1.3 inherit; letter-spacing:.05em; text-transform:uppercase;
+    padding:2px 7px; border-radius:3px; border:1px solid}
+  .rp.admin{color:#8a3b12; background:#fdf2ea; border-color:#e8c9b0}
+  .rp.coordinator,.rp.im_officer{color:var(--who-d); background:var(--who-t); border-color:#bcd3de}
+  .rp.viewer{color:var(--slate); background:var(--line-s); border-color:var(--line)}
+
+  .rk{font-size:11.5px; color:var(--mute); line-height:1.5; margin:4px 0 0}
+  .rlist{display:grid; gap:9px; margin:10px 0 0}
+  .rlist div{font-size:12.5px; color:var(--slate); line-height:1.5}
+  .rlist b{color:var(--ink)}
+  .sep{height:1px; background:var(--line); margin:26px 0}
+</style>
+</head>
+<body class="hub">
+<!--NAV:rail hubaccess-->
+<aside class="rail" aria-label="Coordination hub">
+  <a class="railid" href="./">
+    <span data-mark="30"></span>
+    <span><b>MHPSS Nepal</b><i>Layer 2 &middot; coordination</i></span>
+  </a>
+  <div class="where" aria-label="Where you are in the system">
+    <span class="wlab">Architecture &middot; you are here</span>
+    <a class="lyr" href="../form/"><b>1</b><span>Field forms<i>on phones, works offline</i></span></a>
+    <a class="lyr on" href="./" aria-current="true"><b>2</b><span>Coordination<i>this hub &middot; restricted</i></span></a>
+    <a class="lyr" href="../"><b>3</b><span>Public site<i>published summaries only</i></span></a>
+  </div>
+  <button class="rmenu" type="button" aria-expanded="false"><span></span>Menu</button>
+  <nav>
+    <div class="rg open" data-g="coord">
+      <button class="rgh" type="button"><span class="dot l2"></span>Coordination<em>layer 2</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a href="./#overview">Dashboard &middot; overview</a>
+        <a href="./#who-is-where">Who is where</a>
+        <a href="./#activities">Activities</a>
+        <a href="./#reports">Reports received</a>
+        <a href="./#publish">Publish</a>
+      </div>
+    </div>
+    <div class="rg" data-g="forms">
+      <button class="rgh" type="button"><span class="dot l1"></span>Field forms<em>outputs</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a href="./#reports">Activity report (5Ws)</a>
+        <a href="forms.html#contact">Service contact</a>
+        <a href="forms.html#referral">Referral</a>
+        <a href="forms.html#phq9">PHQ-9 follow-up</a>
+        <a href="forms.html#selfreport">Self-report</a>
+        <a href="../form/">Open the forms &rarr;</a>
+      </div>
+    </div>
+    <div class="rg" data-g="public">
+      <button class="rgh" type="button"><span class="dot l3"></span>Public site<em>layer 3</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a href="../">Home</a>
+      </div>
+    </div>
+    <div class="rg open here admin" data-g="admin" hidden>
+      <button class="rgh" type="button"><span class="dot l2"></span>Admin<em>client role check</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a class="on" aria-current="page" data-default href="access.html">Access &amp; sign-in</a>
+      </div>
+    </div>
+  </nav>
+  <span data-i18n-toggle class="railtoggle"></span>
+  <p class="rfoot">Draft. Figures are provisional.</p>
+  <script>(function(){
+  var rail=document.currentScript.parentNode, KEY='mhpss-rail-groups';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  rail.querySelectorAll('.rg').forEach(function(g){
+    var k=g.getAttribute('data-g'), h=g.querySelector('.rgh');
+    if(!g.classList.contains('here') && k in saved) g.classList.toggle('open', !!saved[k]);
+    h.setAttribute('aria-expanded', g.classList.contains('open'));
+    h.addEventListener('click', function(){
+      g.classList.toggle('open'); var on=g.classList.contains('open');
+      h.setAttribute('aria-expanded', on); saved[k]=on;
+      try{ localStorage.setItem(KEY, JSON.stringify(saved)); }catch(e){}
+    });
+  });
+  var m=rail.querySelector('.rmenu');
+  if(m){ m.addEventListener('click', function(){
+    var open=rail.classList.toggle('menu-open'); m.setAttribute('aria-expanded', open); }); }
+  /* The lit item follows the address: a hub page's sections are hashes, and
+     the same section can be reached from two groups (the activity report's
+     output home IS the dashboard's Reports received), so every link that
+     matches is lit, not just one. */
+  function mark(){
+    var path=location.pathname.split('/').pop()||'index.html', hash=location.hash||'';
+    rail.querySelectorAll('.rgb > a').forEach(function(a){
+      var href=a.getAttribute('href'); if(href.indexOf('../')===0) return;
+      var file=href.split('#')[0], ah=href.indexOf('#')>=0 ? href.slice(href.indexOf('#')) : '';
+      if(file==='./'||file==='') file='index.html';
+      var on = file===path && (hash ? ah===hash : a.hasAttribute('data-default'));
+      a.classList.toggle('on', on);
+      if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+    });
+    if(rail.classList.contains('menu-open')){ rail.classList.remove('menu-open'); if(m) m.setAttribute('aria-expanded', false); }
+  }
+  window.addEventListener('hashchange', mark);
+  document.addEventListener('DOMContentLoaded', mark);
+  window.__railMark = mark;
+  /* Admin is drawn only for an admin account. The bridge (assets/fb.js)
+     loads after the rail, so the question is asked once the page is
+     complete; a page without the bridge simply never shows it. */
+  var adm=rail.querySelector('.rg.admin');
+  if(adm){ document.addEventListener('DOMContentLoaded', function(){
+    if(!(window.FB && window.FB.onStatus)) return;
+    window.FB.onStatus(function(st){
+      if(!(st && st.user && window.FB.myRole)){ adm.hidden=true; return; }
+      window.FB.myRole().then(function(r){ adm.hidden = !(r && r.role==='admin'); }).catch(function(){ adm.hidden=true; });
+    });
+  }); }
+})();</script>
+</aside>
+<!--/NAV-->
+
+<div style="background:#d03b3b;color:#fff;font:700 12.5px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:.02em;text-align:center;padding:7px 16px;padding-top:calc(7px + env(safe-area-inset-top,0px))">TRIAL INSTRUMENT — NOT THE LIVE REPORTING SYSTEM</div>
+
+<div class="top">
+  <div>
+    <div class="brand">Access</div>
+    <div class="sub">Who can see the records</div>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<div class="wrap">
+
+  <h1>Proposed client role administration</h1>
+  <p class="lede">This page exercises a client role-management workflow. It does not establish who
+    the server permits to read or administer records. <a href="../access-explained.html">The
+    current enforcement status and deployment gate are explained here</a>.</p>
+
+  <div class="who-needs">
+    <div class="wn-c open">
+      <span class="tag">Client submission path</span>
+      <h3>Field workers filling forms</h3>
+      <p>They can open the link and save locally without using this sign-in screen. Whether a later
+        network write is accepted is controlled by unverified server policy.</p>
+    </div>
+    <div class="wn-c gated">
+      <span class="tag">Client sign-in path</span>
+      <h3>Anyone reading the records</h3>
+      <p>The client prompts for sign-in and requests a role document before showing read controls.
+        This is not proof of authorization; server enforcement is unverified.</p>
+    </div>
+  </div>
+
+  <div class="card" id="panel">
+    <div class="step"><span class="n">1</span><h2>Sign in</h2><span class="hint" id="st">checking…</span></div>
+    <div id="body"></div>
+  </div>
+
+  <div id="adminArea"></div>
+
+  <div class="sep"></div>
+
+  <h2>What each client level is intended to request</h2>
+  <div class="rlist" id="roleKey"></div>
+
+  <div class="banner warn" style="margin-top:22px">
+    <b>The role-key scheme is not established.</b> This client currently sends email-derived
+    document references, but the authoritative Rules are not versioned. Do not treat an apparent
+    grant, revocation or role response as evidence of server authorization.
+  </div>
+
+  <!-- Filled by assets/brand.js. -->
+  <div class="attrib"></div>
+</div>
+
+<script src="assets/fb-config.js"></script>
+<script src="assets/fb.js"></script>
+<script>window.BRAND_PREFIX="../";</script>
+<script src="assets/brand.js"></script>
+<!-- The bilingual engine. This page was missed when the engine went onto the
+     others, so it was the one page on the site with no language switch --
+     found by sweeping every page in both languages rather than by reading. -->
+<script src="assets/mark.js"></script>
+<script src="assets/icons.js"></script>
+<script src="assets/i18n-strings.js"></script>
+<script src="assets/i18n.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* ---------- client role labels, drawn from the single list in fb.js.
+     They describe interface intent only; server enforcement is unverified. */
+  (function () {
+    var L = (window.FB && window.FB.ROLES) || [];
+    $("roleKey").innerHTML = L.map(function (r) {
+      return '<div><b>' + esc(r[0]) + '</b> — ' + esc(r[1]) + '</div>';
+    }).join("") || '<div>Not connected, so the levels cannot be listed.</div>';
+  })();
+
+  var watching = false;
+
+  function signInForm(msg) {
+    return (msg ? '<div class="banner warn" style="margin:0 0 14px">' + msg + '</div>' : '') +
+      '<p class="help" style="margin:0 0 12px">Two ways in. The link is the one to give other people —' +
+      ' they never choose a password.</p>' +
+      '<div class="row"><div class="f"><label for="em">Email address</label>' +
+      '<input type="email" id="em" autocomplete="username" placeholder="you@who.int"></div></div>' +
+      '<div class="btns" style="margin:0 0 16px"><button class="btn" id="bLink">Email me a sign-in link</button>' +
+      '<span class="xs" id="linkMsg"></span></div>' +
+      '<details><summary class="xs" style="cursor:pointer">Or sign in with a password</summary>' +
+      '<div class="row" style="margin-top:10px"><div class="f"><label for="pw">Password</label>' +
+      '<input type="password" id="pw" autocomplete="current-password"></div></div>' +
+      '<div class="btns"><button class="btn grey" id="bPw">Sign in</button>' +
+      '<span class="xs" id="pwMsg"></span></div></details>';
+  }
+
+  function wireSignIn() {
+    $("bLink").addEventListener("click", function () {
+      var b = this, mail = ($("em").value || "").trim();
+      if (!mail) { $("linkMsg").innerHTML = '<span style="color:#9b2c2c">Type an address first.</span>'; return; }
+      b.disabled = true; b.textContent = "Sending…";
+      window.FB.sendLink(mail).then(function () {
+        $("linkMsg").innerHTML = '<span style="color:#24543f">Sent. Open the link on this device ' +
+          'to finish.</span>';
+        b.textContent = "Link sent";
+      }).catch(function (e) {
+        b.disabled = false; b.textContent = "Email me a sign-in link";
+        $("linkMsg").innerHTML = '<span style="color:#9b2c2c">' +
+          esc((e.message || "").replace(/^Firebase:\s*/, "")) + '</span>';
+      });
+    });
+    $("bPw").addEventListener("click", function () {
+      var b = this;
+      b.disabled = true; b.textContent = "Signing in…";
+      window.FB.signIn(($("em").value || "").trim(), $("pw").value).catch(function (e) {
+        b.disabled = false; b.textContent = "Sign in";
+        $("pwMsg").innerHTML = '<span style="color:#9b2c2c">' +
+          esc((e.message || "").replace(/^Firebase:\s*/, "")) + '</span>';
+      });
+    });
+  }
+
+  function paint(st) {
+    var body = $("body"), s = $("st");
+    $("adminArea").innerHTML = "";
+
+    if (!st.configured) {
+      s.textContent = "not connected";
+      body.innerHTML = '<div class="banner warn" style="margin:0"><b>No database is connected.</b> ' +
+        'There is nothing to grant access to yet.</div>';
+      return;
+    }
+    if (!st.ready) {
+      s.textContent = "connecting";
+      body.innerHTML = '<div class="banner warn" style="margin:0"><b>Cannot reach the database.</b> ' +
+        esc(st.error || "") + '</div>';
+      return;
+    }
+    if (!st.user) {
+      s.textContent = "not signed in";
+      body.innerHTML = signInForm(st.error ? esc(st.error) : "");
+      wireSignIn();
+      return;
+    }
+
+    s.textContent = st.user.email;
+    body.innerHTML = '<div class="banner ok" style="margin:0 0 12px"><b>Signed in</b> as ' +
+      esc(st.user.email) + '.</div><div class="btns"><button class="btn grey sm" id="out">Sign out</button></div>';
+    $("out").addEventListener("click", function () { window.FB.signOut(); });
+
+    window.FB.myRole().then(function (mine) {
+      if (!mine) {
+        $("adminArea").innerHTML =
+          '<div class="card"><div class="step"><span class="n">2</span><h2>You have no access yet</h2></div>' +
+          '<div class="banner warn" style="margin:0"><b>No client role document was returned.</b> ' +
+          'This interface cannot establish server authorization. Server enforcement and the ' +
+          'authoritative role-key scheme are unverified; see the deployment gate.</div></div>';
+        return;
+      }
+      if (mine.role !== "admin") {
+        $("adminArea").innerHTML =
+          '<div class="card"><div class="step"><span class="n">2</span><h2>Your access</h2></div>' +
+          '<p style="margin:0 0 10px">You are <span class="rp ' + esc(mine.role) + '">' + esc(mine.role) +
+          '</span>. The client hides role-management controls for this response; it does not ' +
+          'prove record access.</p><p class="rk" style="margin:0">Server enforcement is unverified ' +
+          'until the authoritative Rules are reviewed and versioned.</p></div>';
+        return;
+      }
+      renderAdmin(st, mine);
+    });
+  }
+
+  function renderAdmin(st, mine) {
+    var L = (window.FB && window.FB.ROLES) || [];
+    $("adminArea").innerHTML =
+      '<div class="card"><div class="step"><span class="n">2</span><h2>Grant access</h2>' +
+      '<span class="hint">client role response: ' + esc(mine.role || "unknown") + '</span></div>' +
+      '<div class="row"><div class="f"><label for="ge">Their email address</label>' +
+      '<input type="email" id="ge" placeholder="name@who.int" autocomplete="off"></div>' +
+      '<div class="f"><label for="gr">Level</label><select id="gr">' +
+      L.map(function (r) {
+        return '<option value="' + esc(r[0]) + '"' + (r[0] === "viewer" ? " selected" : "") + '>' +
+               esc(r[0]) + '</option>';
+      }).join("") + '</select></div></div>' +
+      '<div class="row"><div class="f"><label for="gn">Note (optional) — what they need it for</label>' +
+      '<input type="text" id="gn" maxlength="200" placeholder="Rasuwa TWG focal point"></div></div>' +
+      '<div class="btns"><button class="btn" id="bGrant">Grant</button>' +
+      '<span class="xs" id="gMsg"></span></div>' +
+      '<p class="rk">The address must be the one they sign in with. Granting before they have ever ' +
+      'signed in is fine — the grant waits for them.</p></div>' +
+
+      '<div class="card"><div class="step"><span class="n">3</span><h2>Who has access now</h2>' +
+      '<span class="hint" id="lMsg">loading…</span></div><div id="rlWrap"></div></div>';
+
+    $("bGrant").addEventListener("click", function () {
+      var b = this, mail = ($("ge").value || "").trim().toLowerCase();
+      var role = $("gr").value, note = ($("gn").value || "").trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) {
+        $("gMsg").innerHTML = '<span style="color:#9b2c2c">That does not look like an email address.</span>';
+        return;
+      }
+      b.disabled = true; b.textContent = "Granting…";
+      window.FB.grantRole(mail, role, note).then(function () {
+        $("gMsg").innerHTML = '<span style="color:#24543f">Granted to ' + esc(mail) + '.</span>';
+        $("ge").value = ""; $("gn").value = "";
+        b.disabled = false; b.textContent = "Grant";
+        loadList();
+      }).catch(function (e) {
+        b.disabled = false; b.textContent = "Grant";
+        $("gMsg").innerHTML = '<span style="color:#9b2c2c">' +
+          esc((e.message || "").replace(/^Firebase:\s*/, "")) + '</span>';
+      });
+    });
+
+    loadList();
+  }
+
+  function loadList() {
+    window.FB.listRoles().then(function (rows) {
+      $("lMsg").textContent = rows.length + (rows.length === 1 ? " person" : " people");
+      var html = '<table class="rl"><thead><tr><th>Email</th><th>Level</th><th>Granted</th><th></th></tr></thead><tbody>';
+      html += rows.map(function (r) {
+        var when = "";
+        if (r.added_at && r.added_at.toDate) {
+          try { when = r.added_at.toDate().toISOString().slice(0, 16).replace("T", " ") + " UTC"; }
+          catch (e) { when = ""; }
+        }
+        return '<tr><td class="em">' + esc(r._email) + '</td>' +
+          '<td><span class="rp ' + esc(r.role) + '">' + esc(r.role) + '</span></td>' +
+          '<td class="rk">' + (r.added_by ? "by " + esc(r.added_by) : "") +
+          (when ? "<br>" + esc(when) : "") +
+          (r.note ? '<br><em>' + esc(r.note) + '</em>' : "") + '</td>' +
+          '<td><button class="btn ghost sm" data-revoke="' + esc(r._email) + '">Revoke</button></td></tr>';
+      }).join("");
+      html += '</tbody></table>';
+      if (!rows.length) {
+        html += '<p class="rk">No role documents were returned. This does not establish who the ' +
+                'server allows to read records; server enforcement is unverified.</p>';
+      }
+      $("rlWrap").innerHTML = html;
+      $("rlWrap").querySelectorAll("[data-revoke]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var mail = b.getAttribute("data-revoke");
+          if (!confirm("Revoke access for " + mail + "?\n\nThey will still be able to sign in, " +
+                       "but will see no records until access is granted again.")) return;
+          b.disabled = true; b.textContent = "Revoking…";
+          window.FB.revokeRole(mail).then(loadList).catch(function (e) {
+            b.disabled = false; b.textContent = "Revoke";
+            alert("Could not revoke: " + (e.message || e));
+          });
+        });
+      });
+    }).catch(function (e) {
+      $("lMsg").textContent = "could not load";
+      $("rlWrap").innerHTML = '<div class="banner stop" style="margin:0"><b>The database refused ' +
+        'the list.</b> ' + esc((e.message || "").replace(/^Firebase:\s*/, "")) + '</div>';
+    });
+  }
+
+  if (window.FB) { window.FB.onStatus(paint); }
+  else { paint({ configured: false }); }
+})();
+</script>
+</body></html>

@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Layer 2 · Coordination dashboard — MHPSS Nepal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Lora + Manrope. design.css declares Georgia / system fallbacks, so a
+     failed font request costs typography and never legibility -- which
+     matters on the field forms, where there may be no signal at all. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Manrope:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/design.css">
+<style>
+  .tabs{display:flex; gap:4px; border-bottom:2px solid var(--line); margin:22px 0 16px; flex-wrap:wrap}
+  .tab{font:inherit; font-size:13px; font-weight:700; background:none; border:0; border-bottom:3px solid transparent;
+    padding:9px 14px; margin-bottom:-2px; cursor:pointer; color:var(--slate)}
+  .tab.on{color:var(--who-d); border-bottom-color:var(--who)}
+  .panel{display:none} .panel.on{display:block}
+  /* An empty live register hides the tabs rather than showing five panels of
+     zeros. !important because it has to beat .panel.on, which is what the tab
+     handler sets. */
+  .panel.noshow{display:none!important}
+  /* The hidden ATTRIBUTE is display:none in the UA sheet, which any later
+     display:flex or display:grid silently beats. It bit .tabs over the
+     empty-register panel, and again on the live strip, which stayed on screen
+     above a synthetic file with a stale "as of" time on it. Restating the rule
+     once, with weight, ends the whole family of "I set hidden and it stayed
+     visible" bugs on this page. */
+  [hidden]{display:none!important}
+  .hideblk{display:none!important}
+
+  /* The live strip. An "as of" time on every figure is the Layer 2 gap-list
+     item: a dashboard that moves is only trustworthy if it says WHEN it last
+     moved. The dot pulses so the listener is visibly attached, and stops
+     pulsing for anyone who has asked for reduced motion. */
+  .livestrip{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;
+    margin:0 0 14px;padding:9px 13px;border:1px solid var(--ok);border-left:3px solid var(--ok);
+    border-radius:var(--r);background:var(--ok-t);font-size:12.5px;color:var(--ink)}
+  .livestrip .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:0 0 auto;
+    animation:livepulse 2s ease-in-out infinite}
+  .livestrip .asof{font-variant-numeric:tabular-nums;color:var(--ok);font-weight:700}
+  .livestrip .xs{color:var(--slate)}
+  /* The open window is a temporary state, so it reads as one: amber, not the
+     green of the ordinary live path. What is on screen during the window is a
+     SUBSET -- activity reports only -- and is readable by anyone holding the
+     URL. Both facts belong on the strip, not in a footnote. */
+  .livestrip .openwin{background:var(--warn-t);color:var(--warn);border:1px solid var(--warn);
+    border-radius:var(--r);padding:2px 8px;font-size:11.5px;font-weight:600}
+  @keyframes livepulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @media (prefers-reduced-motion:reduce){ .livestrip .dot{animation:none} }
+  .drop{border:2px dashed var(--line); border-radius:var(--r); padding:26px; text-align:center; background:#fff}
+  .drop.over{border-color:var(--who); background:var(--who-t)}
+  .bar{height:9px; background:var(--line-s); border-radius:5px; overflow:hidden; min-width:70px}
+  .bar i{display:block; height:100%; background:var(--who)}
+  .bar.zero i{background:var(--warn)}
+
+  /* Filters: nine dimensions, applied to every visual at once. Each list
+     offers only the values that survive the OTHER eight -- cascading in every
+     direction, which is what the reference report does and what separates a
+     dashboard from a page of charts. */
+  .filters{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 14px 8px;margin:0 0 14px}
+  .filters .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px 10px}
+  /* the period names its own boundary ("This week (Sun-Sat)"), which does not
+     fit a 148px cell -- these two take two cells each so nothing is clipped */
+  .filters .grid > .w2{grid-column:span 2}
+  @media (max-width:620px){ .filters .grid > .w2{grid-column:span 1} }
+  .filters .grid > div{align-self:end}
+  .filters label{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);margin-bottom:3px}
+  .filters select,.filters input{padding:6px 8px;font-size:13px}
+  .filters .sum{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:9px 0 2px;font-size:12.5px;color:var(--slate)}
+  .filters .sum b{color:var(--ink)}
+  /* The 5Ws proper: who (rows) is where (palika columns, grouped by district)
+     doing what (activity chips, with report counts). */
+  .mx th.dist{background:var(--who-t);color:var(--who-d);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;text-align:center;border-left:1px solid var(--line)}
+  .mx th.pal{font-weight:600;white-space:normal;min-width:118px;vertical-align:bottom;border-left:1px solid var(--line);text-transform:none;letter-spacing:0;font-size:12px}
+  .mx th.pal .xs{display:block;font-weight:400}
+  .mx td.cell{vertical-align:top;font-size:12px;line-height:1.5;border-left:1px solid var(--line)}
+  .mx td.cell.empty{color:#c9c9c7;text-align:center}
+  .mx .ac{display:inline-block;border:1px solid var(--line);border-radius:10px;padding:0 6px;margin:1px 2px 1px 0;font-size:11px;font-weight:700;color:var(--who-d);background:#fff;white-space:nowrap}
+  .mx .ac i{font-style:normal;font-weight:400;color:var(--slate);margin-left:3px}
+  .mx .rch{display:block;font-size:11px;color:var(--slate);margin-top:2px;white-space:nowrap}
+  .mx td.tot{background:#fafaf9;font-variant-numeric:tabular-nums}
+  /* The publish step. Everything the coordinator sees in the preview is
+     exactly the document the public website will read. */
+  .pub .docs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:12px 0}
+  .pub .doc{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+  .pub .doc h3{margin:0 0 4px;font-size:14.5px}
+  .pub .doc .id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:var(--slate)}
+  .pub .doc .st{font-size:12.5px;margin:6px 0 0;color:var(--slate)}
+  .pub .doc .st b{color:var(--ink)}
+  .pub textarea{min-height:58px}
+  .pubprev{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-top:12px}
+  .pubprev h3{margin:0 0 8px;font-size:14px}
+  .pubprev .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:6px 0 12px}
+  .pubprev .kpi{border:1px solid var(--line);border-radius:var(--r);padding:8px 10px}
+  .pubprev .kpi .n{display:block;font-size:22px;font-weight:700;color:var(--who-d);font-variant-numeric:tabular-nums}
+  .pubprev .kpi .l{display:block;font-size:11.5px;color:var(--slate)}
+  .pubprev table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .pubprev th,.pubprev td{padding:5px 8px;border-bottom:1px solid var(--line-s);vertical-align:top}
+  .pubprev details{margin-top:8px} .pubprev summary{cursor:pointer;font-size:12.5px;color:var(--slate)}
+  .pubprev pre{font-size:11px;line-height:1.4;max-height:320px;overflow:auto;background:#fafaf9;padding:8px;border-radius:4px;white-space:pre-wrap;word-break:break-word}
+  .pub .state{font-size:12.5px;color:var(--slate);margin:0 0 6px}
+  /* an organisation name is a label, not a paragraph: keep it on one line so it never justifies */
+  .mx td:first-child{white-space:nowrap}
+  .mx th.tot{vertical-align:bottom}
+  /* ONE dashboard, five sections, addressed by hash and switched from the
+     rail or from the tabs above -- both write the same hash, so a section
+     can be sent as a link. The long method notes used to sit in the open
+     and made every section read like a memo; they are behind one expander
+     per section now, closed by default. */
+  .howcount{margin:12px 0 0;border-top:1px solid var(--line);padding-top:8px}
+  .howcount > summary{cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.3px;
+                      text-transform:uppercase;color:var(--slate);list-style:none}
+  .howcount > summary::-webkit-details-marker{display:none}
+  .howcount > summary::before{content:"\25B8\00a0"}
+  .howcount[open] > summary::before{content:"\25BE\00a0"}
+  .howcount p{font-size:12.5px;line-height:1.6;margin:9px 0 0;color:var(--slate)}
+  .nodate{color:var(--warn);font-weight:600}
+  .sechead{margin:0 0 4px}
+  .secsay{margin:0 0 14px;font-size:14px;color:var(--slate)}
+</style>
+</head>
+<body class="hub">
+<!--NAV:rail hubindex-->
+<aside class="rail" aria-label="Coordination hub">
+  <a class="railid" href="./">
+    <span data-mark="30"></span>
+    <span><b>MHPSS Nepal</b><i>Layer 2 &middot; coordination</i></span>
+  </a>
+  <div class="where" aria-label="Where you are in the system">
+    <span class="wlab">Architecture &middot; you are here</span>
+    <a class="lyr" href="../form/"><b>1</b><span>Field forms<i>on phones, works offline</i></span></a>
+    <a class="lyr on" href="./" aria-current="true"><b>2</b><span>Coordination<i>this hub &middot; restricted</i></span></a>
+    <a class="lyr" href="../"><b>3</b><span>Public site<i>published summaries only</i></span></a>
+  </div>
+  <button class="rmenu" type="button" aria-expanded="false"><span></span>Menu</button>
+  <nav>
+    <div class="rg open here" data-g="coord">
+      <button class="rgh" type="button"><span class="dot l2"></span>Coordination<em>layer 2</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a class="on" aria-current="page" data-default href="./#overview">Dashboard &middot; overview</a>
+        <a href="./#who-is-where">Who is where</a>
+        <a href="./#activities">Activities</a>
+        <a href="./#reports">Reports received</a>
+        <a href="./#publish">Publish</a>
+      </div>
+    </div>
+    <div class="rg" data-g="forms">
+      <button class="rgh" type="button"><span class="dot l1"></span>Field forms<em>outputs</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a href="./#reports">Activity report (5Ws)</a>
+        <a href="forms.html#contact">Service contact</a>
+        <a href="forms.html#referral">Referral</a>
+        <a href="forms.html#phq9">PHQ-9 follow-up</a>
+        <a href="forms.html#selfreport">Self-report</a>
+        <a href="../form/">Open the forms &rarr;</a>
+      </div>
+    </div>
+    <div class="rg" data-g="public">
+      <button class="rgh" type="button"><span class="dot l3"></span>Public site<em>layer 3</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a href="../">Home</a>
+      </div>
+    </div>
+    <div class="rg admin" data-g="admin" hidden>
+      <button class="rgh" type="button"><span class="dot l2"></span>Admin<em>client role check</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a href="access.html">Access &amp; sign-in</a>
+      </div>
+    </div>
+  </nav>
+  <span data-i18n-toggle class="railtoggle"></span>
+  <p class="rfoot">Draft. Figures are provisional.</p>
+  <script>(function(){
+  var rail=document.currentScript.parentNode, KEY='mhpss-rail-groups';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  rail.querySelectorAll('.rg').forEach(function(g){
+    var k=g.getAttribute('data-g'), h=g.querySelector('.rgh');
+    if(!g.classList.contains('here') && k in saved) g.classList.toggle('open', !!saved[k]);
+    h.setAttribute('aria-expanded', g.classList.contains('open'));
+    h.addEventListener('click', function(){
+      g.classList.toggle('open'); var on=g.classList.contains('open');
+      h.setAttribute('aria-expanded', on); saved[k]=on;
+      try{ localStorage.setItem(KEY, JSON.stringify(saved)); }catch(e){}
+    });
+  });
+  var m=rail.querySelector('.rmenu');
+  if(m){ m.addEventListener('click', function(){
+    var open=rail.classList.toggle('menu-open'); m.setAttribute('aria-expanded', open); }); }
+  /* The lit item follows the address: a hub page's sections are hashes, and
+     the same section can be reached from two groups (the activity report's
+     output home IS the dashboard's Reports received), so every link that
+     matches is lit, not just one. */
+  function mark(){
+    var path=location.pathname.split('/').pop()||'index.html', hash=location.hash||'';
+    rail.querySelectorAll('.rgb > a').forEach(function(a){
+      var href=a.getAttribute('href'); if(href.indexOf('../')===0) return;
+      var file=href.split('#')[0], ah=href.indexOf('#')>=0 ? href.slice(href.indexOf('#')) : '';
+      if(file==='./'||file==='') file='index.html';
+      var on = file===path && (hash ? ah===hash : a.hasAttribute('data-default'));
+      a.classList.toggle('on', on);
+      if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+    });
+    if(rail.classList.contains('menu-open')){ rail.classList.remove('menu-open'); if(m) m.setAttribute('aria-expanded', false); }
+  }
+  window.addEventListener('hashchange', mark);
+  document.addEventListener('DOMContentLoaded', mark);
+  window.__railMark = mark;
+  /* Admin is drawn only for an admin account. The bridge (assets/fb.js)
+     loads after the rail, so the question is asked once the page is
+     complete; a page without the bridge simply never shows it. */
+  var adm=rail.querySelector('.rg.admin');
+  if(adm){ document.addEventListener('DOMContentLoaded', function(){
+    if(!(window.FB && window.FB.onStatus)) return;
+    window.FB.onStatus(function(st){
+      if(!(st && st.user && window.FB.myRole)){ adm.hidden=true; return; }
+      window.FB.myRole().then(function(r){ adm.hidden = !(r && r.role==='admin'); }).catch(function(){ adm.hidden=true; });
+    });
+  }); }
+})();</script>
+</aside>
+<!--/NAV-->
+
+<div id="band" style="background:#d03b3b;color:#fff;font:700 12.5px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:.02em;text-align:center;padding:7px 16px;padding-top:calc(7px + env(safe-area-inset-top,0px))">DEMONSTRATION — FIGURES SHOWN HERE COME FROM WHATEVER FILE YOU LOAD <span style="font-weight:400;opacity:.92">· draft, not agreed with EDCD or the MHPSS Technical Working Group · a file is read in the page and never uploaded; the live path reads the register and writes nothing</span></div>
+
+
+<div class="top">
+  <div>
+    <div class="brand">MHPSS Coordination Dashboard</div>
+    <div class="sub">Rasuwa / Bhote Koshi flood response</div>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<div class="wrap wide">
+
+  <h1>Coordination dashboard</h1>
+  <p class="lede">One screen for the flood response: what has been reported, who is where, what was done, every report received, and what the public website is given. It reads the live register — each figure is recomputed the moment a worker saves a report — or a file you choose, which is read in the page and never uploaded.</p>
+
+  <div class="card" id="loader">
+    <div class="drop" id="drop">
+      <p style="margin:0 0 4px"><b>Read the live register</b> — every figure on the dashboard updates as reports arrive.</p>
+      <p class="xs" style="margin:0 0 12px">A Firestore listener, not a refresh schedule: the page recomputes on the change itself. The client first attempts a kind-bounded demonstration read, then prompts for sign-in if it fails. Server authorization is unverified until the authoritative Rules are versioned.</p>
+      <div class="btns" style="justify-content:center">
+        <button type="button" class="btn" id="useLive">Connect to the live register</button>
+      </div>
+
+      <div id="livePanel" hidden style="margin-top:16px;text-align:left"></div>
+
+      <hr style="margin:20px 0;border:0;border-top:1px solid var(--line)">
+
+      <p style="margin:0 0 12px"><b>Or load an export from the report form</b> — a <code>.json</code> or <code>.csv</code> file.</p>
+      <div class="btns" style="justify-content:center">
+        <label class="btn ghost" style="cursor:pointer">Choose a file<input type="file" id="file" accept=".json,.csv" hidden></label>
+        <button type="button" class="btn ghost" id="useLocal">Use reports saved in this browser</button>
+        <button type="button" class="btn grey" id="useDemo">Load synthetic demonstration data</button>
+      </div>
+      <p class="xs" style="margin:14px 0 0">Synthetic data is generated in the page and is not real. It exists so the dashboard can be shown before any operational data has been collected — which is also the position agreed while the three governance questions are open.</p>
+    </div>
+  </div>
+
+  <div id="app" hidden>
+
+    <div class="banner" id="srcNote"></div>
+    <div class="livestrip" id="liveStrip" hidden></div>
+    <!-- one status line: srcNote for a file, liveStrip for the register -->
+
+    <div class="card" id="emptyReg" hidden>
+      <h2 style="margin:0 0 8px;font-size:18px">The register is connected, and holds no activity reports yet</h2>
+      <p style="margin:0 0 10px">This is the live state, not an error, and not a page of zeros dressed up as figures.
+         The listener is attached: the moment a worker saves a report on
+         <a href="../form/5ws-report.html">the activity form</a>, it appears here without a reload.</p>
+      <p class="xs" style="margin:0">Two things put real figures in: reports filed on the form from now on, and the cleaned
+         backlog of 300 records once its four import blockers close. Until then the
+         <b>synthetic demonstration data</b> on the previous screen is what shows the dashboard's shape —
+         and it is labelled synthetic wherever it appears.</p>
+      <div class="btns" style="margin-top:12px"><button type="button" class="btn grey sm" id="emptyOff">Change source</button></div>
+    </div>
+
+    <div class="filters" id="filters">
+      <div class="grid">
+        <div><label for="fProv">Province</label><select id="fProv" data-dim="province"></select></div>
+        <div><label for="fDist">District</label><select id="fDist" data-dim="district"></select></div>
+        <div><label for="fPal">Palika</label><select id="fPal" data-dim="palika"></select></div>
+        <div><label for="fOrg">Organisation</label><select id="fOrg" data-dim="org"></select></div>
+        <div><label for="fDon">Funding source</label><select id="fDon" data-dim="donor"></select></div>
+        <div><label for="fGrp">Activity layer</label><select id="fGrp" data-dim="group"></select></div>
+        <div><label for="fAct">Activity</label><select id="fAct" data-dim="activity"></select></div>
+        <div><label for="fMod">Service setting</label><select id="fMod" data-dim="modality"></select></div>
+        <div><label for="fSta">Status</label><select id="fSta" data-dim="status"></select></div>
+        <div class="w2"><label for="fPeriod">Period</label><select id="fPeriod"></select></div>
+        <div class="w2"><label for="fBasis">Period reads</label><select id="fBasis"></select></div>
+        <div><label for="fFrom">From</label><input type="date" id="fFrom"></div>
+        <div><label for="fTo">To</label><input type="date" id="fTo"></div>
+      </div>
+      <div class="sum">
+        <span id="fSum"></span>
+        <button type="button" class="btn grey sm" id="fClear">Clear filters</button>
+        <span class="xs">Every figure and table on this page follows the filters. Each list offers only the values that survive the other filters.</span>
+      </div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <!-- The same five sections the rail lists, in the same order. Both
+         controls write the same hash, so either can be used and a section
+         can be sent as a link. -->
+    <div class="tabs">
+      <button class="tab on" data-p="ov">Overview</button>
+      <button class="tab" data-p="who">Who is where</button>
+      <button class="tab" data-p="act">Activities</button>
+      <button class="tab" data-p="raw">Reports received</button>
+      <button class="tab" data-p="pub">Publish</button>
+    </div>
+
+    <!-- OVERVIEW: coverage of the roster, the duplication flag, who was
+         reached and the shape over time. One section, because a coordinator
+         reads these four things in one pass. -->
+    <div class="panel on" id="p-ov">
+      <h2 class="sechead">Coverage of the roster</h2>
+      <p class="secsay">Which holding-centre sites have a report in this period, and which are still at zero.</p>
+      <div class="banner warn" id="covLede"></div>
+      <div class="btns" style="margin-bottom:12px">
+        <button type="button" class="btn ghost sm" id="expGap">Export the gap list as CSV</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Site</th><th>District</th><th>Recorded population</th><th>Reports</th><th>Attendances</th><th>Organisations</th><th>Last report</th></tr></thead>
+          <tbody id="covBody"></tbody>
+        </table>
+      </div>
+      <h2>Reported, but not on the roster</h2>
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Site as reported</th><th>District</th><th>Reports</th><th>Attendances</th></tr></thead>
+          <tbody id="offBody"></tbody>
+        </table>
+      </div>
+      <details class="howcount">
+        <summary>How this is counted</summary>
+        <p>Only sites on the holding-centre roster can appear as uncovered: a site nobody ever listed as a service point cannot be counted as one that was missed. Sites appearing in reports but not on the roster are listed in the second table rather than dropped. The denominator follows the place filters and nothing else — filtered to one organisation, a site with no report from anyone is still a site with no report.</p>
+      </details>
+
+      <h2>More than one organisation at one site on one day</h2>
+      <div class="banner" id="dupLede"></div>
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Date</th><th>Site</th><th>Organisations reporting</th><th>Activities</th><th>Attendances</th><th>Reading</th></tr></thead>
+          <tbody id="dupBody"></tbody>
+        </table>
+      </div>
+      <details class="howcount">
+        <summary>How this is counted</summary>
+        <p>Two organisations at one site on one day is a flag, not a finding. It is often legitimate — a counselling session and a child-friendly space in the same shelter reach different people. It becomes double counting only when the same people are counted twice, and only the two organisations can settle that. The same organisation appearing twice under different funding tags is a funding attribution, not duplication, and is shown as such.</p>
+      </details>
+
+      <h2>Who was reached</h2>
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Age band</th><th>Female</th><th>Male</th><th>Not recorded</th><th>Total</th></tr></thead>
+          <tbody id="disBody"></tbody>
+        </table>
+      </div>
+      <p class="xs" style="margin-top:10px" id="disNote"></p>
+
+      <h2>Reports per day</h2>
+      <p class="secsay">Follows the period and the date basis chosen above.</p>
+      <div id="dayWrap"></div>
+    </div>
+
+    <!-- WHO IS WHERE: the 5Ws proper -->
+    <div class="panel" id="p-who">
+      <h2 class="sechead">Who is present where, doing what</h2>
+      <p class="secsay">Organisation by palika, with the activity codes each has reported there.</p>
+      <div class="banner" id="pxLede"></div>
+      <div class="btns" style="margin-bottom:12px">
+        <button type="button" class="btn ghost sm" id="expMx">Export the matrix as CSV</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="data mx" id="pxTable">
+          <thead id="pxHead"></thead>
+          <tbody id="pxBody"></tbody>
+        </table>
+      </div>
+      <details class="howcount">
+        <summary>How this is counted</summary>
+        <p>A cell lists the activity codes an organisation has reported in that palika, with the number of reports per code and the attendances underneath. A site's palika comes from the site list; a palika-level report carries its own. Reports whose palika is not established sit in the last column rather than being dropped.</p>
+      </details>
+      <h2>By organisation</h2>
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Organisation</th><th>District</th><th>Sites</th><th>Activities</th><th>Reports</th><th>Attendances</th><th>First</th><th>Last</th></tr></thead>
+          <tbody id="mxBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACTIVITIES: one activity, two readings -->
+    <div class="panel" id="p-act">
+      <h2 class="sechead">What was done</h2>
+      <p class="secsay">The same code read twice: the plain label the form showed the worker, and the IASC reading the backend reports.</p>
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Activity — as the form shows it</th><th>IASC layer</th><th>Backend reading — IASC 4Ws (2012)</th><th>Reports</th><th>Attendances</th><th>Share</th><th>Organisations</th></tr></thead>
+          <tbody id="actBody"></tbody>
+        </table>
+      </div>
+      <details class="howcount">
+        <summary>How this is counted</summary>
+        <p>One activity, two readings. The worker chose a plain label; the register keeps its code, and this table reads that one code both ways — the IASC intervention pyramid layer, and the 4Ws (2012) subcode the inter-agency return expects. A report filed under the previous list is read through its crosswalk where the match is one-to-one, and is otherwise left as not yet placed rather than assigned by guess. Attendances are sessions: one report is one session with the number of people at it, so a person at two sessions is counted twice.</p>
+      </details>
+    </div>
+
+    <!-- RAW: the list of reports received -- where a report filed on a phone
+         can be found again. Newest received first; the filter box narrows by
+         any word (organisation, site, activity, date, id). -->
+    <div class="panel" id="p-raw">
+      <h2 class="sechead">Reports received</h2>
+      <p class="secsay">The home of the activity report (5Ws): every entry made on that form, newest first. A report appears here the moment the phone has signal; the same report saved twice on one phone stays one row.</p>
+      <div class="btns" style="margin-bottom:12px;align-items:center;flex-wrap:wrap">
+        <input type="search" id="rawFind" placeholder="Find — organisation, site, activity, date, id" style="flex:1 1 260px;min-width:200px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13px">
+        <span class="xs" id="rawCount"></span>
+        <button type="button" class="btn ghost sm" id="expAll">Export everything loaded as CSV</button>
+        <label class="btn ghost sm" style="cursor:pointer">Import a file<input type="file" id="file2" accept=".json,.csv" hidden></label>
+        <button type="button" class="btn grey sm" id="reload">Change source</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Received</th><th>Date of activity</th><th>Site</th><th>Organisation</th><th>Activity</th><th class="n">Attendance</th><th>Target groups</th><th>ID</th></tr></thead>
+          <tbody id="rawBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PUBLISH -->
+    <div class="panel pub" id="p-pub">
+      <h2 class="sechead">What the public website is given</h2>
+      <p class="secsay">The website never reads the register. It reads three documents on a public shelf that a coordinator writes on purpose, from this screen, with the filters above applied.</p>
+      <div class="banner warn"><b>Demonstration mode, until the review by WHO and the Ministry.</b> Everything this
+        dashboard computes is published as it stands — site level, organisation names, no small-cell
+        suppression — so the full behaviour of the system can be judged. Two things are never published:
+        the free-text description of a report, and any focal-point contact, which never reaches the
+        register at all. After the review, what is public and what is not is decided and a reviewed
+        server policy is versioned. Server enforcement is unverified in this branch.</div>
+
+      <div class="docs" id="pubDocs"></div>
+
+      <div class="f">
+        <label for="pubBasis">Basis — one sentence saying what is counted (published with the figures)</label>
+        <textarea id="pubBasis"></textarea>
+      </div>
+      <div class="row">
+        <div class="f">
+          <label>Documents to publish</label>
+          <div class="chks">
+            <label class="chk"><input type="checkbox" id="pubFlood" checked><span>Flood response summary</span></label>
+            <label class="chk"><input type="checkbox" id="pubDir" checked><span>Referral directory</span></label>
+            <label class="chk"><input type="checkbox" id="pubFull" checked><span>Full coordination picture</span></label>
+          </div>
+        </div>
+      </div>
+      <div id="pubAuth"></div>
+      <div class="btns" style="margin:10px 0 4px">
+        <button type="button" class="btn ghost" id="pubPreview">Preview what will be published</button>
+        <button type="button" class="btn" id="pubGo" disabled>Publish to the public website</button>
+        <span class="xs" id="pubMsg"></span>
+      </div>
+      <div id="pubPrev"></div>
+    </div>
+  </div>
+
+  <p class="xs" style="margin-top:26px">Draft instrument. Coverage denominators come from the holding-centre roster of the daily reporting workbook. Figures shown are only as good as the source loaded; nothing here is validated against any other source.</p>
+</div>
+
+<div id="toast"></div>
+
+<script src="assets/codes.js"></script>
+<script src="assets/store.js"></script>
+<!-- The live-register client loads sign-in, listeners and the offline queue.
+     Its role lookup is client intent only: the authoritative Rules and their
+     role-key scheme are not versioned here, so server enforcement is
+     unverified and this branch must not be deployed. -->
+<script src="assets/fb-config.js"></script>
+<script src="assets/fb.js"></script>
+<!-- The bilingual engine: mounts the ENG/NEP toggle so it does not
+     vanish when a reader navigates here from the hub, and states
+     plainly that this page is not in Nepali yet. -->
+<script src="assets/mark.js"></script>
+<script src="assets/icons.js"></script>
+<script src="assets/i18n-strings.js"></script>
+<script src="assets/i18n.js"></script>
+<script>
+(function () {
+  var C = window.CODES, S = window.STORE;
+  var $ = function (id) { return document.getElementById(id); };
+  var ALL = [], DATA = [], SRC = "", PERIOD = "";
+
+  function toast(m, w) { var t = $("toast"); t.textContent = m; t.className = w ? "show warn" : "show"; clearTimeout(t._h); t._h = setTimeout(function () { t.className = ""; }, 3200); }
+  function n(v) { var x = parseInt(v, 10); return isFinite(x) ? x : 0; }
+  function esc(s) { return String(s === null || s === undefined ? "" : s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
+  function siteName(r) {
+    if (r.site === "OTHER") return (r.siteOther || "Unnamed") + " (other)";
+    /* a palika-level report names no site: it is shown under its palika and never counted as one */
+    if (r.site === "PALIKA") return (C.palikaName(r.palika) || "palika not stated") + " (palika level)";
+    var s = C.siteByCode[r.site]; return s ? s.name : (r.site || "—");
+  }
+  /* the grouping key for "one place": a site code, or one palika for palika-level reports */
+  function placeKey(r) { return r.site === "PALIKA" ? "PALIKA:" + (r.palika || "?") : (r.site || "—"); }
+  function orgName(r) { if (r.org === "OTHER") return (r.orgOther || "Unnamed") + " (other)"; var o = C.orgByCode[r.org]; return o ? o.name : (r.org || "—"); }
+  /* ONE ACTIVITY, TWO READINGS (list v3, 17 Sep 2026). The form showed a
+     plain label; this page reads the same code with its IASC layer and 4Ws
+     subcode beside it. A record filed under the previous list is read
+     through the crosswalk: one target and it counts under the new code; two
+     or more and it stays "not yet placed" until its description is read --
+     nothing is picked by default. */
+  function actRes(c) { return C.activityResolve(c); }
+  function actKey(c) { var r = actRes(c); return r.placed || (c || "—"); }
+  function actName(c) {
+    var r = actRes(c);
+    if (r.placed) { var a = C.activityByCode[r.placed]; return a.code + " " + a.name; }
+    return (r.name || c || "—") + (r.legacy ? " · not yet placed" : "");
+  }
+  function actLayer(c) {
+    var r = actRes(c), a = r.placed ? C.activityByCode[r.placed] : null, g = a ? C.activityGroupByCode[a.group] : null;
+    return g ? g.code + " " + g.name : "Previous list — not yet placed";
+  }
+  function actIasc(c) { var r = actRes(c); return r.placed ? C.activityIasc(r.placed) : (r.legacy ? r.note : ""); }
+  function distName(c) { var d = C.districtByCode[c]; return d ? d.name : (c || "—"); }
+  var DIST_BY_NAME = {};
+  (C.DISTRICTS || []).forEach(function (d) { DIST_BY_NAME[d.name] = d.code; });
+  function distCode(raw) {
+    raw = (raw || "").trim();
+    if (!raw) return "";
+    if (C.districtByCode[raw]) return raw;
+    return DIST_BY_NAME[raw] || raw;
+  }
+
+  /* ---------- CSV parsing (quoted fields, embedded newlines) ---------- */
+  function parseCSV(text) {
+    text = text.replace(/^﻿/, "");
+    var rows = [], row = [], cur = "", q = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (q) {
+        if (ch === '"' && text[i + 1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') q = false;
+        else cur += ch;
+      } else if (ch === '"') q = true;
+      else if (ch === ",") { row.push(cur); cur = ""; }
+      else if (ch === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+      else if (ch !== "\r") cur += ch;
+    }
+    if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
+    if (!rows.length) return [];
+    var head = rows.shift();
+    return rows.filter(function (r) { return r.some(function (c) { return c !== ""; }); })
+      .map(function (r) {
+        var o = {};
+        head.forEach(function (h, i) { o[h.trim()] = r[i] === undefined ? "" : r[i]; });
+        if (typeof o.targetGroups === "string") o.targetGroups = o.targetGroups ? o.targetGroups.split(";") : [];
+        return o;
+      });
+  }
+
+  /* ---------- synthetic demonstration data ---------- */
+  function demo() {
+    var rng = 20260915, rand = function () { rng = (rng * 1103515245 + 12345) % 2147483648; return rng / 2147483648; };
+    var orgs = ["TPO", "CMC", "CWIN", "NRCS", "KOS"];
+    var acts = ["3.1", "3.2", "2.2", "2.1", "3.4", "3.3", "1.1"];   /* activity list v3 codes (17 Sep 2026) */
+    var tgs = ["TG-DIS", "TG-BER", "TG-CHI", "TG-COM", "TG-OLD"];
+    /* deliberately leaves several roster sites untouched, so the coverage
+       panel has something real to show rather than an all-green table */
+    var used = C.ROSTER_SITES.filter(function (_, i) { return i % 3 !== 2; });
+    var out = [];
+    for (var d = 0; d < 12; d++) {
+      var day = new Date(Date.UTC(2026, 8, 2 + d)).toISOString().slice(0, 10);
+      var k = 4 + Math.floor(rand() * 5);
+      for (var j = 0; j < k; j++) {
+        var st = used[Math.floor(rand() * used.length)];
+        var org = orgs[Math.floor(rand() * orgs.length)];
+        var tot = 3 + Math.floor(rand() * 40);
+        var fu = Math.floor(tot * 0.18), mu = Math.floor(tot * 0.14), f = Math.floor(tot * 0.38);
+        out.push({
+          id: "D" + d + "-" + j, createdAt: day + "T06:00:00Z", revision: 0,
+          dateAD: day, dateBS: "", district: st.district, site: st.code, siteOther: "", siteSource: "roster",
+          org: org, orgOther: "", donor: rand() > 0.5 ? "UNICEF" : "SDC",
+          focalName: "Focal point", focalPhone: "98XXXXXXXX", focalEmail: "",
+          cadre: rand() > 0.6 ? "PSY" : "PSC",
+          activity: acts[Math.floor(rand() * acts.length)],
+          modality: ["HC", "COM", "FAC"][Math.floor(rand() * 3)], status: "CMP",
+          targetGroups: [tgs[Math.floor(rand() * tgs.length)]],
+          description: "Synthetic record — not real data",
+          reachedTotal: tot, countBasis: "CONTACTS", sessionTime: "",
+          /* the five age groups, so the synthetic file exercises the shape the
+             form now files; shares are arbitrary but plausible */
+          f04: Math.floor(fu / 3), m04: Math.floor(mu / 3), o04: 0,
+          f514: fu - Math.floor(fu / 3), m514: mu - Math.floor(mu / 3), o514: 0,
+          f1549: f - Math.floor(f * 0.3), m1549: (tot - fu - mu - f) - Math.floor((tot - fu - mu - f) * 0.3), o1549: 0,
+          f5059: Math.floor(f * 0.18), m5059: Math.floor((tot - fu - mu - f) * 0.2), o5059: 0,
+          f60: Math.floor(f * 0.3) - Math.floor(f * 0.18), m60: Math.floor((tot - fu - mu - f) * 0.3) - Math.floor((tot - fu - mu - f) * 0.2), o60: 0,
+          ofChildAlone: rand() > 0.8 ? 1 + Math.floor(rand() * 2) : 0,
+          ofPreg: rand() > 0.85 ? 1 + Math.floor(rand() * 2) : 0,
+          ofPwd: rand() > 0.75 ? 1 + Math.floor(rand() * 3) : 0,
+          ofInjured: rand() > 0.85 ? 1 : 0,
+          ofDistress: rand() > 0.7 ? 1 + Math.floor(rand() * 3) : 0,
+          schemaVersion: S.SCHEMA_VERSION
+        });
+      }
+    }
+    return out;
+  }
+
+  /* ---------- load ----------
+     `live` is passed only by the register path. An empty FILE is a mistake
+     worth a toast; an empty REGISTER is a true state of the system and has
+     to render as itself, because a page of zeros looks exactly like a page
+     that is broken. */
+  /* The band over the page says where the figures come from. It was written
+     for the file path ("whatever file you load"); on the live path that
+     sentence is false, so the band is renamed when the source is the register.
+     What stays true on both paths, and stays in the band: the classification
+     is provisional and nothing on this page writes anywhere. */
+  var BAND_FILE = $("band") ? $("band").innerHTML : "";
+  function setBand(live) {
+    var b = $("band"); if (!b) return;
+    if (live) {
+      b.style.background = "#245c86";
+      b.innerHTML = 'LIVE REGISTER — FIGURES RECOMPUTE AS REPORTS ARRIVE <span style="font-weight:400;opacity:.92">' +
+        '· classification provisional, not yet agreed with EDCD or the MHPSS Technical Working Group ' +
+        '· this page reads the register and writes nothing</span>';
+    } else {
+      b.style.background = "#d03b3b";
+      b.innerHTML = BAND_FILE;
+    }
+  }
+
+  function load(rows, src, live) {
+    if (!live && (!rows || !rows.length)) return toast("That file has no records in it", true);
+    rows = rows || [];
+    ALL = rows; SRC = src;
+    setBand(!!live);
+    $("loader").hidden = true; $("app").hidden = false;
+
+    /* !! is load-bearing. `live` is undefined on the file paths, so `empty`
+       was undefined, and classList.toggle(token, undefined) does NOT force
+       false -- WebIDL treats an undefined optional boolean as "not supplied",
+       so it plain-toggles. The tabs therefore switched off on one file load
+       and back on the next. Coerce to a real boolean. */
+    var empty = !!(live && !rows.length);
+    $("emptyReg").hidden = !empty;
+    ["stats", "srcNote", "filters"].forEach(function (id) { $(id).classList.toggle("hideblk", empty); });
+    document.querySelector(".tabs").classList.toggle("hideblk", empty);
+    document.querySelectorAll(".panel").forEach(function (el) { el.classList.toggle("noshow", empty); });
+    if (empty) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+
+    var dates = rows.map(function (r) { return r.dateAD; }).filter(Boolean).sort();
+    PERIOD = dates.length ? dates[0] + " to " + dates[dates.length - 1] : "";
+    /* Three stacked notices said the same thing three ways. On the live path
+       the strip below is the status line and this banner stays out of the
+       way; a file keeps its own line, because there is no strip. */
+    $("srcNote").classList.toggle("hideblk", !!live);
+    $("srcNote").innerHTML = "<b>" + rows.length + " records loaded</b> from " + esc(src) +
+      (PERIOD ? " · reporting period " + PERIOD : "") +
+      (src.indexOf("Synthetic") === 0 ? " · <b>this is not real data</b>" : "");
+    applyFilters();
+    if (!live) { window.scrollTo({ top: 0, behavior: "smooth" }); }
+  }
+
+  /* ---------- filters ---------------------------------------------------
+     Nine dimensions, the reference report's set mapped onto this data:
+       province, district, palika            where
+       organisation, funding source          who   (the 5Ws has lead agency
+                                                    and implementing partner;
+                                                    this data has one
+                                                    organisation and a funding
+                                                    tag -- not the same thing,
+                                                    and labelled as what it is)
+       activity group, activity              what  (the group stands in for
+                                                    the 5Ws cluster: every
+                                                    record here is MHPSS)
+       modality, status
+     plus a date range. A record's palika is its own (palika-level reports and
+     unlisted sites) or its site's. The options of each list are computed from
+     the records that pass every OTHER filter, so the lists cascade in every
+     direction and never offer a choice that would empty the page. */
+  /* ---------- the period ------------------------------------------------
+     "This week" has to mean one thing, and it has to be visible. The week
+     runs Sunday to Saturday, which is the Nepali working week (Saturday is
+     the weekly holiday), and every option says its own boundary so nobody
+     has to guess which convention is in force.
+     Two bases, because the register holds two kinds of date and one of them
+     is missing from most of it:
+       date of activity -- what the report is about. The 5Ws form records it
+         in the Gregorian calendar; the backlog was imported with Bikram
+         Sambat only, so those records fall outside EVERY period and the
+         filter summary says how many.
+       date received    -- when the register took the record. Present on
+         every record without exception, so "what came in this week" is
+         answerable for the whole register.
+     Neither is converted into the other and no Bikram Sambat date is read as
+     a Gregorian one: there is no agreed conversion in this build. */
+  var PERIODS = [
+    ["",          "All dates"],
+    ["today",     "Today"],
+    ["yesterday", "Yesterday"],
+    ["week",      "This week (Sun–Sat)"],
+    ["lastweek",  "Last week (Sun–Sat)"],
+    ["7d",        "Last 7 days"],
+    ["month",     "This month"],
+    ["lastmonth", "Last month"],
+    ["30d",       "Last 30 days"],
+    ["custom",    "Custom dates"]
+  ];
+  var BASES = [["activity", "Date of activity"], ["received", "Date received"]];
+  function pad2(x) { return (x < 10 ? "0" : "") + x; }
+  function ymd(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+  var DAY = 86400000;
+  function periodRange(p) {
+    var now = new Date(), t = new Date(now.getFullYear(), now.getMonth(), now.getDate()), f, u;
+    if (p === "today") { f = t; u = t; }
+    else if (p === "yesterday") { f = new Date(t.getTime() - DAY); u = f; }
+    else if (p === "week") { f = new Date(t.getTime() - t.getDay() * DAY); u = new Date(f.getTime() + 6 * DAY); }
+    else if (p === "lastweek") { f = new Date(t.getTime() - (t.getDay() + 7) * DAY); u = new Date(f.getTime() + 6 * DAY); }
+    else if (p === "7d") { f = new Date(t.getTime() - 6 * DAY); u = t; }
+    else if (p === "month") { f = new Date(t.getFullYear(), t.getMonth(), 1); u = new Date(t.getFullYear(), t.getMonth() + 1, 0); }
+    else if (p === "lastmonth") { f = new Date(t.getFullYear(), t.getMonth() - 1, 1); u = new Date(t.getFullYear(), t.getMonth(), 0); }
+    else if (p === "30d") { f = new Date(t.getTime() - 29 * DAY); u = t; }
+    else return null;
+    return { from: ymd(f), to: ymd(u) };
+  }
+  function periodLabel(p) {
+    for (var i = 0; i < PERIODS.length; i++) { if (PERIODS[i][0] === p) return PERIODS[i][1]; }
+    return p;
+  }
+  function basisLabel(b) { return b === "received" ? "date received" : "date of activity"; }
+  /* the date a record is placed by, on the basis in force -- "" means it
+     cannot be placed at all, which is a state the page reports rather than
+     hides */
+  function basisDate(r) {
+    if (FILT.basis === "received") {
+      var t = receivedAt(r); if (!t) return "";
+      var d = new Date(t); return isNaN(d) ? "" : ymd(d);
+    }
+    return r.dateAD || "";
+  }
+
+  var DIMS = ["province", "district", "palika", "org", "donor", "group", "activity", "modality", "status"];
+  var FSEL = {};
+  DIMS.forEach(function (d) { FSEL[d] = document.querySelector('#filters select[data-dim="' + d + '"]'); });
+  var FILT = { province: "", district: "", palika: "", org: "", donor: "", group: "", activity: "", modality: "", status: "",
+               from: "", to: "", period: "", basis: "activity" };
+
+  function palikaOf(r) {
+    if (r.palika) return r.palika;
+    var s = C.siteByCode[r.site];
+    return (s && s.palika) || "";
+  }
+  /* each dimension: the record's value(s) as codes, and a label for a code */
+  var DIM = {
+    province: { of: function (r) { var p = C.palikaByCode[palikaOf(r)]; if (p) return [p.province]; var d = C.districtByCode[distCode(r.district)]; return [d && d.province ? d.province : ""]; }, label: function (v) { return v || "not stated"; } },
+    /* The backlog states a district NAME ("Nuwakot") where the form states a
+       CODE ("NUW"), so the filter offered the same district twice. The name
+       is read as its code ONLY on an exact match in the code list -- a name
+       that is not in the list stays exactly as the record states it, because
+       mapping it would assert a district the record does not name. */
+    district: { of: function (r) { return [distCode(r.district)]; }, label: function (v) { return v ? distName(v) : "not stated"; } },
+    palika:   { of: function (r) { return [palikaOf(r)]; }, label: function (v) { return v ? (C.palikaName(v) || v) : "not established"; } },
+    org:      { of: function (r) { return [orgName(r)]; }, label: function (v) { return v; } },
+    donor:    { of: function (r) { var d = S.donorsOf(r); return d.length ? d : [""]; }, label: function (v) { return v || "not specified"; } },
+    group:    { of: function (r) { return [actLayer(r.activity)]; }, label: function (v) { return v || "not stated"; } },
+    activity: { of: function (r) { return [actKey(r.activity)]; }, label: function (v) { return v && v !== "—" ? actName(v) : "not stated"; } },
+    modality: { of: function (r) { return [r.modality || ""]; }, label: function (v) { return v ? C.labelOf(C.MODALITIES, v) : "not stated"; } },
+    status:   { of: function (r) { return [r.status || ""]; }, label: function (v) { return v ? C.labelOf(C.STATUS, v) : "not stated"; } }
+  };
+  function passes(r, skip) {
+    for (var i = 0; i < DIMS.length; i++) {
+      var d = DIMS[i], want = FILT[d];
+      if (!want || d === skip) continue;
+      if (DIM[d].of(r).indexOf(want === "\u2205" ? "" : want) < 0) return false;
+    }
+    if (FILT.from || FILT.to) {
+      var d = basisDate(r);
+      /* a record with no date on this basis is outside every period: it is
+         dropped from the selection and COUNTED in the summary, never quietly
+         folded in at one end of the range */
+      if (!d) return false;
+      if (FILT.from && d < FILT.from) return false;
+      if (FILT.to && d > FILT.to) return false;
+    }
+    return true;
+  }
+  function fillFilter(d) {
+    var sel = FSEL[d], counts = {};
+    ALL.forEach(function (r) {
+      if (!passes(r, d)) return;
+      DIM[d].of(r).forEach(function (v) { counts[v] = (counts[v] || 0) + 1; });
+    });
+    var vals = Object.keys(counts).sort(function (a, b) {
+      if (a === "") return 1; if (b === "") return -1;
+      return DIM[d].label(a).localeCompare(DIM[d].label(b));
+    });
+    var keep = FILT[d];
+    sel.innerHTML = '<option value="">All (' + vals.length + ")</option>" + vals.map(function (v) {
+      /* an empty value cannot be an <option> value, so "not stated" travels as a sentinel */
+      var val = v === "" ? "\u2205" : v;
+      return '<option value="' + esc(val).replace(/"/g, "&quot;") + '">' + esc(DIM[d].label(v)) + " (" + counts[v] + ")</option>";
+    }).join("");
+    if (keep && vals.indexOf(keep === "\u2205" ? "" : keep) >= 0) sel.value = keep; else { sel.value = ""; FILT[d] = ""; }
+  }
+  function applyFilters() {
+    DIMS.forEach(fillFilter);
+    DATA = ALL.filter(function (r) { return passes(r, null); });
+    var active = DIMS.filter(function (d) { return FILT[d]; }).length + (FILT.from ? 1 : 0) + (FILT.to ? 1 : 0);
+    var say = active
+      ? "Showing <b>" + DATA.length.toLocaleString() + "</b> of " + ALL.length.toLocaleString() + " reports · <b>" + active + "</b> filter" + (active === 1 ? "" : "s") + " active"
+      : "Showing <b>all " + ALL.length.toLocaleString() + "</b> reports";
+    if (FILT.from || FILT.to) {
+      say += " · " + (FILT.period && FILT.period !== "custom" ? esc(periodLabel(FILT.period).replace(/ \(.*\)$/, "")) : "dates") +
+        " <b>" + esc(FILT.from || "any") + "</b> to <b>" + esc(FILT.to || "any") + "</b>, read on the " + basisLabel(FILT.basis);
+      var undated = ALL.filter(function (r) { return !basisDate(r); }).length;
+      if (undated) {
+        say += ' · <span class="nodate"><b>' + undated.toLocaleString() + "</b> report" + (undated === 1 ? "" : "s") +
+          " carr" + (undated === 1 ? "ies" : "y") + " no " + basisLabel(FILT.basis) +
+          " and sit" + (undated === 1 ? "s" : "") + " outside every period" +
+          (FILT.basis === "activity" ? " — the imported backlog has Bikram Sambat dates only; switch the basis to the date received to place them" : "") +
+          "</span>";
+      }
+    }
+    $("fSum").innerHTML = say;
+    $("fClear").hidden = !active;
+    render();
+  }
+  DIMS.forEach(function (d) {
+    FSEL[d].addEventListener("change", function () { FILT[d] = this.value; applyFilters(); });
+  });
+  /* The two selects and the two date boxes are one control: choosing a
+     period writes the dates, and editing a date makes the period custom. */
+  (function fillPeriodControls() {
+    $("fPeriod").innerHTML = PERIODS.map(function (p) {
+      return '<option value="' + p[0] + '">' + p[1] + "</option>"; }).join("");
+    $("fBasis").innerHTML = BASES.map(function (b) {
+      return '<option value="' + b[0] + '">' + b[1] + "</option>"; }).join("");
+    $("fBasis").value = FILT.basis;
+  })();
+  $("fPeriod").addEventListener("change", function () {
+    FILT.period = this.value;
+    if (!FILT.period) { FILT.from = ""; FILT.to = ""; }
+    else if (FILT.period !== "custom") {
+      var rg = periodRange(FILT.period);
+      FILT.from = rg.from; FILT.to = rg.to;
+    }
+    $("fFrom").value = FILT.from; $("fTo").value = FILT.to;
+    applyFilters();
+  });
+  $("fBasis").addEventListener("change", function () { FILT.basis = this.value; applyFilters(); });
+  $("fFrom").addEventListener("change", function () {
+    FILT.from = this.value; FILT.period = (FILT.from || FILT.to) ? "custom" : "";
+    $("fPeriod").value = FILT.period; applyFilters();
+  });
+  $("fTo").addEventListener("change", function () {
+    FILT.to = this.value; FILT.period = (FILT.from || FILT.to) ? "custom" : "";
+    $("fPeriod").value = FILT.period; applyFilters();
+  });
+  $("fClear").addEventListener("click", function () {
+    Object.keys(FILT).forEach(function (k) { FILT[k] = ""; });
+    FILT.basis = "activity";
+    $("fFrom").value = ""; $("fTo").value = "";
+    $("fPeriod").value = ""; $("fBasis").value = "activity";
+    applyFilters();
+  });
+
+  /* ---------- the live register -----------------------------------------
+     FB.watch is a Firestore onSnapshot listener. That is the whole point of
+     this path: the figures move on the change itself, not on a schedule and
+     not when someone remembers to re-upload a workbook. Nothing is
+     persisted in this browser from the live path -- the records belong to
+     the register, and this page is a view of them.
+
+     Four states, each with its own remedy, and none of them a blank screen:
+       no config      -- the bridge is not wired into this build
+       not ready      -- the database cannot be reached
+       no user        -- the client prompts for sign-in before its full read
+       no role doc    -- the client cannot infer intended role state
+     The wording matches the field inbox on purpose, so a coordinator meets
+     one system rather than two. */
+  /* WANT_LIVE: the listener attaches when the coordinator asks for it, not on
+     page load. The page should not reach for the network before anyone has
+     asked it to, and it makes the four states deterministic instead of
+     depending on when Firebase happens to resolve the session.
+     REFUSED: once the register has refused a read, that message stays put --
+     clicking Connect again used to paint "attaching the listener..." over the
+     one screen that explained what was actually wrong. */
+  var LIVE_ON = false, LIVE_AT = null, LIVE_TICK = null, WANT_LIVE = false, REFUSED = false;
+  /* OPEN_MODE: reading through the time-boxed window rather than as a named
+     account -- the strip has to say so, because what is on screen is then a
+     subset (activity reports only) and it is readable by anyone with the URL.
+     OPEN_TRIED: so the sign-in form is not painted over a working open view. */
+  var OPEN_MODE = false, OPEN_TRIED = false;
+  var WINDOW_ENDS = "30 September 2026";
+
+  function liveApply(rows) {
+    /* Only activity reports belong on this page. The register also carries
+       service contacts, referrals and PHQ-9 follow-ups; those have their own
+       shape and their own view, and counting them here would inflate every
+       figure on the page. */
+    var recs = rows.filter(function (r) { return (r.kind || "") === "activity"; })
+      .map(function (r) {
+        var o = JSON.parse(JSON.stringify(r));
+        o.id = o.id || o._id || "";
+        return o;
+      });
+    LIVE_AT = new Date();
+    LIVE_ON = true;
+    load(recs, "the live register", true);
+    stampLive(rows.length, recs.length);
+  }
+
+  function stampLive(total, acts) {
+    var el = $("liveStrip");
+    if (!LIVE_ON) { el.hidden = true; return; }
+    el.hidden = false;
+    var t = LIVE_AT;
+    var hh = function (x) { return (x < 10 ? "0" : "") + x; };
+    var clock = hh(t.getHours()) + ":" + hh(t.getMinutes()) + ":" + hh(t.getSeconds());
+    var other = (total || 0) - (acts || 0);
+    el.innerHTML = '<span class="dot" aria-hidden="true"></span>' +
+      '<span><b>Live</b> — recomputed on the register\u2019s own changes, not on a schedule.</span>' +
+      (OPEN_MODE ? '<span class="openwin">Client demonstration read succeeded — activity reports only; ' +
+        'server authorization remains unverified</span>' : '') +
+      '<span class="asof">as of <b>' + clock + '</b> <span id="liveAge"></span></span>' +
+      '<span class="xs">' + (acts || 0) + ' activity report(s)' +
+      (PERIOD ? ' · ' + esc(PERIOD) : '') +
+      (other > 0 ? ' · ' + other + ' other record(s) in the register, not counted here' : '') + '</span>' +
+      '<button type="button" class="btn grey sm" id="liveOff" style="margin-left:auto">Change source</button>';
+    $("liveOff").addEventListener("click", resetSource);
+    ageLive();
+    clearInterval(LIVE_TICK);
+    LIVE_TICK = setInterval(ageLive, 5000);
+  }
+
+  function ageLive() {
+    var a = $("liveAge");
+    if (!a || !LIVE_AT) return;
+    var s2 = Math.max(0, Math.round((Date.now() - LIVE_AT.getTime()) / 1000));
+    a.textContent = s2 < 10 ? "(just now)"
+      : s2 < 90 ? "(" + s2 + "s ago)"
+      : "(" + Math.round(s2 / 60) + " min ago)";
+  }
+
+  function livePaint(st, force) {
+    var el = $("livePanel");
+    el.hidden = false;
+    if (REFUSED) return;
+    /* While the open window is serving rows, a password box on the loader is
+       noise -- and the loader is not even on screen. */
+    if (OPEN_MODE && !force) return;
+    if (!st.configured) {
+      el.innerHTML = '<div class="banner warn" style="margin:0"><b>No register is wired into this build.</b> ' +
+        'The file paths below still work. Once the project config is in place, reports appear here the ' +
+        'moment a worker saves one.</div>';
+      return;
+    }
+    if (!st.ready) {
+      el.innerHTML = '<div class="banner warn" style="margin:0"><b>Cannot reach the register.</b> ' +
+        (st.error ? esc(st.error) : "No connection.") + '</div>';
+      return;
+    }
+    if (!st.user) {
+      el.innerHTML =
+        '<div class="banner" style="margin:0 0 12px"><b>The client asks you to sign in before a full read.</b> ' +
+        'Submitting a report does not use this prompt. Server authorization remains unverified.</div>' +
+        '<div class="row"><div class="f"><label for="em">Email</label>' +
+        '<input type="email" id="em" autocomplete="username"></div>' +
+        '<div class="f"><label for="pw">Password</label>' +
+        '<input type="password" id="pw" autocomplete="current-password"></div></div>' +
+        '<div class="btns"><button type="button" class="btn" id="signin">Sign in</button>' +
+        '<span class="xs" id="signerr"></span></div>';
+      $("signin").addEventListener("click", function () {
+        var b = this; b.disabled = true; b.textContent = "Signing in…";
+        window.FB.signIn($("em").value.trim(), $("pw").value).catch(function (e) {
+          b.disabled = false; b.textContent = "Sign in";
+          $("signerr").innerHTML = '<span style="color:var(--critical,#9b2c2c)">' +
+            esc(e && e.message ? e.message.replace(/^Firebase:\s*/, "") : "could not sign in") + "</span>";
+        });
+      });
+      return;
+    }
+    el.innerHTML = '<div class="banner ok" style="margin:0"><b>Signed in as ' + esc(st.user.email) +
+      '.</b> Attaching the listener…</div>';
+  }
+
+  /* Client intent for the demonstration window: try a kind-bounded read
+     before prompting for sign-in. Whether anonymous or authenticated reads
+     are allowed is unverified until the authoritative Rules are versioned. */
+  function liveAttachOpen() {
+    if (!WANT_LIVE || LIVE_ON || REFUSED) return;
+    var st = window.FB.status();
+    if (!st.ready || st.user) return;          /* signed in -> use the full path */
+    if (!window.FB.watchKind) return;
+    OPEN_TRIED = true;
+    window.FB.watchKind("activity", function (rows) {
+      OPEN_MODE = true;
+      liveApply(rows);
+    }, function () {
+      /* The window is shut, or this build predates it. Not an error worth
+         showing: fall back to asking who you are. */
+      OPEN_MODE = false;
+      if (!LIVE_ON) { livePaint(window.FB.status(), true); }
+    });
+  }
+
+  function liveAttach() {
+    if (!WANT_LIVE || LIVE_ON || REFUSED) return;
+    var st = window.FB.status();
+    if (!(st.ready && st.user)) return;
+    LIVE_ON = true;
+    window.FB.watch(liveApply, function (err) {
+      LIVE_ON = false; REFUSED = true;
+      clearInterval(LIVE_TICK);
+      $("liveStrip").hidden = true;
+      $("app").hidden = true;
+      $("loader").hidden = false;
+      $("livePanel").hidden = false;
+      $("livePanel").innerHTML = '<div class="banner stop" style="margin:0"><b>The register refused the read.</b> ' +
+        esc(err) + '<br><br>The client could not establish permission. Server enforcement and the ' +
+        'authoritative role-key scheme are unverified; see the deployment gate.</div>';
+    });
+  }
+
+  if (window.FB) {
+    window.FB.onStatus(function (st) {
+      if (!WANT_LIVE) return;
+      if (!st.user && !OPEN_MODE) { LIVE_ON = false; clearInterval(LIVE_TICK); $("liveStrip").hidden = true; }
+      if (!$("loader").hidden && !OPEN_MODE) { livePaint(st); }
+      liveAttach();
+    });
+  }
+
+  $("useLive").addEventListener("click", function () {
+    WANT_LIVE = true; REFUSED = false;
+    if (!window.FB) { $("livePanel").hidden = false; livePaint({ configured: false }); return; }
+    var st = window.FB.status();
+    if (st.ready && !st.user) {
+      /* Show nothing yet: the open window usually answers within a moment,
+         and a password box that then disappears is worse than a short wait. */
+      $("livePanel").hidden = false;
+      $("livePanel").innerHTML = '<div class="banner" style="margin:0">Connecting to the register…</div>';
+      liveAttachOpen();
+      /* If the window is shut and no rows arrive, ask who you are. */
+      setTimeout(function () {
+        if (!LIVE_ON && !REFUSED) { livePaint(window.FB.status(), true); }
+      }, 3500);
+      return;
+    }
+    livePaint(st);
+    liveAttach();
+  });
+
+  /* A coordination screen opens on the register, not on a menu. The click is
+     issued only once the bridge reports ready, because before that moment the
+     handler cannot tell the open window from a shut one and would ask for a
+     password it does not need. `?source=choose` keeps the chooser, for loading
+     a file or the synthetic set. Change source still works afterwards. */
+  (function openOnLive() {
+    if (/[?&]source=choose\b/.test(location.search) || !window.FB || !window.FB.onStatus) return;
+    var done = false;
+    window.FB.onStatus(function (st) {
+      if (done || !st || !st.ready) return;
+      done = true;
+      if ($("loader").hidden) return;          /* a file was loaded first */
+      $("useLive").click();
+    });
+  })();
+
+  /* One reader, two doors: the chooser on the way in, and "Import a file"
+     inside Reports received, so a file does not mean going back to a
+     different screen. */
+  function readChosen(f) {
+    if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function () {
+      try {
+        if (/\.json$/i.test(f.name)) {
+          var j = JSON.parse(fr.result);
+          load(Array.isArray(j) ? j : j.records, f.name);
+        } else load(parseCSV(fr.result), f.name);
+      } catch (err) { toast("Could not read that file: " + err.message, true); }
+    };
+    fr.readAsText(f);
+  }
+  $("file").addEventListener("change", function (e) { readChosen(e.target.files[0]); });
+  $("file2").addEventListener("change", function (e) { readChosen(e.target.files[0]); this.value = ""; });
+  $("useLocal").addEventListener("click", function () {
+    var r = S.active();
+    if (!r.length) return toast("No reports saved in this browser yet", true);
+    load(r, "reports saved in this browser");
+  });
+  $("useDemo").addEventListener("click", function () { load(demo(), "Synthetic demonstration data"); });
+  function resetSource() {
+    $("app").hidden = true; $("loader").hidden = false;
+    /* Leaving the live view stops the clock and hides the strip, so a stale
+       "as of" time can never sit over a file's figures. */
+    LIVE_ON = false; WANT_LIVE = false; REFUSED = false; clearInterval(LIVE_TICK);
+    OPEN_MODE = false; OPEN_TRIED = false;
+    $("livePanel").hidden = true;
+    $("liveStrip").hidden = true; $("emptyReg").hidden = true;
+    ["stats", "srcNote"].forEach(function (id) { $(id).classList.remove("hideblk"); });
+    document.querySelector(".tabs").classList.remove("hideblk");
+    document.querySelectorAll(".panel").forEach(function (el) { el.classList.remove("noshow"); });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  $("reload").addEventListener("click", resetSource);
+  $("emptyOff").addEventListener("click", resetSource);
+
+  var dz = $("drop");
+  ["dragenter", "dragover"].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove("over"); }); });
+  dz.addEventListener("drop", function (e) {
+    var f = e.dataTransfer.files[0]; if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function () {
+      try {
+        if (/\.json$/i.test(f.name)) { var j = JSON.parse(fr.result); load(Array.isArray(j) ? j : j.records, f.name); }
+        else load(parseCSV(fr.result), f.name);
+      } catch (err) { toast("Could not read that file: " + err.message, true); }
+    };
+    fr.readAsText(f);
+  });
+
+  /* ---------- the five sections ----------
+     Each has an address: #overview #who-is-where #activities #reports
+     #publish. The rail switches sections by writing the hash; the tabs above
+     write the same hash; both therefore agree, and a section can be sent as
+     a link. The old tab addresses of this page still work -- they are mapped
+     below, because links to them have already been sent. */
+  var TAB_HASH = { ov: "overview", who: "who-is-where", act: "activities", raw: "reports", pub: "publish" };
+  var HASH_TAB = {}; Object.keys(TAB_HASH).forEach(function (k) { HASH_TAB[TAB_HASH[k]] = k; });
+  var OLD_HASH = { gaps: "ov", duplication: "ov", matrix: "who", activity: "act", records: "raw", publish: "pub",
+                   coverage: "ov", who: "who", what: "act", when: "ov", people: "ov", helpline: "ov", layers: "ov" };
+  function showTab(p) {
+    var b = document.querySelector('.tab[data-p="' + p + '"]'); if (!b) return;
+    document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("on"); });
+    document.querySelectorAll(".panel").forEach(function (x) { x.classList.remove("on"); });
+    b.classList.add("on"); $("p-" + p).classList.add("on");
+    if (p === "pub" && PUBSRC) { pubDocsPanel(); }
+  }
+  document.querySelectorAll(".tab").forEach(function (b) {
+    b.addEventListener("click", function () {
+      showTab(b.dataset.p);
+      if (history.replaceState) history.replaceState(null, "", "#" + TAB_HASH[b.dataset.p]);
+      if (window.__railMark) window.__railMark();
+    });
+  });
+  function tabFromHash() {
+    var h = (location.hash || "").replace("#", "");
+    if (HASH_TAB[h]) { showTab(HASH_TAB[h]); return; }
+    if (OLD_HASH[h]) {
+      showTab(OLD_HASH[h]);
+      if (history.replaceState) history.replaceState(null, "", "#" + TAB_HASH[OLD_HASH[h]]);
+      if (window.__railMark) window.__railMark();
+    }
+  }
+  window.addEventListener("hashchange", tabFromHash);
+  tabFromHash();
+
+  /* ---------- render ---------- */
+  var GAPS = [], MX_LONG = [], PUBSRC = null;
+  /* The denominator follows the WHERE filters and nothing else: filtered to
+     Rasuwa, the question is "which Rasuwa roster sites are at zero", not
+     "which of all 23". Filtered to one organisation or one activity, the
+     denominator stays whole -- a site with no PFA report is still a site with
+     no PFA report. */
+  function rosterScope() {
+    return C.ROSTER_SITES.filter(function (s) {
+      if (FILT.district && s.district !== FILT.district) return false;
+      if (FILT.palika && (s.palika || "") !== (FILT.palika === "\u2205" ? "" : FILT.palika)) return false;
+      if (FILT.province) { var p = C.palikaByCode[s.palika]; var d = C.districtByCode[s.district]; var pv = p ? p.province : (d && d.province) || ""; if (pv !== (FILT.province === "\u2205" ? "" : FILT.province)) return false; }
+      return true;
+    });
+  }
+  function render() {
+    var ROSTER = rosterScope();
+    var reach = DATA.reduce(function (a, r) { return a + n(r.reachedTotal); }, 0);
+    var orgs = new Set(DATA.map(orgName));
+    var sitesSeen = new Set(DATA.map(function (r) { return r.site; }));
+    var covered = ROSTER.filter(function (s) { return sitesSeen.has(s.code); });
+    GAPS = ROSTER.filter(function (s) { return !sitesSeen.has(s.code); });
+    var gapPop = GAPS.reduce(function (a, s) { return a + (s.pop || 0); }, 0);
+    // The headline says what was actually counted. Since 17 Sep 2026 the form
+    // files one session with its attendance (countBasis CONTACTS) and the
+    // backlog was imported as service contacts, so the usual case is one
+    // basis: attendances. Earlier records that counted people keep their
+    // basis; contacts and people cannot share a label, let alone a sum.
+    var nC = DATA.filter(function (r) { return r.countBasis === "CONTACTS"; }).length,
+        nP = DATA.filter(function (r) { return r.countBasis === "PEOPLE"; }).length,
+        nU = DATA.length - nC - nP;
+    var reachLabel, reachSub;
+    if (DATA.length && nC === DATA.length) {
+      reachLabel = "Attendances"; reachSub = "service contacts — a person at two sessions counts twice; sessions, not people; no subtotals";
+    } else if (DATA.length && nP === DATA.length) {
+      reachLabel = "People reached"; reachSub = "distinct people as the reports state — no subtotals";
+    } else {
+      reachLabel = "Reach — mixed basis";
+      reachSub = nC + " reports count contacts, " + nP + " count people, " + nU + " do not say — not one series";
+    }
+
+    $("stats").innerHTML = [
+      stat(DATA.length, "Reports loaded", "one report per session — activity, place, day"),
+      stat(reach.toLocaleString(), reachLabel, reachSub),
+      stat(orgs.size, "Organisations reporting", ""),
+      stat(covered.length + " / " + ROSTER.length, "Roster sites reached", "", covered.length === ROSTER.length ? "good" : ""),
+      stat(GAPS.length, "Roster sites with no report", gapPop ? "≈" + gapPop.toLocaleString() + " people recorded there" : "", GAPS.length ? "alert" : "good")
+    ].join("");
+
+    /* --- coverage --- */
+    $("covLede").innerHTML = GAPS.length
+      ? "<b>" + GAPS.length + " of " + ROSTER.length + " roster sites have no report in this period" + (gapPop ? ", covering roughly " + gapPop.toLocaleString() + " recorded people" : "") + ".</b> This is the question a 5Ws is for: not who is present, but which sites are at zero."
+      : "<b>Every roster site has at least one report in this period.</b> Coverage is not the same as adequacy — the volume per site is in the table below.";
+
+    var bySite = {};
+    DATA.forEach(function (r) {
+      var k = placeKey(r);
+      (bySite[k] = bySite[k] || { reports: 0, reach: 0, orgs: new Set(), last: "", label: siteName(r), district: r.district })
+      var b = bySite[k];
+      b.reports++; b.reach += n(r.reachedTotal); b.orgs.add(orgName(r));
+      if ((r.dateAD || "") > b.last) b.last = r.dateAD || "";
+    });
+    var maxReach = Math.max(1, ...ROSTER.map(function (s) { return bySite[s.code] ? bySite[s.code].reach : 0; }));
+    $("covBody").innerHTML = ROSTER.map(function (s) {
+      var b = bySite[s.code];
+      var w = b ? Math.max(3, Math.round((b.reach / maxReach) * 100)) : 0;
+      return "<tr>" +
+        "<td><b>" + esc(s.name) + "</b>" + (s.np ? '<div class="xs">' + esc(s.np) + "</div>" : "") + "</td>" +
+        "<td>" + esc(distName(s.district)) + "</td>" +
+        '<td class="n">' + (s.pop === null ? "—" : s.pop) + "</td>" +
+        '<td class="n">' + (b ? b.reports : '<span class="pill zero">none</span>') + "</td>" +
+        '<td class="n">' + (b ? b.reach : "0") + '<div class="bar' + (b ? "" : " zero") + '"><i style="width:' + (b ? w : 100) + '%"></i></div></td>' +
+        "<td>" + (b ? esc([...b.orgs].join(", ")) : "—") + "</td>" +
+        "<td>" + (b ? esc(b.last) : "—") + "</td></tr>";
+    }).join("");
+
+    var off = Object.keys(bySite).filter(function (k) {
+      var s = C.siteByCode[k];
+      return !s || s.source !== "roster";
+    });
+    $("offBody").innerHTML = off.length ? off.map(function (k) {
+      var b = bySite[k];
+      return "<tr><td>" + esc(b.label) + "</td><td>" + esc(distName(b.district)) + '</td><td class="n">' + b.reports + '</td><td class="n">' + b.reach + "</td></tr>";
+    }).join("") : '<tr><td colspan="4" class="xs">Every reported site is on the roster.</td></tr>';
+
+    /* --- duplication --- */
+    var key = {};
+    DATA.forEach(function (r) {
+      var k = (r.dateAD || "?") + "|" + placeKey(r);
+      (key[k] = key[k] || { date: r.dateAD, site: siteName(r), rows: [] }).rows.push(r);
+    });
+    var flags = Object.values(key).filter(function (g) { return new Set(g.rows.map(orgName)).size > 1; });
+    var flagged = flags.reduce(function (a, g) { return a + g.rows.reduce(function (x, r) { return x + n(r.reachedTotal); }, 0); }, 0);
+    var total = DATA.reduce(function (a, r) { return a + n(r.reachedTotal); }, 0);
+    $("dupLede").innerHTML = flags.length
+      ? "<b>" + flags.length + " site-days have more than one organisation reporting</b>, covering " + flagged.toLocaleString() + " of " + total.toLocaleString() +
+        " of the reach (" + (total ? (flagged / total * 100).toFixed(1) : "0") + "%). These need a conversation, not a correction."
+      : "<b>No site-day has more than one organisation reporting.</b>";
+    $("dupBody").innerHTML = flags.length ? flags.sort(function (a, b) { return (b.date || "").localeCompare(a.date || ""); }).map(function (g) {
+      var byOrg = {};
+      g.rows.forEach(function (r) { (byOrg[orgName(r)] = byOrg[orgName(r)] || []).push(r); });
+      var sameOrgTwoDonors = Object.values(byOrg).some(function (v) { return new Set(v.map(function (r) { return S.donorsOf(r).join("+"); })).size > 1; });
+      var acts = new Set(g.rows.map(function (r) { return actName(r.activity); }));
+      return "<tr><td>" + esc(g.date || "—") + "</td><td>" + esc(g.site) + "</td>" +
+        "<td>" + Object.keys(byOrg).map(function (o) { return esc(o) + " <span class='xs'>(" + byOrg[o].length + ")</span>"; }).join("<br>") + "</td>" +
+        "<td>" + esc([...acts].join(", ")) + "</td>" +
+        '<td class="n">' + g.rows.reduce(function (a, r) { return a + n(r.reachedTotal); }, 0) + "</td>" +
+        "<td class='xs'>" + (acts.size > 1 ? "Different activities — likely different people" : sameOrgTwoDonors ? "One organisation, two funding tags — attribution, not duplication" : "Same activity, different organisations — ask them") + "</td></tr>";
+    }).join("") : '<tr><td colspan="6" class="xs">Nothing flagged.</td></tr>';
+
+    /* --- the 5Ws proper: organisation x palika x activity --- */
+    var PX = {}, palCols = {}, orgTot = {};
+    DATA.forEach(function (r) {
+      var o = orgName(r), pc = palikaOf(r), a = actKey(r.activity);
+      var pinfo = C.palikaByCode[pc];
+      var colKey = pc || "∅";
+      if (!palCols[colKey]) palCols[colKey] = { pcode: pc, district: pinfo ? pinfo.district : (pc ? "" : "zz"), name: pc ? (C.palikaName(pc) || pc) : "Palika not established", reports: 0, reach: 0 };
+      palCols[colKey].reports++; palCols[colKey].reach += n(r.reachedTotal);
+      var row = PX[o] = PX[o] || {};
+      var cell = row[colKey] = row[colKey] || { acts: {}, reports: 0, reach: 0 };
+      cell.acts[a] = (cell.acts[a] || 0) + 1; cell.reports++; cell.reach += n(r.reachedTotal);
+      orgTot[o] = orgTot[o] || { reports: 0, reach: 0 }; orgTot[o].reports++; orgTot[o].reach += n(r.reachedTotal);
+    });
+    var cols = Object.keys(palCols).sort(function (a, b) {
+      var A = palCols[a], B = palCols[b];
+      if (A.district !== B.district) return (distName(A.district) || "zz").localeCompare(distName(B.district) || "zz");
+      return A.name.localeCompare(B.name);
+    });
+    var orgRows = Object.keys(PX).sort(function (a, b) { return orgTot[b].reach - orgTot[a].reach; });
+    /* district group header, then a palika header */
+    var groups = [];
+    cols.forEach(function (k) {
+      var d = palCols[k].district, last = groups[groups.length - 1];
+      if (last && last.d === d) last.n++; else groups.push({ d: d, n: 1 });
+    });
+    $("pxHead").innerHTML =
+      "<tr><th rowspan=\"2\">Organisation</th>" + groups.map(function (g) {
+        return '<th class="dist" colspan="' + g.n + '">' + esc(g.d === "zz" ? "—" : (distName(g.d) || "—")) + "</th>";
+      }).join("") + '<th rowspan="2" class="tot">Reports</th><th rowspan="2" class="tot">Attendances</th></tr>' +
+      "<tr>" + cols.map(function (k) {
+        var c = palCols[k];
+        return '<th class="pal">' + esc(c.name) + '<span class="xs">' + c.reports + " report" + (c.reports === 1 ? "" : "s") + " · " + c.reach.toLocaleString() + " attendances</span></th>";
+      }).join("") + "</tr>";
+    $("pxBody").innerHTML = orgRows.map(function (o) {
+      return "<tr><td><b>" + esc(o) + "</b></td>" + cols.map(function (k) {
+        var c = PX[o][k];
+        if (!c) return '<td class="cell empty">·</td>';
+        var chips = Object.keys(c.acts).sort().map(function (a) { return '<span class="ac" title="' + esc(actName(a)).replace(/"/g, "&quot;") + '">' + esc(a) + "<i>" + c.acts[a] + "</i></span>"; }).join("");
+        return '<td class="cell">' + chips + '<span class="rch" title="attendances">' + c.reach.toLocaleString() + "</span></td>";
+      }).join("") + '<td class="n tot">' + orgTot[o].reports + '</td><td class="n tot">' + orgTot[o].reach.toLocaleString() + "</td></tr>";
+    }).join("") || '<tr><td class="xs">No reports match the filters.</td></tr>';
+    $("pxLede").innerHTML = orgRows.length
+      ? "<b>" + orgRows.length + " organisation" + (orgRows.length === 1 ? "" : "s") + " across " + cols.filter(function (k) { return palCols[k].pcode; }).length + " palika" + (cols.length === 1 ? "" : "s") + ".</b> Codes are the activity list in <code>codes.js</code>; the number beside each is how many reports carry it."
+      : "No reports match the filters.";
+    MX_LONG = [];
+    orgRows.forEach(function (o) {
+      cols.forEach(function (k) {
+        var c = PX[o][k]; if (!c) return;
+        Object.keys(c.acts).forEach(function (a) {
+          MX_LONG.push([o, palCols[k].district === "zz" ? "" : distName(palCols[k].district), palCols[k].pcode ? palCols[k].name : "", palCols[k].pcode, a, actName(a), c.acts[a]]);
+        });
+        MX_LONG[MX_LONG.length - 1].push(c.reach);
+      });
+    });
+
+    /* --- by organisation --- */
+    var byOrg = {};
+    DATA.forEach(function (r) {
+      var k = orgName(r);
+      var b = byOrg[k] = byOrg[k] || { sites: new Set(), acts: new Set(), dists: new Set(), reports: 0, reach: 0, first: "9999", last: "" };
+      b.sites.add(siteName(r)); b.acts.add(actName(r.activity)); b.dists.add(distName(r.district));
+      b.reports++; b.reach += n(r.reachedTotal);
+      if (r.dateAD && r.dateAD < b.first) b.first = r.dateAD;
+      if (r.dateAD && r.dateAD > b.last) b.last = r.dateAD;
+    });
+    $("mxBody").innerHTML = Object.keys(byOrg).sort(function (a, b) { return byOrg[b].reach - byOrg[a].reach; }).map(function (k) {
+      var b = byOrg[k];
+      return "<tr><td><b>" + esc(k) + "</b></td><td>" + esc([...b.dists].join(", ")) + '</td><td class="n">' + b.sites.size +
+        "</td><td>" + esc([...b.acts].join(", ")) + '</td><td class="n">' + b.reports + '</td><td class="n">' + b.reach.toLocaleString() +
+        "</td><td>" + esc(b.first === "9999" ? "—" : b.first) + "</td><td>" + esc(b.last || "—") + "</td></tr>";
+    }).join("");
+
+    /* --- by activity --- */
+    var byAct = {};
+    DATA.forEach(function (r) {
+      var k = actKey(r.activity);
+      var b = byAct[k] = byAct[k] || { reports: 0, reach: 0, orgs: new Set(), from: new Set() };
+      b.reports++; b.reach += n(r.reachedTotal); b.orgs.add(orgName(r));
+      if (actRes(r.activity).legacy) b.from.add(r.activity);
+    });
+    $("actBody").innerHTML = Object.keys(byAct).sort(function (a, b) { return byAct[b].reach - byAct[a].reach; }).map(function (k) {
+      var b = byAct[k];
+      var pct = total ? (b.reach / total * 100) : 0;
+      var from = b.from.size ? '<div class="xs">from previous code' + (b.from.size === 1 ? "" : "s") + " " + esc(Array.from(b.from).join(", ")) + "</div>" : "";
+      return "<tr><td><b>" + esc(actName(k)) + "</b>" + from + "</td><td>" + esc(actLayer(k)) + '</td><td class="xs">' + esc(actIasc(k)) + '</td><td class="n">' + b.reports +
+        '</td><td class="n">' + b.reach.toLocaleString() + '</td><td class="n">' + pct.toFixed(1) + '%<div class="bar"><i style="width:' + Math.max(2, pct) + '%"></i></div></td><td class="n">' + b.orgs.size + "</td></tr>";
+    }).join("");
+
+    /* Two shapes in one file. Records filed since 16 Sep 2026 carry four
+       age bands; earlier ones carry only under-18 / 18-and-over. Both are
+       shown, and both fold into the official two rows, so the table never
+       silently drops the half of the file that is in the other shape.
+       The band list comes from store.js -- this page keeps no copy. */
+    /* Three shapes can sit in one file: the five groups (fold at 15), the
+       four bands of 16-17 Sep (fold at 18) and the earliest two-band pair
+       (18). Each shape is summed on its own bands and folded at its own
+       boundary; the fold rows are labelled by that boundary and never mixed. */
+    var band = {}, band03 = {}, legacy = { fU18: 0, mU18: 0, oU18: 0, f18: 0, m18: 0, o18: 0 };
+    S.BANDS.forEach(function (b) { band[b.key] = { f: 0, m: 0, o: 0, any: false }; });
+    S.BANDS_V03.forEach(function (b) { band03[b.key] = { f: 0, m: 0, o: 0, any: false }; });
+    var fold15 = { f: 0, m: 0, o: 0, F: 0, M: 0, O: 0 }, fold18 = { f: 0, m: 0, o: 0, F: 0, M: 0, O: 0 };
+    var nBanded = 0, nBanded03 = 0, nLegacy = 0;
+    DATA.forEach(function (r) {
+      var d = S.fold(r);
+      var acc = function (tgt) { tgt.f += d.fLow; tgt.m += d.mLow; tgt.o += d.oLow; tgt.F += d.fHigh; tgt.M += d.mHigh; tgt.O += d.oHigh; };
+      if (d.shape === "v04") {
+        nBanded++; acc(fold15);
+        S.BANDS.forEach(function (b) {
+          var c = band[b.key];
+          c.f += n(r[b.f]); c.m += n(r[b.m]); c.o += n(r[b.o]);
+          if (r[b.f] != null || r[b.m] != null || r[b.o] != null) { c.any = true; }
+        });
+      } else if (d.shape === "v03") {
+        nBanded03++; acc(fold18);
+        S.BANDS_V03.forEach(function (b) {
+          var c = band03[b.key];
+          c.f += n(r[b.f]); c.m += n(r[b.m]); c.o += n(r[b.o]);
+          if (r[b.f] != null || r[b.m] != null || r[b.o] != null) { c.any = true; }
+        });
+      } else if (d.fLow + d.mLow + d.oLow + d.fHigh + d.mHigh + d.oHigh > 0) {
+        nLegacy++; acc(fold18);
+        legacy.fU18 += d.fLow; legacy.mU18 += d.mLow; legacy.oU18 += d.oLow;
+        legacy.f18 += d.fHigh; legacy.m18 += d.mHigh; legacy.o18 += d.oHigh;
+      }
+    });
+    /* seen at the session: five counts, summed on their own, never added to
+       the figures above or to each other */
+    var seen = {};
+    S.OF_WHOM.forEach(function (k) { seen[k] = 0; });
+    DATA.forEach(function (r) { S.OF_WHOM.forEach(function (k) { seen[k] += n(r[k]); }); });
+    var ofPwd = seen.ofPwd, ofPreg = seen.ofPreg;
+
+    var rows = [];
+    var cell = function (x) { return '<td class="n">' + x.toLocaleString() + "</td>"; };
+    S.BANDS.forEach(function (b) {
+      var c = band[b.key];
+      if (!c.any) { return; }
+      rows.push("<tr><td>" + b.label + "</td>" + cell(c.f) + cell(c.m) + cell(c.o) + cell(c.f + c.m + c.o) + "</tr>");
+    });
+    if (nBanded03) {
+      S.BANDS_V03.forEach(function (b) {
+        var c = band03[b.key];
+        if (!c.any) { return; }
+        rows.push("<tr><td>" + b.label + ' <span class="xs">· four-band records of 16–17 Sep</span></td>' + cell(c.f) + cell(c.m) + cell(c.o) + cell(c.f + c.m + c.o) + "</tr>");
+      });
+    }
+    if (nLegacy) {
+      rows.push('<tr><td>Under 18 <span class="xs">· reported before the bands</span></td>' +
+        cell(legacy.fU18) + cell(legacy.mU18) + cell(legacy.oU18) + cell(legacy.fU18 + legacy.mU18 + legacy.oU18) + "</tr>");
+      rows.push('<tr><td>18 and over <span class="xs">· reported before the bands</span></td>' +
+        cell(legacy.f18) + cell(legacy.m18) + cell(legacy.o18) + cell(legacy.f18 + legacy.m18 + legacy.o18) + "</tr>");
+    }
+    /* Two-way folds, one per boundary. They are not added to each other:
+       0-14 and under-18 are different populations, and how the national
+       return is compiled from the five groups is a ruling still to come. */
+    if (nBanded) {
+      rows.push('<tr class="fold"><td><b>Aged 0–14</b> <span class="xs">· five groups, split at 15</span></td>' +
+        cell(fold15.f) + cell(fold15.m) + cell(fold15.o) + cell(fold15.f + fold15.m + fold15.o) + "</tr>");
+      rows.push('<tr class="fold"><td><b>Aged 15 and over</b> <span class="xs">· five groups, split at 15</span></td>' +
+        cell(fold15.F) + cell(fold15.M) + cell(fold15.O) + cell(fold15.F + fold15.M + fold15.O) + "</tr>");
+    }
+    if (nBanded03 || nLegacy) {
+      rows.push('<tr class="fold"><td><b>Under 18</b> <span class="xs">· earlier records, split at 18</span></td>' +
+        cell(fold18.f) + cell(fold18.m) + cell(fold18.o) + cell(fold18.f + fold18.m + fold18.o) + "</tr>");
+      rows.push('<tr class="fold"><td><b>18 and over</b> <span class="xs">· earlier records, split at 18</span></td>' +
+        cell(fold18.F) + cell(fold18.M) + cell(fold18.O) + cell(fold18.F + fold18.M + fold18.O) + "</tr>");
+    }
+    var oF18 = fold18.f, oM18 = fold18.m, oO18 = fold18.o, aF = fold18.F, aM = fold18.M, aO = fold18.O;
+    if (S.OF_WHOM.some(function (k) { return seen[k] > 0; })) {
+      rows.push('<tr class="ofw"><td colspan="5" class="xs">Seen at the sessions — inside the figures above, not added to them: ' +
+        S.OF_WHOM.filter(function (k) { return seen[k] > 0; }).map(function (k) {
+          return "<b>" + seen[k].toLocaleString() + "</b> " + esc(S.OF_WHOM_LABEL[k].toLowerCase());
+        }).join(" · ") + ".</td></tr>");
+    }
+    var dgTotal = oF18 + oM18 + oO18 + aF + aM + aO + fold15.f + fold15.m + fold15.o + fold15.F + fold15.M + fold15.O;
+    $("disBody").innerHTML = rows.join("");
+    $("disNote").innerHTML = dgTotal
+      ? "Disaggregated figures account for <b>" + dgTotal.toLocaleString() + " of " + total.toLocaleString() + "</b> attendances (" +
+        (total ? (dgTotal / total * 100).toFixed(1) : 0) + "%)." + (dgTotal < total ? " The remaining " + (total - dgTotal).toLocaleString() + " was reported as a total only." : "")
+      : "No disaggregation was supplied in this file.";
+    if (nBanded || nBanded03 || nLegacy) {
+      $("disNote").innerHTML += " Of the records carrying a breakdown, <b>" + nBanded + "</b> use the five age groups" +
+        (nBanded03 ? ", <b>" + nBanded03 + "</b> the four bands of 16–17 September" : "") +
+        (nLegacy ? " and <b>" + nLegacy + "</b> the earliest two" : "") + ". Each shape folds at its own boundary; the folds are not added together.";
+    }
+
+    /* what the publish step reads -- the same objects the tables were drawn from,
+       so the public documents can never disagree with the screen */
+    PUBSRC = { ROSTER: ROSTER, GAPS: GAPS, bySite: bySite, byOrg: byOrg, byAct: byAct, flags: flags,
+               sadd: { band: band, band03: band03, legacy: legacy, ofPwd: ofPwd, ofPreg: ofPreg, seen: seen, total: total, dgTotal: dgTotal,
+                       u18: { f: oF18, m: oM18, o: oO18 }, a18: { f: aF, m: aM, o: aO },
+                       u15: { f: fold15.f, m: fold15.m, o: fold15.o }, a15: { f: fold15.F, m: fold15.M, o: fold15.O },
+                       n: { v04: nBanded, v03: nBanded03, pair: nLegacy } } };
+    if ($("p-pub").classList.contains("on")) { pubDocsPanel(); }
+
+    /* --- over time ---------------------------------------------------
+       The backlog was imported with Bikram Sambat dates only, so most
+       records cannot be placed on an AD day. They are counted and named
+       rather than converted: there is no agreed conversion in this build,
+       and a guessed date is worse than an absent one. */
+    var byDay = {}, noAD = 0, noADreach = 0;
+    DATA.forEach(function (r) {
+      var day = basisDate(r);
+      if (!day) { noAD++; noADreach += n(r.reachedTotal); return; }
+      var b = byDay[day] = byDay[day] || { reports: 0, reach: 0, orgs: new Set() };
+      b.reports++; b.reach += n(r.reachedTotal); b.orgs.add(orgName(r));
+    });
+    var days = Object.keys(byDay).sort();
+    var dayMax = Math.max(1, ...days.map(function (d) { return byDay[d].reach; }));
+    var dayNote = noAD
+      ? '<p class="xs" style="margin-top:10px">' + noAD.toLocaleString() + " report" + (noAD === 1 ? "" : "s") +
+        " carr" + (noAD === 1 ? "ies" : "y") + " no " + basisLabel(FILT.basis) + " and " + (noAD === 1 ? "is" : "are") +
+        " not on this table" + (FILT.basis === "activity" ? " — the imported backlog has Bikram Sambat dates only, and nothing here converts them" : "") +
+        ". Their " + noADreach.toLocaleString() +
+        " attendances are in every other figure on this screen; only the day is unplaced.</p>"
+      : "";
+    $("dayWrap").innerHTML = (days.length
+      ? '<div class="tbl-wrap"><table class="data"><thead><tr><th>' +
+        (FILT.basis === "received" ? "Date received" : "Date of activity") + '</th>' +
+        '<th class="n">Reports</th><th class="n">Attendances</th><th class="n">Organisations</th><th>Share of the attendances placed on a day</th></tr></thead><tbody>' +
+        days.map(function (d) {
+          var b = byDay[d], w = Math.max(3, Math.round(b.reach / dayMax * 100));
+          return "<tr><td><b>" + esc(d) + "</b></td>" +
+            '<td class="n">' + b.reports + '</td><td class="n">' + b.reach.toLocaleString() + '</td>' +
+            '<td class="n">' + b.orgs.size + '</td>' +
+            '<td class="n">' + w + '%<div class="bar"><i style="width:' + w + '%"></i></div></td></tr>';
+        }).join("") + "</tbody></table></div>"
+      : '<div class="banner warn" style="margin:0"><b>No report in this selection can be placed on a day.</b> ' +
+        'On the date of activity that means no report here carries a Gregorian date — the imported backlog has ' +
+        'Bikram Sambat only. Switch the basis above to the date received to see when the register took them.</div>') + dayNote;
+
+    /* --- reports received --- */
+    renderRaw();
+  }
+
+  /* the list of reports received: newest first by the time the register
+     took it (server_ts, then createdAt), narrowed by the find box */
+  function receivedAt(r) {
+    var t = r.server_ts || r.created_at || r.createdAt || "";
+    if (t && typeof t === "object" && typeof t.toDate === "function") t = t.toDate().toISOString();
+    if (t && typeof t === "object" && t.seconds) t = new Date(t.seconds * 1000).toISOString();
+    return typeof t === "string" ? t : "";
+  }
+  function fmtReceived(t) {
+    if (!t) return "—";
+    var d = new Date(t); if (isNaN(d)) return esc(String(t).slice(0, 16));
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) + " " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  }
+  function renderRaw() {
+    var q = ($("rawFind").value || "").trim().toLowerCase();
+    var rows = DATA.slice().sort(function (a, b) { return receivedAt(b).localeCompare(receivedAt(a)); });
+    if (q) rows = rows.filter(function (r) {
+      return [r.dateAD, r.dateBS, siteName(r), orgName(r), actName(r.activity), r.activity, r.id, r.sessionTime, (r.targetGroups || []).join(" ")]
+        .join(" ").toLowerCase().indexOf(q) >= 0;
+    });
+    $("rawCount").textContent = rows.length + " of " + DATA.length + " report" + (DATA.length === 1 ? "" : "s") + (rows.length > 400 ? " · first 400 shown" : "");
+    $("rawBody").innerHTML = rows.slice(0, 400).map(function (r) {
+      return "<tr><td class='xs'>" + fmtReceived(receivedAt(r)) + "</td><td>" + esc(r.dateAD || (r.dateBS ? "BS " + r.dateBS : "—")) + (r.sessionTime ? " <span class='xs'>" + esc(r.sessionTime) + "</span>" : "") +
+        "</td><td>" + esc(siteName(r)) + "</td><td>" + esc(orgName(r)) +
+        "</td><td>" + esc(actName(r.activity)) + '</td><td class="n">' + esc(r.reachedTotal) + "</td><td class='xs'>" +
+        esc((r.targetGroups || []).join(", ")) + "</td><td class='xs'>" + esc(r.id) + "</td></tr>";
+    }).join("") || "<tr><td colspan='8' class='xs'>No report matches.</td></tr>";
+  }
+  $("rawFind").addEventListener("input", renderRaw);
+
+  function stat(v, k, s, cls) {
+    return '<div class="stat ' + (cls || "") + '"><div class="v">' + v + '</div><div class="k">' + k + "</div>" + (s ? '<div class="s">' + s + "</div>" : "") + "</div>";
+  }
+
+  $("expGap").addEventListener("click", function () {
+    if (!GAPS.length) return toast("No gaps to export — every roster site has a report", true);
+    var head = "site_code,site_name,site_name_np,district,palika,palika_pcode,recorded_population\n";
+    var body = GAPS.map(function (s) {
+      return [s.code, '"' + s.name + '"', '"' + (s.np || "") + '"', distName(s.district), '"' + C.palikaName(s.palika) + '"', s.palika || "", s.pop === null ? "" : s.pop].join(",");
+    }).join("\n");
+    S.download("mhpss_np_coverage_gaps_" + S.stamp() + ".csv", "﻿" + head + body + "\n", "text/csv");
+  });
+  /* ---------- publish: the public shelf --------------------------------
+     public_stats is the only thing the public website reads. Three documents:
+       flood_response      schema 1 -- the summary the Flood Response page shows
+       referral_directory  schema 1 -- organisation x palika x activities
+       coordination_full   schema 2 -- everything this screen computes, with
+                           names inline so the public site depends on no file
+                           of ours
+     Demonstration mode (decided 17 Sep 2026, until the WHO / Ministry review):
+     no small-cell suppression (suppressed_below: 1), site level, organisation
+     names. Never published by this client: `description` (free text) or
+     focal-point contact. Client validation requires computed_at, a `basis`
+     string and fewer than 40 top-level fields. Server enforcement is unverified. */
+  var PUB_IDS = ["flood_response", "referral_directory", "coordination_full"];
+  var PUB_ROLE = null;
+
+  function pubFilters() {
+    var parts = [];
+    DIMS.forEach(function (d) { if (FILT[d]) parts.push(d + " = " + DIM[d].label(FILT[d] === "\u2205" ? "" : FILT[d])); });
+    if (FILT.from) parts.push("from " + FILT.from);
+    if (FILT.to) parts.push("to " + FILT.to);
+    if (FILT.from || FILT.to) parts.push("dates read on the " + basisLabel(FILT.basis));
+    return parts.length ? parts.join("; ") : "no filters";
+  }
+  function pubDefaultBasis() {
+    var dates = DATA.map(function (r) { return r.dateAD; }).filter(Boolean).sort();
+    return "Activity reports in the register (kind = activity), read from " + SRC +
+      (dates.length ? ", dated " + dates[0] + " to " + dates[dates.length - 1] : "") +
+      ": " + DATA.length + " reports, " + pubFilters() +
+      ". Counts are attendances (service contacts: one report per session, its attendance) unless a report filed before 17 September 2026 says it counted people. Activity codes follow the list of 17 September 2026; records filed under the previous list are read through its crosswalk where the match is one-to-one and are otherwise marked not yet placed. Demonstration mode: no small-cell suppression.";
+  }
+  function buildPublicDocs() {
+    if (!PUBSRC) render();
+    var P = PUBSRC, rows = DATA;
+    var dates = rows.map(function (r) { return r.dateAD; }).filter(Boolean).sort();
+    var basis = $("pubBasis").value.trim() || pubDefaultBasis();
+    var contacts = 0, people = 0, distinct = 0;
+    rows.forEach(function (r) {
+      var v = n(r.reachedTotal);
+      if (r.countBasis === "PEOPLE") people += v; else contacts += v;
+      distinct += n(r.distinctPeople);
+    });
+    var orgSet = new Set(rows.map(orgName));
+    var palSet = new Set(rows.map(palikaOf).filter(Boolean));
+    var byD = {};
+    rows.forEach(function (r) {
+      var k = r.district || "";
+      var b = byD[k] = byD[k] || { code: k, name: distName(k), reports: 0, contacts: 0, orgs: new Set() };
+      b.reports++; b.contacts += n(r.reachedTotal); b.orgs.add(orgName(r));
+    });
+    var districts = Object.values(byD).map(function (b) { return { code: b.code, name: b.name, reports: b.reports, contacts: b.contacts, organisations: b.orgs.size }; });
+    var byF = {};
+    rows.forEach(function (r) { var f = actLayer(r.activity); byF[f] = (byF[f] || 0) + n(r.reachedTotal); });
+    var families = Object.keys(byF).sort().map(function (f) { return { family: f, contacts: byF[f] }; });
+    var common = { basis: basis, mode: "demonstration", period_from: dates[0] || "", period_to: dates[dates.length - 1] || "",
+                   source: SRC, filters: pubFilters() };
+
+    var flood = Object.assign({ schema: 1, suppressed_below: 1, reports: rows.length, contacts: contacts,
+      people_reported: people, distinct_people_reported: distinct, organisations: orgSet.size, palikas: palSet.size,
+      districts: districts, families: families }, common);
+
+    var byOP = {};
+    rows.forEach(function (r) {
+      var pc = palikaOf(r); if (!pc) return;
+      var k = (r.org || "?") + "|" + pc;
+      var b = byOP[k] = byOP[k] || { district: r.district || "", pcode: pc, palika: C.palikaName(pc) || pc, org: r.org || "", org_name: orgName(r), activities: new Set(), last_report: "" };
+      if (r.activity) b.activities.add(r.activity);
+      if ((r.dateAD || "") > b.last_report) b.last_report = r.dateAD || "";
+    });
+    var dirRows = Object.values(byOP).map(function (b) { return { district: b.district, pcode: b.pcode, palika: b.palika, org: b.org, org_name: b.org_name, activities: Array.from(b.activities).sort(), last_report: b.last_report }; });
+    var referral = Object.assign({ schema: 1, rows: dirRows }, common);
+
+    /* schema 2: the whole screen, names inline */
+    var sites = P.ROSTER.map(function (s) {
+      var b = P.bySite[s.code];
+      return { code: s.code, name: s.name, np: s.np || "", district: s.district, palika: s.palika || "", source: s.source,
+               reports: b ? b.reports : 0, contacts: b ? b.reach : 0, organisations: b ? Array.from(b.orgs) : [], last_report: b ? b.last : "" };
+    });
+    Object.keys(P.bySite).forEach(function (k) {
+      var s = C.siteByCode[k];
+      if (s && s.source === "roster") return;
+      var b = P.bySite[k];
+      var pal = k.indexOf("PALIKA:") === 0;
+      sites.push({ code: pal ? "" : k, name: b.label, np: s ? (s.np || "") : "", district: b.district || "", palika: s ? (s.palika || "") : (pal ? k.slice(7) : ""),
+                   source: s ? s.source : (pal ? "palika-level" : "other"), reports: b.reports, contacts: b.reach, organisations: Array.from(b.orgs), last_report: b.last });
+    });
+    var organisations = Object.keys(P.byOrg).map(function (k) {
+      var b = P.byOrg[k];
+      return { name: k, districts: Array.from(b.dists), sites: b.sites.size, activities: Array.from(b.acts), reports: b.reports, contacts: b.reach,
+               first_report: b.first === "9999" ? "" : b.first, last_report: b.last || "" };
+    });
+    var activities = Object.keys(P.byAct).map(function (k) {
+      var b = P.byAct[k], a = C.activityByCode[k], cur = a && !a.retired ? a : null;
+      return { code: k, name: cur ? cur.name : actName(k), group: actLayer(k), iasc: cur && cur.iasc_sub ? cur.iasc_sub : "",
+               iasc_reading: actIasc(k), from_previous_codes: Array.from(b.from || []),
+               reports: b.reports, contacts: b.reach, organisations: b.orgs.size };
+    });
+    var matrix = MX_LONG.map(function (r) { return { organisation: r[0], district: r[1], palika: r[2], pcode: r[3], activity: r[4], activity_name: r[5], reports: r[6], contacts_org_palika: r.length > 7 ? r[7] : null }; });
+    var bands = S.BANDS.map(function (b) { var c = P.sadd.band[b.key]; return { band: b.label, f: c.f, m: c.m, o: c.o }; });
+    var bands03 = S.BANDS_V03.map(function (b) { var c = P.sadd.band03[b.key]; return { band: b.label, f: c.f, m: c.m, o: c.o }; });
+    /* official_under18 / official_18plus keep their 0.3.0 meaning (records
+       split at 18) and are NOT fed by the five groups; the five-group fold
+       is published under its own names, split at 15. See the contract, §9. */
+    var sadd = { age_bands: S.BANDS.map(function (b) { return b.label; }), bands: bands, bands_v03: bands03,
+                 fold_under_15: P.sadd.u15, fold_15_and_over: P.sadd.a15,
+                 legacy_two_band: P.sadd.legacy, official_under18: P.sadd.u18, official_18plus: P.sadd.a18,
+                 records_by_shape: P.sadd.n,
+                 fold_note: "five groups agreed with EDCD 17 Sep 2026 (0-4, 5-14, 15-49, 50-59, 60+) fold at 15; earlier records fold at 18; the two folds are not added together",
+                 of_whom_pwd: P.sadd.ofPwd, of_whom_pregnant_postpartum: P.sadd.ofPreg,
+                 seen_at_session: { children_without_adult: P.sadd.seen.ofChildAlone, pregnant_or_with_infant: P.sadd.seen.ofPreg,
+                                    visible_disability: P.sadd.seen.ofPwd, injured_or_unwell: P.sadd.seen.ofInjured, acute_distress: P.sadd.seen.ofDistress,
+                                    note: "counted by sight at the session (WHO PFA guide, LOOK step); each inside the total, never added together" },
+                 disaggregated_total: P.sadd.dgTotal, total: P.sadd.total };
+    var gaps = P.GAPS.map(function (s) { return { code: s.code, name: s.name, district: s.district, palika: s.palika || "" }; });
+    var duplication = P.flags.map(function (g) {
+      var orgs = {}; g.rows.forEach(function (r) { orgs[orgName(r)] = (orgs[orgName(r)] || 0) + 1; });
+      return { date: g.date || "", place: g.site, organisations: Object.keys(orgs), activities: Array.from(new Set(g.rows.map(function (r) { return actName(r.activity); }))),
+               contacts: g.rows.reduce(function (a, r) { return a + n(r.reachedTotal); }, 0) };
+    });
+    var names = { districts: {}, palikas: {}, activities: {}, organisations: {} };
+    C.DISTRICTS.forEach(function (d) { names.districts[d.code] = d.name; });
+    C.PALIKAS.forEach(function (p) { names.palikas[p.pcode] = p.name; });
+    C.ACTIVITIES.forEach(function (a) { names.activities[a.code] = a.name; });
+    C.ACTIVITIES_V03.forEach(function (a) { names.activities[a.code] = a.name + " (previous list)"; });
+    names.activity_groups = {}; C.ACTIVITY_GROUPS.forEach(function (g) { names.activity_groups[g.code] = g.name; });
+    C.ORGS.forEach(function (o) { names.organisations[o.code] = o.name; });
+    var full = Object.assign({ schema: 2, suppressed_below: 1, reports: rows.length, contacts: contacts, people_reported: people,
+      distinct_people_reported: distinct, organisations_count: orgSet.size, palikas_count: palSet.size,
+      roster_total: P.ROSTER.length, roster_reached: P.ROSTER.length - P.GAPS.length,
+      districts: districts, families: families, sites: sites, organisations: organisations, activities: activities,
+      matrix: matrix, sadd: sadd, gaps: gaps, duplication: duplication, names: names,
+      excluded: ["description (free text of a report)", "focal-point name, phone and email (never stored in the register)"],
+      codes_version: C.META.version, schema_version: S.SCHEMA_VERSION }, common);
+    return { flood_response: flood, referral_directory: referral, coordination_full: full };
+  }
+
+  function pubDocsPanel() {
+    var el = $("pubDocs");
+    if (!el.innerHTML) {
+      el.innerHTML = PUB_IDS.map(function (id) {
+        var title = id === "flood_response" ? "Flood response summary" : id === "referral_directory" ? "Referral directory" : "Full coordination picture";
+        var reads = id === "coordination_full" ? "read by whoever builds on it (names inline)" : "read live by the public website";
+        return '<div class="doc"><h3>' + title + '</h3><div class="id">public_stats/' + id + '</div><p class="st" id="pubst-' + id + '">' + reads + ' · checking what is published…</p></div>';
+      }).join("");
+      refreshPubStatus();
+    }
+    if (!$("pubBasis").value) $("pubBasis").value = pubDefaultBasis();
+  }
+  function whenOf(ts) {
+    try { var d = ts && ts.toDate ? ts.toDate() : (ts ? new Date(ts) : null); return d ? d.toLocaleString("en-GB", { hour12: false }) : "—"; } catch (e) { return "—"; }
+  }
+  function refreshPubStatus() {
+    if (!window.FB || !window.FB.readPublic) return;
+    PUB_IDS.forEach(function (id) {
+      var st = $("pubst-" + id); if (!st) return;
+      window.FB.readPublic(id).then(function (d) {
+        st.innerHTML = d ? "published <b>" + esc(whenOf(d.computed_at)) + "</b> · schema " + esc(d.schema) + (d.mode ? " · " + esc(d.mode) : "") +
+          (typeof d.reports === "number" ? " · " + d.reports + " reports" : "") + (d.rows ? " · " + d.rows.length + " rows" : "")
+          : "<b>nothing published yet</b>";
+      }).catch(function (e) { st.innerHTML = "could not read: " + esc(e && e.message ? e.message : e); });
+    });
+  }
+  function pubAuthPaint() {
+    var el = $("pubAuth"); if (!el) return;
+    var st = window.FB ? window.FB.status() : { configured: false };
+    $("pubGo").disabled = true;
+    if (!st.configured) { el.innerHTML = '<p class="state">No register is wired into this build; nothing can be published.</p>'; return; }
+    if (!st.ready) { el.innerHTML = '<p class="state">Cannot reach the register.</p>'; return; }
+    if (!st.user) {
+      el.innerHTML = '<p class="state">Publishing is a coordination act: sign in with a coordinator account.</p>' +
+        '<div class="row"><div class="f"><label for="pem">Email</label><input type="email" id="pem" autocomplete="username"></div>' +
+        '<div class="f"><label for="ppw">Password</label><input type="password" id="ppw" autocomplete="current-password"></div></div>' +
+        '<div class="btns"><button type="button" class="btn sec sm" id="psignin">Sign in</button><span class="xs" id="psignerr"></span></div>';
+      $("psignin").addEventListener("click", function () {
+        var b = this; b.disabled = true; b.textContent = "Signing in…";
+        window.FB.signIn($("pem").value.trim(), $("ppw").value).catch(function (e) {
+          b.disabled = false; b.textContent = "Sign in";
+          $("psignerr").innerHTML = '<span style="color:var(--critical,#9b2c2c)">' + esc(e && e.message ? e.message.replace(/^Firebase:\s*/, "") : "could not sign in") + "</span>";
+        });
+      });
+      return;
+    }
+    el.innerHTML = '<p class="state">Signed in as <b>' + esc(st.user.email) + '</b> · checking the role…</p>';
+    window.FB.myRole().then(function (r) {
+      PUB_ROLE = r;
+      var ok = !!(r && ["admin", "coordinator", "im_officer"].indexOf(r.role) >= 0);
+      el.innerHTML = '<p class="state">Signed in as <b>' + esc(st.user.email) + '</b> · client role response: <b>' + esc(r ? r.role : "none") + '</b>' +
+        (ok ? " · client publish control enabled" : " · client publish control disabled") +
+        ". Server enforcement is unverified.</p>";
+      $("pubGo").disabled = !ok;
+    });
+  }
+  if (window.FB) { window.FB.onStatus(function () { if ($("p-pub").classList.contains("on")) pubAuthPaint(); }); }
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.addEventListener("click", function () { if (t.getAttribute("data-p") === "pub") { pubDocsPanel(); pubAuthPaint(); } });
+  });
+
+  /* the preview: our own tables, and the public website's own renderer for
+     the two schema-1 documents when its file can be loaded (root assets) */
+  function pubRenderPreview(docs) {
+    var out = [];
+    var f = docs.flood_response, d = docs.referral_directory, full = docs.coordination_full;
+    out.push('<div class="pubprev"><h3>Flood response summary <span class="xs">public_stats/flood_response</span></h3>' +
+      '<div class="kpis"><div class="kpi"><span class="n">' + f.reports + '</span><span class="l">reports</span></div>' +
+      '<div class="kpi"><span class="n">' + f.contacts.toLocaleString() + '</span><span class="l">service contacts</span></div>' +
+      '<div class="kpi"><span class="n">' + f.organisations + '</span><span class="l">organisations</span></div>' +
+      '<div class="kpi"><span class="n">' + f.palikas + '</span><span class="l">palikas</span></div></div>' +
+      '<table><thead><tr><th>District</th><th class="n">Reports</th><th class="n">Contacts</th><th class="n">Organisations</th></tr></thead><tbody>' +
+      f.districts.map(function (x) { return "<tr><td>" + esc(x.name) + '</td><td class="n">' + x.reports + '</td><td class="n">' + x.contacts.toLocaleString() + '</td><td class="n">' + x.organisations + "</td></tr>"; }).join("") +
+      '</tbody></table><div id="pubL3flood" style="margin-top:10px"></div>' +
+      '<details><summary>the document as the website will read it</summary><pre>' + esc(JSON.stringify(f, null, 1)) + "</pre></details></div>");
+    out.push('<div class="pubprev"><h3>Referral directory <span class="xs">public_stats/referral_directory · ' + d.rows.length + ' rows</span></h3>' +
+      '<table><thead><tr><th>District</th><th>Palika</th><th>Organisation</th><th>Activities</th><th>Last report</th></tr></thead><tbody>' +
+      d.rows.slice().sort(function (a, b) { return (a.district + a.palika + a.org_name).localeCompare(b.district + b.palika + b.org_name); }).map(function (r) {
+        return "<tr><td>" + esc(distName(r.district)) + "</td><td>" + esc(r.palika) + "</td><td>" + esc(r.org_name) + "</td><td>" + esc(r.activities.map(actName).join(", ")) + "</td><td>" + esc(r.last_report) + "</td></tr>"; }).join("") +
+      '</tbody></table><div id="pubL3dir" style="margin-top:10px"></div>' +
+      '<details><summary>the document as the website will read it</summary><pre>' + esc(JSON.stringify(d, null, 1)) + "</pre></details></div>");
+    out.push('<div class="pubprev"><h3>Full coordination picture <span class="xs">public_stats/coordination_full · schema 2</span></h3>' +
+      '<p class="xs" style="margin:0 0 8px">' + full.sites.length + " sites (" + full.roster_reached + " of " + full.roster_total + " roster sites reached, " + full.gaps.length + " gaps) · " +
+      full.organisations.length + " organisations · " + full.activities.length + " activities · " + full.matrix.length + " matrix rows · " + full.duplication.length + " site-days flagged · " +
+      "disaggregated " + full.sadd.disaggregated_total.toLocaleString() + " of " + full.sadd.total.toLocaleString() + ". Not included: " + esc(full.excluded.join("; ")) + ".</p>" +
+      '<details><summary>the document in full (' + Math.round(JSON.stringify(full).length / 1024) + ' KB)</summary><pre>' + esc(JSON.stringify(full, null, 1)) + "</pre></details></div>");
+    $("pubPrev").innerHTML = out.join("");
+    /* the website's own renderer, if its file loads -- exactly what the public page will draw */
+    function paintL3() {
+      if (!window.PUBLIC_STATS || !window.PUBLIC_STATS.preview) return;
+      [["pubL3flood", f, "flood"], ["pubL3dir", d, "referral"]].forEach(function (x) {
+        var host = $(x[0]); if (!host) return;
+        host.innerHTML = '<p class="xs" style="margin:0 0 4px">As the public website draws it:</p><p class="xs" data-state></p><div data-body></div>';
+        try { window.PUBLIC_STATS.preview({ state: host.querySelector("[data-state]"), body: host.querySelector("[data-body]"), panel: host, kind: x[2] }, x[1]); }
+        catch (e) { host.innerHTML = '<p class="xs">The website\u2019s renderer could not draw this preview: ' + esc(e.message) + "</p>"; }
+      });
+    }
+    if (window.PUBLIC_STATS) { paintL3(); }
+    else {
+      var sc = document.createElement("script"); sc.src = "../assets/public-read.js"; sc.onload = paintL3;
+      sc.onerror = function () { /* the public site's renderer is not reachable from here; our tables stand */ };
+      document.head.appendChild(sc);
+    }
+  }
+  $("pubPreview").addEventListener("click", function () {
+    if (!DATA.length) return toast("Nothing to publish — no reports match the filters", true);
+    pubRenderPreview(buildPublicDocs());
+    $("pubMsg").textContent = "Preview built from " + DATA.length + " reports on screen. Nothing has been written.";
+  });
+  $("pubGo").addEventListener("click", function () {
+    if (!DATA.length) return toast("Nothing to publish — no reports match the filters", true);
+    var docs = buildPublicDocs();
+    var want = [];
+    if ($("pubFlood").checked) want.push("flood_response");
+    if ($("pubDir").checked) want.push("referral_directory");
+    if ($("pubFull").checked) want.push("coordination_full");
+    if (!want.length) return toast("Tick at least one document", true);
+    var b = $("pubGo"); b.disabled = true; b.textContent = "Publishing…";
+    pubRenderPreview(docs);
+    var done = [];
+    want.reduce(function (chain, id) {
+      return chain.then(function () { return window.FB.publish(id, docs[id]).then(function () { done.push(id); $("pubMsg").textContent = "Published: " + done.join(", "); }); });
+    }, Promise.resolve()).then(function () {
+      b.disabled = false; b.textContent = "Publish to the public website";
+      $("pubMsg").innerHTML = "<b>Published " + done.join(", ") + " at " + new Date().toLocaleTimeString("en-GB", { hour12: false }) + ".</b> The public pages update within seconds.";
+      toast("Published to the public shelf");
+      refreshPubStatus();
+    }).catch(function (e) {
+      b.disabled = false; b.textContent = "Publish to the public website";
+      $("pubMsg").innerHTML = '<span style="color:var(--critical,#9b2c2c)">' + (done.length ? "Published " + done.join(", ") + "; then refused: " : "Refused: ") +
+        esc(e && e.message ? e.message : e) + "</span>";
+      refreshPubStatus();
+    });
+  });
+
+  $("expAll").addEventListener("click", function () { S.download("mhpss_np_loaded_" + S.stamp() + ".csv", S.toCSV(DATA), "text/csv"); });
+  /* Long format, one row per organisation x palika x activity: the shape a
+     5Ws submission or a pivot table wants. Reach is on the last activity row
+     of each organisation-palika pair only, so summing the column does not
+     count it once per activity. */
+  $("expMx").addEventListener("click", function () {
+    if (!MX_LONG.length) return toast("Nothing to export — no reports match the filters", true);
+    var q = function (v) { v = v === undefined || v === null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var head = "organisation,district,palika,palika_pcode,activity_code,activity,reports,people_reached_org_palika\n";
+    var body = MX_LONG.map(function (r) { return r.map(q).join(","); }).join("\n");
+    S.download("mhpss_np_5ws_matrix_" + S.stamp() + ".csv", "\ufeff" + head + body + "\n", "text/csv");
+  });
+})();
+</script>
+</body>
+</html>

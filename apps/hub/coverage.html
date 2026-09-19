@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coverage and the 5Ws — moved to the dashboard</title>
+<!-- 17 September 2026. There is one coordination dashboard now, at ./ , and
+     what used to be this page's tabs are its sections. This page stays only
+     so that a link already sent still lands in the right place: the tab
+     addresses are mapped onto the section addresses below. Nothing is
+     computed here. -->
+<script>(function () {
+  var MAP = { gaps: "overview", duplication: "overview", matrix: "who-is-where",
+              activity: "activities", records: "reports", publish: "publish" };
+  var h = (location.hash || "").replace("#", "");
+  location.replace("./" + location.search + "#" + (MAP[h] || "overview"));
+})();</script>
+<meta http-equiv="refresh" content="0; url=./#overview">
+<style>body{font:16px/1.5 -apple-system,system-ui,sans-serif;margin:40px auto;max-width:560px;padding:0 16px;color:#1d1d1b}a{color:#006996}</style>
+</head>
+<body>
+<p>Coverage, duplication, the 5Ws matrix and the list of reports received are sections of one <a href="./#overview">coordination dashboard</a> now. If this page does not move on by itself, tap the link.</p>
+</body>
+</html>

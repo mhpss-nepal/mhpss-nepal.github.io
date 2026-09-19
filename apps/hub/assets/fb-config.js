@@ -6,11 +6,10 @@
 
    This file is public, and that is expected: a Firebase web config is
    not a secret. It identifies the project; it does not grant access.
-   Access is decided entirely by the Firestore security rules, which
-   live in Information Management/firestore_rules_mhpss_nepal_v1.txt
-   and are published from the console. Those rules are tested — 40 cases
-   covering identity keys, timestamps, location precision and read
-   access — before anything is deployed.
+   Authorization must be enforced by authoritative Firestore security Rules.
+   Those Rules are external to this monorepo and are not yet versioned or
+   verified here, so server enforcement is unverified and this branch must not
+   be deployed. See infra/README.md.
 
    NEVER put a service-account key or any private key in this file.
    ===================================================================== */

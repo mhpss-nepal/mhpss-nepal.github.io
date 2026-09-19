@@ -24,9 +24,13 @@ in: running text is not held to a measure. It waits for the live panels to
 draw, and it runs in English and in Nepali.
 """
 import sys, subprocess, time, json
+from pathlib import Path
+from urllib.error import URLError
+from urllib.request import urlopen
 from playwright.sync_api import sync_playwright
 
 PORT = 9071
+APP_ROOT = Path(__file__).resolve().parents[1]
 # The real pages of this repository. coordination/* and dashboard/index.html are
 # deliberately NOT here: they are redirect stubs that meta-refresh in 0s, so
 # loading them measures their destination and reports it under the stub's
@@ -44,6 +48,20 @@ PAGES = ["index.html","flood-response.html","bps.html","iec.html","referral-dire
 EXEMPT = ("th", ".mono", "code", "kbd", "samp", ".chip", ".badge", ".tag",
           ".num", ".eyebrow", ".blabel", ".ulab", ".pill", ".tagpill",
           ".hint", ".opt", ".n", ".rt")
+
+def wait_for_server(srv):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        try:
+            with urlopen("http://127.0.0.1:%d/" % PORT, timeout=0.5) as response:
+                if response.status == 200:
+                    return
+        except (OSError, URLError):
+            if srv.poll() is not None:
+                raise RuntimeError("local QA server failed to start")
+        time.sleep(0.05)
+    raise RuntimeError("local QA server was not ready in time")
+
 
 JS = r"""() => {
   const RUN = 'p, li, dd, td, blockquote, figcaption, .note, .callout, .lede, .subtitle, .help, .stand, .insight, .figsrc';
@@ -136,18 +154,28 @@ JS = r"""() => {
   return out;
 }"""
 
+def local_only(route):
+    if route.request.url.startswith("http://127.0.0.1:"):
+        route.continue_()
+    else:
+        route.abort()
+
+
 def main():
-    srv = subprocess.Popen([sys.executable, "-m", "http.server", str(PORT)],
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    time.sleep(1.5)
+    srv = subprocess.Popen([
+        sys.executable, "-m", "http.server", str(PORT), "--bind", "127.0.0.1",
+        "--directory", str(APP_ROOT),
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     runs = bad = 0
     problems = []
     try:
+        wait_for_server(srv)
         with sync_playwright() as pw:
             b = pw.chromium.launch()
             for lang in ("en", "ne"):
                 for w in (1440, 390):
                     ctx = b.new_context(viewport={"width": w, "height": 1200})
+                    ctx.route("**/*", local_only)
                     if lang == "ne":
                         ctx.add_init_script("try{localStorage.setItem('mhpss-np-lang','ne')}catch(e){}")
                     pg = ctx.new_page()
@@ -166,6 +194,11 @@ def main():
             b.close()
     finally:
         srv.terminate()
+        try:
+            srv.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            srv.kill()
+            srv.wait(timeout=5)
 
     print("MHPSS Nepal -- text setting")
     print("  pages: %d x 2 widths x 2 languages   page views checked: %d" % (len(PAGES), runs))

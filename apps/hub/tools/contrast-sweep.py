@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""
+MHPSS Nepal -- the live contrast sweep (needs Playwright, so it is run before a
+deploy rather than inside the guard)
+---------------------------------------------------------------------
+Walks every text-bearing element on every page, in light and in dark, resolves
+the background it actually sits on through its ancestors, and reports anything
+below its WCAG AA threshold for its own size and weight. The token gate beside
+this file catches a bad token; only this catches a cascade landing a passing
+colour on an unexpected background.
+
+  python3 tools/contrast-sweep.py http://127.0.0.1:8000
+
+On 16 September 2026 it found 109 failing elements and was run down to 0.
+"""
+from pathlib import Path
+from urllib.error import URLError
+from urllib.request import urlopen
+from playwright.sync_api import sync_playwright
+import json, subprocess, sys, time
+PORT = 9063
+APP_ROOT = Path(__file__).resolve().parents[1]
+B = sys.argv[1] if len(sys.argv)>1 else "http://127.0.0.1:%d" % PORT
+PAGES=["/","/forms.html","/access.html"]
+
+def wait_for_server(srv):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        try:
+            with urlopen(B + "/", timeout=0.5) as response:
+                if response.status == 200:
+                    return
+        except (OSError, URLError):
+            if srv.poll() is not None:
+                raise RuntimeError("local QA server failed to start")
+        time.sleep(0.05)
+    raise RuntimeError("local QA server was not ready in time")
+
+JS = """() => {
+  const lum = c => { const m=c.match(/[\\d.]+/g); if(!m) return null;
+    if (m.length>3 && +m[3]===0) return null;
+    const f=x=>{x/=255; return x<=0.03928?x/12.92:Math.pow((x+0.055)/1.055,2.4)};
+    return 0.2126*f(+m[0])+0.7152*f(+m[1])+0.0722*f(+m[2]); };
+  const parse = c => { const m=c.match(/[\\d.]+/g); if(!m) return null;
+    return {r:+m[0],g:+m[1],b:+m[2],a:m.length>3?+m[3]:1}; };
+  const bgOf = el => { let rgb={r:255,g:255,b:255}; const layers=[]; let n=el;
+    while(n && n!==document.documentElement){ const c=parse(getComputedStyle(n).backgroundColor);
+      if(c && c.a>0) layers.push(c); n=n.parentElement; }
+    const body=parse(getComputedStyle(document.body).backgroundColor); if(body) layers.push(body);
+    for(const c of layers.reverse()) rgb={r:c.r*c.a+rgb.r*(1-c.a),g:c.g*c.a+rgb.g*(1-c.a),b:c.b*c.a+rgb.b*(1-c.a)};
+    return lum(`rgb(${rgb.r},${rgb.g},${rgb.b})`); };
+  const out=[];
+  for (const el of document.querySelectorAll('body *')) {
+    if (el.children.length && [...el.childNodes].every(n=>n.nodeType!==3||!n.textContent.trim())) continue;
+    const t=(el.textContent||'').trim(); if(!t) continue;
+    const cs=getComputedStyle(el);
+    if (cs.visibility==='hidden'||cs.display==='none'||+cs.opacity===0) continue;
+    const r=el.getBoundingClientRect(); if(r.width<2||r.height<2) continue;
+    const fg=lum(cs.color); if(fg===null) continue;
+    const bg=bgOf(el);
+    const ratio=(Math.max(fg,bg)+0.05)/(Math.min(fg,bg)+0.05);
+    const px=parseFloat(cs.fontSize), bold=+cs.fontWeight>=700;
+    const need=(px>=24||(px>=18.66&&bold))?3:4.5;
+    if (ratio<need) out.push({tag:el.tagName, cls:String(el.className).slice(0,28),
+      txt:t.slice(0,26), px:+px.toFixed(1), ratio:+ratio.toFixed(2), need,
+      fg:cs.color, bg:(()=>{let n=el; while(n&&n!==document.documentElement){
+        const c=getComputedStyle(n).backgroundColor; if(lum(c)!==null) return c; n=n.parentElement;}
+        return getComputedStyle(document.body).backgroundColor;})()});
+  }
+  const seen=new Set(), u=[];
+  for(const o of out){const k=o.tag+o.cls+o.px+o.fg; if(!seen.has(k)){seen.add(k);u.push(o);}}
+  return u.slice(0,12);
+}"""
+def local_only(route):
+    if route.request.url.startswith("http://127.0.0.1:"):
+        route.continue_()
+    else:
+        route.abort()
+
+bad={}
+srv = None
+if len(sys.argv) == 1:
+    srv = subprocess.Popen([
+        sys.executable, "-m", "http.server", str(PORT), "--bind", "127.0.0.1",
+        "--directory", str(APP_ROOT),
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+try:
+    if srv is not None:
+        wait_for_server(srv)
+    with sync_playwright() as p:
+        br=p.chromium.launch()
+        for scheme in ("light","dark"):
+            for path in PAGES:
+                ctx=br.new_context(viewport={"width":1280,"height":900}, color_scheme=scheme)
+                ctx.route("**/*", local_only)
+                pg=ctx.new_page(); pg.goto(B+path, wait_until="load", timeout=25000); pg.wait_for_timeout(1700)
+                r=pg.evaluate(JS)
+                if r: bad["%s %s"%(scheme,path)]=r
+                ctx.close()
+        br.close()
+finally:
+    if srv is not None:
+        srv.terminate()
+        try:
+            srv.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            srv.kill()
+            srv.wait(timeout=5)
+n=sum(len(v) for v in bad.values())
+print("pages checked: %d   failing elements: %d"%(len(PAGES)*2, n))
+print(json.dumps(bad, indent=1) if bad else "every text element clears its WCAG threshold, light and dark")
+raise SystemExit(1 if bad else 0)

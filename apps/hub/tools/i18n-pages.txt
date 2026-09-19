@@ -1,0 +1,5 @@
+# Which pages the bilingual gate enforces in this repository.
+#   keyed   = no loose English allowed; Nepali still awaited
+#   pending = not yet migrated; counted and reported, not blocked
+# The hub pages are not keyed yet: they are the coordinator's working
+# screens and were the last on the keying list.

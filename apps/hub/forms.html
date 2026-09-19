@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Layer 2 · Where each form's entries land — MHPSS Nepal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Lora + Manrope. design.css declares Georgia / system fallbacks, so a
+     failed font request costs typography and never legibility. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Manrope:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/design.css">
+<link rel="stylesheet" href="assets/brand.css">
+<style>
+  /* One page, one section per Layer 1 form: the form's OUTPUT HOME. The
+     forms themselves live on the phones (layer 1) and are not repeated
+     here; what is here is where their entries can be found again. The
+     activity report has its own home -- the dashboard's Reports received --
+     because everything else on that dashboard is computed from it. */
+  .tabs{display:flex; gap:4px; border-bottom:2px solid var(--line); margin:18px 0 16px; flex-wrap:wrap}
+  .tab{font:inherit; font-size:13px; font-weight:700; background:none; border:0; border-bottom:3px solid transparent;
+       padding:9px 12px; cursor:pointer; color:var(--slate)}
+  .tab.on{color:var(--who-d); border-bottom-color:var(--who)}
+  .tab:hover{color:var(--ink)}
+  .panel{display:none} .panel.on{display:block}
+  .k{display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:12px; margin:0 0 18px}
+  .kc{background:var(--paper); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px}
+  .kc .v{font:700 27px/1 inherit; letter-spacing:-.02em; display:block; margin-bottom:3px}
+  .kc .l{font-size:11.5px; color:var(--slate); line-height:1.35}
+  .kc.good .v{color:var(--ok)} .kc.bad .v{color:var(--stop)} .kc.warn .v{color:var(--warn)}
+  .pill{display:inline-block; font:700 10.5px/1.3 inherit; letter-spacing:.05em;
+        text-transform:uppercase; padding:2px 7px; border-radius:3px; border:1px solid}
+  .pill.ok{color:var(--ok); background:var(--ok-t); border-color:#bcd9c9}
+  .pill.wn{color:var(--warn); background:var(--warn-t); border-color:#e8c9b0}
+  .pill.st{color:var(--stop); background:var(--stop-t); border-color:#f0c9c9}
+  .empty{background:var(--paper); border:1px dashed var(--line); border-radius:var(--r);
+         padding:24px; text-align:center; color:var(--mute); font-size:13.5px}
+  .livestrip{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;
+             background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--ok);
+             border-radius:var(--r);padding:10px 14px;margin:0 0 16px;font-size:13px}
+  .livestrip .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:0 0 auto}
+  .livestrip .xs{color:var(--slate)}
+  .sechead{margin:0 0 4px}
+  .secsay{margin:0 0 14px;font-size:14px;color:var(--slate)}
+  .howcount{margin:12px 0 0;border-top:1px solid var(--line);padding-top:8px}
+  .howcount > summary{cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.3px;
+                      text-transform:uppercase;color:var(--slate);list-style:none}
+  .howcount > summary::-webkit-details-marker{display:none}
+  .howcount > summary::before{content:"\25B8\00a0"}
+  .howcount[open] > summary::before{content:"\25BE\00a0"}
+  .howcount p{font-size:12.5px;line-height:1.6;margin:9px 0 0;color:var(--slate)}
+  .data{width:100%}
+  .data td.xs, .data th.xs{font-size:11.5px}
+</style>
+</head>
+<body class="hub">
+<!--NAV:rail hubforms-->
+<aside class="rail" aria-label="Coordination hub">
+  <a class="railid" href="./">
+    <span data-mark="30"></span>
+    <span><b>MHPSS Nepal</b><i>Layer 2 &middot; coordination</i></span>
+  </a>
+  <div class="where" aria-label="Where you are in the system">
+    <span class="wlab">Architecture &middot; you are here</span>
+    <a class="lyr" href="../form/"><b>1</b><span>Field forms<i>on phones, works offline</i></span></a>
+    <a class="lyr on" href="./" aria-current="true"><b>2</b><span>Coordination<i>this hub &middot; restricted</i></span></a>
+    <a class="lyr" href="../"><b>3</b><span>Public site<i>published summaries only</i></span></a>
+  </div>
+  <button class="rmenu" type="button" aria-expanded="false"><span></span>Menu</button>
+  <nav>
+    <div class="rg open" data-g="coord">
+      <button class="rgh" type="button"><span class="dot l2"></span>Coordination<em>layer 2</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a href="./#overview">Dashboard &middot; overview</a>
+        <a href="./#who-is-where">Who is where</a>
+        <a href="./#activities">Activities</a>
+        <a href="./#reports">Reports received</a>
+        <a href="./#publish">Publish</a>
+      </div>
+    </div>
+    <div class="rg open here" data-g="forms">
+      <button class="rgh" type="button"><span class="dot l1"></span>Field forms<em>outputs</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a href="./#reports">Activity report (5Ws)</a>
+        <a class="on" aria-current="page" data-default href="forms.html#contact">Service contact</a>
+        <a href="forms.html#referral">Referral</a>
+        <a href="forms.html#phq9">PHQ-9 follow-up</a>
+        <a href="forms.html#selfreport">Self-report</a>
+        <a href="../form/">Open the forms &rarr;</a>
+      </div>
+    </div>
+    <div class="rg" data-g="public">
+      <button class="rgh" type="button"><span class="dot l3"></span>Public site<em>layer 3</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a href="../">Home</a>
+      </div>
+    </div>
+    <div class="rg admin" data-g="admin" hidden>
+      <button class="rgh" type="button"><span class="dot l2"></span>Admin<em>client role check</em><i class="chev"></i></button>
+      <div class="rgb">
+        <a href="access.html">Access &amp; sign-in</a>
+      </div>
+    </div>
+  </nav>
+  <span data-i18n-toggle class="railtoggle"></span>
+  <p class="rfoot">Draft. Figures are provisional.</p>
+  <script>(function(){
+  var rail=document.currentScript.parentNode, KEY='mhpss-rail-groups';
+  var saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  rail.querySelectorAll('.rg').forEach(function(g){
+    var k=g.getAttribute('data-g'), h=g.querySelector('.rgh');
+    if(!g.classList.contains('here') && k in saved) g.classList.toggle('open', !!saved[k]);
+    h.setAttribute('aria-expanded', g.classList.contains('open'));
+    h.addEventListener('click', function(){
+      g.classList.toggle('open'); var on=g.classList.contains('open');
+      h.setAttribute('aria-expanded', on); saved[k]=on;
+      try{ localStorage.setItem(KEY, JSON.stringify(saved)); }catch(e){}
+    });
+  });
+  var m=rail.querySelector('.rmenu');
+  if(m){ m.addEventListener('click', function(){
+    var open=rail.classList.toggle('menu-open'); m.setAttribute('aria-expanded', open); }); }
+  /* The lit item follows the address: a hub page's sections are hashes, and
+     the same section can be reached from two groups (the activity report's
+     output home IS the dashboard's Reports received), so every link that
+     matches is lit, not just one. */
+  function mark(){
+    var path=location.pathname.split('/').pop()||'index.html', hash=location.hash||'';
+    rail.querySelectorAll('.rgb > a').forEach(function(a){
+      var href=a.getAttribute('href'); if(href.indexOf('../')===0) return;
+      var file=href.split('#')[0], ah=href.indexOf('#')>=0 ? href.slice(href.indexOf('#')) : '';
+      if(file==='./'||file==='') file='index.html';
+      var on = file===path && (hash ? ah===hash : a.hasAttribute('data-default'));
+      a.classList.toggle('on', on);
+      if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+    });
+    if(rail.classList.contains('menu-open')){ rail.classList.remove('menu-open'); if(m) m.setAttribute('aria-expanded', false); }
+  }
+  window.addEventListener('hashchange', mark);
+  document.addEventListener('DOMContentLoaded', mark);
+  window.__railMark = mark;
+  /* Admin is drawn only for an admin account. The bridge (assets/fb.js)
+     loads after the rail, so the question is asked once the page is
+     complete; a page without the bridge simply never shows it. */
+  var adm=rail.querySelector('.rg.admin');
+  if(adm){ document.addEventListener('DOMContentLoaded', function(){
+    if(!(window.FB && window.FB.onStatus)) return;
+    window.FB.onStatus(function(st){
+      if(!(st && st.user && window.FB.myRole)){ adm.hidden=true; return; }
+      window.FB.myRole().then(function(r){ adm.hidden = !(r && r.role==='admin'); }).catch(function(){ adm.hidden=true; });
+    });
+  }); }
+})();</script>
+</aside>
+<!--/NAV-->
+
+<div class="wrap wide">
+
+  <h1>Where each form's entries land</h1>
+  <p class="lede">Every form in Layer 1 has a home here: the entries made on it, the checks that need a person, and an export. The forms themselves are on the phones — this is what comes back from them. The activity report (5Ws) has its home on the <a href="./#reports">dashboard</a>, because every figure there is computed from it.</p>
+
+  <div class="livestrip" id="strip"><span class="dot" aria-hidden="true"></span><span id="stripTxt">Checking the register…</span></div>
+  <div id="livePanel"></div>
+  <div id="log"></div>
+
+  <div class="tabs">
+    <button class="tab on" data-p="contact">Service contact</button>
+    <button class="tab" data-p="referral">Referral</button>
+    <button class="tab" data-p="phq9">PHQ-9 follow-up</button>
+    <button class="tab" data-p="selfreport">Self-report</button>
+  </div>
+
+  <!-- SERVICE CONTACT -->
+  <div class="panel on" id="p-contact">
+    <h2 class="sechead">Service contact</h2>
+    <p class="secsay">One row per person seen, with the contact code that lets a returning person be recognised without a name being recorded.</p>
+    <div class="btns" style="margin-bottom:14px;flex-wrap:wrap">
+      <a class="btn ghost sm" href="../form/contact.html">Open the form &rarr;</a>
+      <label class="btn ghost sm" style="cursor:pointer">Import a file<input type="file" class="pick" multiple accept=".json,.csv" hidden></label>
+      <button type="button" class="btn ghost sm exp" data-k="service_contact">Export these as CSV</button>
+    </div>
+    <div class="k kpi"></div>
+    <div class="flags"></div>
+    <div class="rows"></div>
+    <details class="howcount">
+      <summary>How this is counted</summary>
+      <p>Distinct people are counted by contact code, which is built on the phone from four identity answers and carries no name. A contact with no code cannot be matched to a returning person, so it is listed as a gap rather than folded in silently. Records that arrived over the network and the same record inside an imported file are one row, matched on the same deterministic identifier both sides compute.</p>
+    </details>
+  </div>
+
+  <!-- REFERRAL -->
+  <div class="panel" id="p-referral">
+    <h2 class="sechead">Referral</h2>
+    <p class="secsay">Who was sent where, and whether the receiving service ever confirmed the person arrived.</p>
+    <div class="btns" style="margin-bottom:14px;flex-wrap:wrap">
+      <a class="btn ghost sm" href="../form/referral.html">Open the form &rarr;</a>
+      <label class="btn ghost sm" style="cursor:pointer">Import a file<input type="file" class="pick" multiple accept=".json,.csv" hidden></label>
+      <button type="button" class="btn ghost sm exp" data-k="referral">Export these as CSV</button>
+    </div>
+    <div class="k kpi"></div>
+    <div class="flags"></div>
+    <div class="rows"></div>
+    <details class="howcount">
+      <summary>How this is counted</summary>
+      <p>A referral is complete only when arrival is confirmed, so a high count of unknown arrivals is the measure rather than a data fault: it says the pathway is not closing. Barriers are recorded on the referral itself, which is the only place the reason a person did not arrive is ever written down.</p>
+    </details>
+  </div>
+
+  <!-- PHQ-9 -->
+  <div class="panel" id="p-phq9">
+    <h2 class="sechead">PHQ-9 follow-up</h2>
+    <p class="secsay">Repeat measures for people already in care, and the item 9 audit.</p>
+    <div class="btns" style="margin-bottom:14px;flex-wrap:wrap">
+      <a class="btn ghost sm" href="../form/phq9.html">Open the form &rarr;</a>
+      <label class="btn ghost sm" style="cursor:pointer">Import a file<input type="file" class="pick" multiple accept=".json,.csv" hidden></label>
+      <button type="button" class="btn ghost sm exp" data-k="phq9">Export these as CSV</button>
+    </div>
+    <div class="k kpi"></div>
+    <div class="flags"></div>
+    <div class="rows"></div>
+    <details class="howcount">
+      <summary>How this is counted</summary>
+      <p>Item 9 is the self-harm item. Every positive answer is listed so that a person can check a referral was recorded for it — that audit is the reason the field exists. A PHQ-9 score is a screening measure and not a diagnosis, and it is read beside the person's own account, never instead of it.</p>
+    </details>
+  </div>
+
+  <!-- SELF-REPORT -->
+  <div class="panel" id="p-selfreport">
+    <h2 class="sechead">Self-report</h2>
+    <p class="secsay">What people say about their own situation, anonymously, in their own words.</p>
+    <div class="btns" style="margin-bottom:14px;flex-wrap:wrap">
+      <a class="btn ghost sm" href="../form/selfreport.html">Open the form &rarr;</a>
+      <label class="btn ghost sm" style="cursor:pointer">Import a file<input type="file" class="pick" multiple accept=".json,.csv" hidden></label>
+      <button type="button" class="btn ghost sm exp" data-k="self_report">Export these as CSV</button>
+    </div>
+    <div class="k kpi"></div>
+    <div class="flags"></div>
+    <div class="rows"></div>
+    <details class="howcount">
+      <summary>How this is counted</summary>
+      <p>A self-report carries no identity at all, so it can never be matched to a service contact or followed up with an individual. Free text may name someone or describe distress, so it is held for a person to read before it goes anywhere, and it is never published.</p>
+    </details>
+  </div>
+
+  <!-- Filled by assets/brand.js. Emblems are off until the official
+       files are supplied — see that file before changing anything here. -->
+  <div class="attrib"></div>
+
+</div>
+
+<script src="assets/codes.js"></script>
+<script src="assets/l1.js"></script>
+<script src="assets/fb-config.js"></script>
+<script src="assets/fb.js"></script>
+<script>
+(function () {
+  "use strict";
+  var C = window.CODES, L = window.L1;
+  var $ = function (id) { return document.getElementById(id); };
+  var KEY = "mhpss-np-inbox-v1";          /* the same store the field inbox used */
+
+  var KINDS = {
+    service_contact: "Service contact",
+    activity:        "Activity report (5Ws)",
+    referral:        "Referral",
+    phq9:            "PHQ-9",
+    self_report:     "Self-report"
+  };
+  var SECTION = { contact: "service_contact", referral: "referral", phq9: "phq9", selfreport: "self_report" };
+
+  /* ---------- store ---------- */
+  function loadStore() {
+    try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { return []; }
+  }
+  function save(list) {
+    try { localStorage.setItem(KEY, JSON.stringify(list)); return true; }
+    catch (e) { window.__inbox = list; return false; }
+  }
+  var ROWS = loadStore();
+
+  /* ---------- parsing ---------- */
+  function csvRows(text) {
+    /* small RFC4180 reader — quoted fields, doubled quotes, CRLF */
+    var rows = [], row = [], cur = "", q = false, i, ch;
+    for (i = 0; i < text.length; i++) {
+      ch = text[i];
+      if (q) {
+        if (ch === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else { q = false; } }
+        else cur += ch;
+      } else if (ch === '"') { q = true; }
+      else if (ch === ",") { row.push(cur); cur = ""; }
+      else if (ch === "\n") { row.push(cur); cur = ""; rows.push(row); row = []; }
+      else if (ch !== "\r") { cur += ch; }
+    }
+    if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
+    return rows.filter(function (r) { return r.some(function (c) { return c !== ""; }); });
+  }
+  function fromCSV(text) {
+    var rows = csvRows(text);
+    if (rows.length < 2) return [];
+    var head = rows[0];
+    return rows.slice(1).map(function (r) {
+      var o = {};
+      head.forEach(function (h, i) { o[h] = r[i] === undefined ? "" : r[i]; });
+      return o;
+    });
+  }
+  function classify(rec) {
+    if (rec.kind && KINDS[rec.kind]) return rec.kind;
+    if (rec.schema && /contact/.test(rec.schema)) return "service_contact";
+    if (rec.schema && /referral/.test(rec.schema)) return "referral";
+    if (rec.schema && /phq9/.test(rec.schema)) return "phq9";
+    if (rec.schema && /selfreport/.test(rec.schema)) return "self_report";
+    /* the activity form predates the kind field: recognise it by its columns */
+    if (rec.activity !== undefined || rec.activityCode !== undefined ||
+        rec.reached_total !== undefined || rec.total !== undefined && rec.site !== undefined) {
+      return "activity";
+    }
+    return "";
+  }
+
+  /* Deterministic id so the same record dropped twice is not counted twice.
+     FNV-1a over the fields that identify a record, not over the whole object —
+     a re-export can differ in _saved without being a different record. */
+  function rid(rec, kind) {
+    var basis = [kind, rec.org, rec.date_ad || rec.dateAD || rec.date, rec.site,
+                 rec.contact_code || "", rec.service || rec.activity || "",
+                 rec.total || "", rec.minutes || "", rec.q1 === undefined ? "" : rec.q1,
+                 rec.coping || "", rec.reason || ""].join("|");
+    var h = 0x811c9dc5 >>> 0;
+    for (var i = 0; i < basis.length; i++) {
+      h ^= basis.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return kind + "-" + h.toString(36);
+  }
+
+  function ingest(name, text) {
+    var recs = [], err = "";
+    try {
+      if (/\.json$/i.test(name) || /^\s*[[{]/.test(text)) {
+        var j = JSON.parse(text);
+        recs = Array.isArray(j) ? j : (Array.isArray(j.records) ? j.records : [j]);
+      } else {
+        recs = fromCSV(text);
+      }
+    } catch (e) { err = "could not be read as JSON or CSV"; }
+    if (err) return { name: name, err: err, added: 0, dupe: 0, unknown: 0, kinds: {} };
+
+    var seen = {}; ROWS.forEach(function (r) { seen[r._rid] = 1; });
+    var added = 0, dupe = 0, unknown = 0, kinds = {};
+    recs.forEach(function (rec) {
+      if (!rec || typeof rec !== "object") { unknown++; return; }
+      var kind = classify(rec);
+      if (!kind) { unknown++; return; }
+      var id = rid(rec, kind);
+      if (seen[id]) { dupe++; return; }
+      seen[id] = 1;
+      rec._rid = id; rec._kind = kind; rec._file = name;
+      ROWS.push(rec); added++;
+      kinds[kind] = (kinds[kind] || 0) + 1;
+    });
+    return { name: name, added: added, dupe: dupe, unknown: unknown, kinds: kinds, err: "" };
+  }
+
+  /* ---------- helpers ---------- */
+  function val(r, keys) {
+    for (var i = 0; i < keys.length; i++) {
+      if (r[keys[i]] !== undefined && r[keys[i]] !== "") return r[keys[i]];
+    }
+    return "";
+  }
+  function esc(s) {
+    return String(s === undefined || s === null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function orgName(code) {
+    var o = C.orgByCode[code]; return o ? o.name : (code || "not stated");
+  }
+  function siteName(code, r) {
+    if (!code) return "not stated";
+    if (/^OTHER/.test(code)) return "Other — " + (code.split(":")[1] || "unnamed") + " (not on roster)";
+    if (code === "PALIKA") return (C.palikaName(r && r.palika) || "palika not stated") + " (palika level)";
+    var s = C.siteByCode[code]; return s ? s.name : code;
+  }
+  function dateOf(r) { return val(r, ["date_ad", "dateAD", "date"]); }
+  function today() { return L.today(); }
+  function kpi(cells) {
+    return cells.map(function (p) {
+      return '<div class="kc ' + (p[2] || "") + '"><span class="v">' + p[0] + '</span><span class="l">' + p[1] + "</span></div>";
+    }).join("");
+  }
+  function flagTable(probs) {
+    if (!probs.length) {
+      return '<div class="banner ok" style="margin:0 0 14px"><b>Nothing flagged.</b> With this few records that means little — the checks only bite once there is volume.</div>';
+    }
+    return '<h2>What needs a person to look at it</h2><div class="tbl-wrap"><table class="data prov">' +
+      "<thead><tr><th>Flag</th><th>What</th><th>Why it matters</th></tr></thead><tbody>" +
+      probs.map(function (p) {
+        return '<tr><td><span class="pill ' + p[0] + '">' +
+          (p[0] === "st" ? "fix" : p[0] === "wn" ? "check" : "expected") + "</span></td><td><b>" +
+          esc(p[1]) + "</b></td><td>" + esc(p[2]) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function table(head, rows) {
+    if (!rows.length) return '<div class="empty">No entry from this form has arrived yet. It appears here the moment a worker saves one and the phone has signal, or when an exported file is imported above.</div>';
+    return '<h2>Every entry</h2><div class="tbl-wrap"><table class="data prov"><thead><tr>' +
+      head.map(function (h) { return "<th>" + h + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      rows.join("") + "</tbody></table></div>";
+  }
+  function newestFirst(list) {
+    return list.slice().sort(function (a, b) {
+      var da = dateOf(a), db = dateOf(b);
+      return da < db ? 1 : da > db ? -1 : 0;
+    });
+  }
+
+  /* ---------- the two sources, one view ---------------------------------
+     LIVE is what the register is streaming and is never persisted here; the
+     imported file store is persisted in this browser. Both sides compute the
+     same deterministic id, so one record is one row. */
+  var LIVE = [];
+  function viewRows() {
+    var seen = {}, out = [];
+    LIVE.concat(ROWS).forEach(function (r) {
+      if (seen[r._rid]) return;
+      seen[r._rid] = 1; out.push(r);
+    });
+    return out;
+  }
+  function ofKind(k) { return viewRows().filter(function (r) { return r._kind === k; }); }
+
+  /* ---------- per-form renderers ---------- */
+  function renderContact(rows) {
+    var codes = {}; rows.forEach(function (r) { if (r.contact_code) codes[r.contact_code] = 1; });
+    var distinct = Object.keys(codes).length;
+    var noCode = rows.filter(function (r) { return !r.contact_code; }).length;
+    var orgs = {}; rows.forEach(function (r) { if (r.org) orgs[r.org] = 1; });
+    var body = kpi([
+      [rows.length, "entries", ""],
+      [rows.length ? distinct : "—", "distinct people, by contact code", "good"],
+      [rows.length ? (rows.length - distinct) : "—", "repeat contacts folded in", ""],
+      [Object.keys(orgs).length, "organisations reporting", ""],
+      [noCode, "with no contact code — cannot be de-duplicated", noCode ? "bad" : ""]
+    ]);
+    var probs = [];
+    var future = rows.filter(function (r) { var d = dateOf(r); return d && d > today(); });
+    if (future.length) probs.push(["st", future.length + " entry(ies) dated in the future",
+      "A date after today is a typing error or a wrongly set phone clock. Fix before these go into any total."]);
+    if (noCode) probs.push(["st", noCode + " contact(s) with no contact code",
+      "These cannot be matched to a returning person, so they inflate the count of people. Ask the worker to fill the four identity boxes."]);
+    var off = rows.filter(function (r) { return /^OTHER/.test(String(r.site || "")); }).length;
+    if (off) probs.push(["wn", off + " entry(ies) at a site not on the roster",
+      "Each has to be matched to a roster site or added to the roster. Until then, coverage of the roster cannot be computed from these records."]);
+    var nosex = rows.filter(function (r) { return !r.sex; }).length;
+    if (nosex) probs.push(["wn", nosex + " entry(ies) with no sex recorded",
+      "Sex and age disaggregation is the minimum the 5Ws expects; without it the return cannot be submitted as complete."]);
+    var noage = rows.filter(function (r) { return !val(r, ["age_band", "ageBand"]); }).length;
+    if (noage) probs.push(["wn", noage + " entry(ies) with no age band", "Same reason as sex."]);
+    var trs = newestFirst(rows).map(function (r) {
+      return "<tr><td>" + esc(dateOf(r)) + "</td><td>" + esc(siteName(r.site, r)) + "</td><td>" +
+        esc(orgName(r.org)) + "</td><td><code style='font-size:11px'>" + esc(r.contact_code || "—") +
+        "</code></td><td>" + esc(r.sex || "—") + "</td><td>" + esc(val(r, ["age_band", "ageBand"]) || "—") +
+        "</td><td>" + esc(val(r, ["service", "activity"]) || "—") + "</td><td>" + esc(r.modality || "—") +
+        "</td><td class='n'>" + esc(r.minutes || "—") + "</td><td class='xs'>" + esc(r._file || "—") + "</td></tr>";
+    });
+    return { kpi: body, flags: flagTable(probs),
+             rows: table(["Date", "Site", "Organisation", "Contact code", "Sex", "Age", "Service", "Setting", "Minutes", "Source"], trs) };
+  }
+
+  function renderReferral(rows) {
+    var open = rows.filter(function (r) { return r.arrived === "UNK" || !r.arrived; }).length;
+    var yes = rows.filter(function (r) { return r.arrived === "YES" || r.arrived === "Y" || r.arrived === true || r.arrived === "true"; }).length;
+    var barrier = rows.filter(function (r) { return r.barrier; }).length;
+    var body = kpi([
+      [rows.length, "entries", ""],
+      [yes, "arrival confirmed", yes ? "good" : ""],
+      [open, "arrival still unknown", open ? "warn" : ""],
+      [barrier, "with a barrier recorded", ""]
+    ]);
+    var probs = [];
+    if (rows.length) probs.push([open === rows.length ? "wn" : "ok",
+      open + " of " + rows.length + " referral(s) with arrival still unknown",
+      "This is expected and is itself the measure: a referral is complete only when the receiving service confirms it. A number that stays high means the pathway is not closing."]);
+    var nosex = rows.filter(function (r) { return !r.sex; }).length;
+    if (nosex) probs.push(["wn", nosex + " entry(ies) with no sex recorded",
+      "Sex and age disaggregation is the minimum the 5Ws expects; without it the return cannot be submitted as complete."]);
+    var trs = newestFirst(rows).map(function (r) {
+      return "<tr><td>" + esc(dateOf(r)) + "</td><td>" + esc(siteName(r.site, r)) + "</td><td>" +
+        esc(orgName(r.org)) + "</td><td>" + esc(r.direction || "—") + "</td><td>" + esc(r.urgency || "—") +
+        "</td><td>" + esc(r.reason || "—") + "</td><td>" + esc(r.to_service_type || "—") + "</td><td>" +
+        esc(r.arrived || "unknown") + "</td><td>" + esc(r.barrier || "—") + "</td><td class='xs'>" +
+        esc(r._file || "—") + "</td></tr>";
+    });
+    return { kpi: body, flags: flagTable(probs),
+             rows: table(["Date", "Site", "Organisation", "Direction", "Urgency", "Reason", "To service", "Arrived", "Barrier", "Source"], trs) };
+  }
+
+  function renderPhq9(rows) {
+    var i9 = rows.filter(function (r) { return r.item9_positive === true || r.item9_positive === "true"; }).length;
+    var scored = rows.filter(function (r) { return r.total !== null && r.total !== undefined && r.total !== ""; });
+    var high = scored.filter(function (r) { return parseInt(r.total, 10) >= 10; }).length;
+    var body = kpi([
+      [rows.length, "entries", ""],
+      [scored.length, "with a complete score", ""],
+      [high, "scoring 10 or more", high ? "warn" : ""],
+      [i9, "with a positive item 9", i9 ? "bad" : "good"]
+    ]);
+    var probs = [];
+    if (i9) probs.push(["st", i9 + " entry(ies) with a positive item 9",
+      "Item 9 is the self-harm item. Check that a referral was recorded for each one — that is the audit this field exists for."]);
+    var noScore = rows.length - scored.length;
+    if (noScore) probs.push(["wn", noScore + " entry(ies) with no complete score",
+      "An incomplete PHQ-9 cannot be banded, so it cannot be compared with the person's earlier measure."]);
+    var trs = newestFirst(rows).map(function (r) {
+      return "<tr><td>" + esc(dateOf(r)) + "</td><td>" + esc(siteName(r.site, r)) + "</td><td>" +
+        esc(orgName(r.org)) + "</td><td><code style='font-size:11px'>" + esc(r.contact_code || "—") +
+        "</code></td><td class='n'>" + esc(r.total === null || r.total === undefined || r.total === "" ? "—" : r.total) +
+        "</td><td>" + esc(r.band || "—") + "</td><td>" +
+        (r.item9_positive === true || r.item9_positive === "true" ? '<span class="pill st">item 9</span>' : "—") +
+        "</td><td class='xs'>" + esc(r._file || "—") + "</td></tr>";
+    });
+    return { kpi: body, flags: flagTable(probs),
+             rows: table(["Date", "Site", "Organisation", "Contact code", "Total", "Band", "Item 9", "Source"], trs) };
+  }
+
+  function renderSelf(rows) {
+    var unrev = rows.filter(function (r) { return r.free_text && !r.free_text_reviewed_by_human; }).length;
+    var cannot = rows.filter(function (r) { return r.could_reach === "NO" || r.could_reach === "no" || r.could_reach === false || r.could_reach === "false"; }).length;
+    var unknown = rows.filter(function (r) { return r.knows_where === "NO" || r.knows_where === "no" || r.knows_where === false || r.knows_where === "false"; }).length;
+    var body = kpi([
+      [rows.length, "entries", ""],
+      [unknown, "did not know where to go for support", unknown ? "warn" : ""],
+      [cannot, "could not reach support", cannot ? "warn" : ""],
+      [unrev, "free-text entries a person has not read yet", unrev ? "bad" : "good"]
+    ]);
+    var probs = [];
+    if (unrev) probs.push(["st", unrev + " self-report(s) with unreviewed free text",
+      "Anonymous free text may name someone or describe distress. A person has to read these before they go anywhere."]);
+    var trs = newestFirst(rows).map(function (r) {
+      return "<tr><td>" + esc(dateOf(r)) + "</td><td>" + esc(siteName(r.site, r)) + "</td><td class='n'>" +
+        esc(r.coping || "—") + "</td><td>" + esc(r.need || "—") + "</td><td>" + esc(r.knows_where || "—") +
+        "</td><td>" + esc(r.could_reach || "—") + "</td><td>" +
+        (r.free_text ? (r.free_text_reviewed_by_human ? '<span class="pill ok">read</span>' : '<span class="pill st">to read</span>') : "—") +
+        "</td><td class='xs'>" + esc(r._file || "—") + "</td></tr>";
+    });
+    return { kpi: body, flags: flagTable(probs),
+             rows: table(["Date", "Site", "Coping (of 4)", "Greatest need", "Knew where", "Could reach", "Free text", "Source"], trs) };
+  }
+
+  var RENDER = { service_contact: renderContact, referral: renderReferral, phq9: renderPhq9, self_report: renderSelf };
+
+  function render() {
+    Object.keys(SECTION).forEach(function (sec) {
+      var kind = SECTION[sec], panel = $("p-" + sec);
+      var out = RENDER[kind](ofKind(kind));
+      panel.querySelector(".kpi").innerHTML = out.kpi;
+      panel.querySelector(".flags").innerHTML = out.flags;
+      panel.querySelector(".rows").innerHTML = out.rows;
+    });
+    document.querySelectorAll(".tab").forEach(function (t) {
+      var k = SECTION[t.dataset.p], nk = ofKind(k).length;
+      t.innerHTML = t.textContent.replace(/\s*·\s*\d+$/, "") + (nk ? ' <span class="xs">· ' + nk + "</span>" : "");
+    });
+  }
+
+  /* ---------- sections ---------- */
+  function showTab(p) {
+    var b = document.querySelector('.tab[data-p="' + p + '"]'); if (!b) return;
+    document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("on"); });
+    document.querySelectorAll(".panel").forEach(function (x) { x.classList.remove("on"); });
+    b.classList.add("on"); $("p-" + p).classList.add("on");
+  }
+  document.querySelectorAll(".tab").forEach(function (b) {
+    b.addEventListener("click", function () {
+      showTab(b.dataset.p);
+      if (history.replaceState) history.replaceState(null, "", "#" + b.dataset.p);
+      if (window.__railMark) window.__railMark();
+    });
+  });
+  function tabFromHash() {
+    var h = (location.hash || "").replace("#", "");
+    if (SECTION[h]) showTab(h);
+  }
+  window.addEventListener("hashchange", tabFromHash);
+
+  /* ---------- file intake ---------- */
+  function report(results) {
+    $("log").innerHTML = results.map(function (r) {
+      if (r.err) {
+        return '<div class="banner stop"><b>' + esc(r.name) + "</b> — " + esc(r.err) +
+          ". Export it again from the form, or check you picked the right file.</div>";
+      }
+      var bits = [];
+      bits.push("<b>" + r.added + "</b> new record(s)");
+      if (r.dupe) bits.push(r.dupe + " already here, skipped");
+      if (r.unknown) bits.push("<b>" + r.unknown + "</b> row(s) not recognised as any known form");
+      var kinds = Object.keys(r.kinds).map(function (k) {
+        return (KINDS[k] || k) + " " + r.kinds[k]; }).join(" · ");
+      return '<div class="banner ' + (r.unknown ? "warn" : "ok") + '"><b>' + esc(r.name) + "</b> — " +
+        bits.join(", ") + (kinds ? "<br>" + esc(kinds) : "") + "</div>";
+    }).join("");
+  }
+  function handle(files) {
+    var list = Array.prototype.slice.call(files), out = [], done = 0;
+    if (!list.length) return;
+    list.forEach(function (f, idx) {
+      var fr = new FileReader();
+      var finish = function () { if (++done === list.length) { save(ROWS); report(out.filter(Boolean)); render(); } };
+      fr.onload = function () { out[idx] = ingest(f.name, String(fr.result || "")); finish(); };
+      fr.onerror = function () { out[idx] = { name: f.name, err: "could not be opened", added: 0, dupe: 0, unknown: 0, kinds: {} }; finish(); };
+      fr.readAsText(f);
+    });
+  }
+  document.querySelectorAll("input.pick").forEach(function (inp) {
+    inp.addEventListener("change", function () { handle(this.files); this.value = ""; });
+  });
+
+  /* ---------- export ---------- */
+  var COLS = ["_kind", "org", "date_ad", "date_bs", "district", "site", "ward_text", "contact_code",
+              "client_status", "sex", "age_band", "target_group", "provider_type", "service",
+              "modality", "minutes", "outcome", "reason", "direction", "urgency", "to_service_type",
+              "arrived", "barrier", "total", "band", "item9_positive", "coping", "need",
+              "knows_where", "could_reach", "lat", "lon", "_file", "_saved"];
+  document.querySelectorAll("button.exp").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var k = b.dataset.k, rows = ofKind(k);
+      if (!rows.length) return;
+      L.download("mhpss_np_" + k + "_" + L.stamp() + ".csv", L.toCSV(rows, COLS), "text/csv");
+    });
+  });
+
+  /* ---------- the live register ---------------------------------------- */
+  function mergeLive(rows) {
+    LIVE = rows.map(function (r) {
+      var o = JSON.parse(JSON.stringify(r));
+      o._kind = o.kind || classify(o) || "";
+      o._rid = o._id || rid(o, o._kind);
+      o._file = "register";
+      return o;
+    });
+    render();
+    strip();
+  }
+  function strip() {
+    var n = LIVE.length, act = LIVE.filter(function (r) { return r._kind === "activity"; }).length;
+    var mine = n - act;
+    $("stripTxt").innerHTML = n
+      ? "<b>Live.</b> " + mine + " entry(ies) from these four forms in the register, updating as workers submit" +
+        (act ? ' · <span class="xs">' + act + ' activity report(s) are on the <a href="./#reports">dashboard</a></span>' : "")
+      : "<b>Live.</b> No entry from these four forms has reached the register yet.";
+  }
+  function paintLive(st) {
+    var el = $("livePanel");
+    if (!st.configured) {
+      $("stripTxt").innerHTML = "<b>No register is connected in this build.</b> Imported files still work.";
+      el.innerHTML = "";
+      return;
+    }
+    if (!st.ready) {
+      $("stripTxt").innerHTML = "<b>Cannot reach the register.</b> " + esc(st.error || "No connection.");
+      el.innerHTML = "";
+      return;
+    }
+    if (!st.user) {
+      $("stripTxt").innerHTML = "<b>The client asks you to sign in before a register read.</b> Server authorization remains unverified.";
+      el.innerHTML =
+        '<div class="card" style="margin:0 0 16px"><div class="banner" style="margin:0 0 12px">' +
+        '<b>These four forms carry a per-person code, so this client prompts for sign-in before reading them.</b> ' +
+        'Server authorization remains unverified until the authoritative Rules are versioned.</div>' +
+        '<div class="row"><div class="f"><label for="em">Email</label>' +
+        '<input type="email" id="em" autocomplete="username"></div>' +
+        '<div class="f"><label for="pw">Password</label>' +
+        '<input type="password" id="pw" autocomplete="current-password"></div></div>' +
+        '<div class="btns"><button type="button" class="btn" id="signin">Sign in</button>' +
+        '<span class="xs" id="signerr"></span></div></div>';
+      $("signin").addEventListener("click", function () {
+        var b = this; b.disabled = true; b.textContent = "Signing in…";
+        window.FB.signIn($("em").value.trim(), $("pw").value).catch(function (e) {
+          b.disabled = false; b.textContent = "Sign in";
+          $("signerr").innerHTML = '<span style="color:var(--critical,#9b2c2c)">' +
+            esc(e && e.message ? e.message.replace(/^Firebase:\s*/, "") : "could not sign in") + "</span>";
+        });
+      });
+      return;
+    }
+    el.innerHTML = '<div class="btns" style="margin:0 0 14px"><span class="xs">Signed in as ' +
+      esc(st.user.email) + '</span><button type="button" class="btn grey sm" id="signout">Sign out</button></div>';
+    $("signout").addEventListener("click", function () { window.FB.signOut(); });
+    strip();
+  }
+
+  render();
+  tabFromHash();
+
+  if (window.FB) {
+    var watching = false;
+    window.FB.onStatus(function (st) {
+      paintLive(st);
+      if (st.ready && st.user && !watching) {
+        watching = true;
+        window.FB.watch(mergeLive, function (err) {
+          $("livePanel").innerHTML = '<div class="banner stop" style="margin:0 0 14px"><b>The register refused ' +
+            'the read.</b> ' + esc(err) + '<br><br>The client could not establish permission. ' +
+            'Server enforcement and the authoritative role-key scheme are unverified.</div>';
+        });
+      }
+      if (!st.user) { watching = false; LIVE = []; render(); }
+    });
+  } else {
+    paintLive({ configured: false });
+  }
+})();
+</script>
+<script>window.BRAND_PREFIX="../";</script>
+<script src="assets/brand.js"></script>
+<script src="assets/mark.js"></script>
+<script src="assets/icons.js"></script>
+<script src="assets/i18n-strings.js"></script>
+<script src="assets/i18n.js"></script>
+</body>
+</html>

@@ -1,12 +1,37 @@
+# Generated monorepo output and Python caches
+dist/
+.verify-dist-*/
+__pycache__/
+*.py[cod]
+
 # Operational data must never enter this repository.
 *.xlsx
 *.xls
 *.xlsm
+*.ods
 *.csv
 *.tsv
+*.psv
+*.sql
+*.dump
+*.db
+*.sqlite
+*.sqlite3
 *.json
-!data/demo.json
+!apps/hub/data/demo.json
 !package.json
+**/snapshot/
+**/snapshots/
+**/backup/
+**/backups/
+**/export/
+**/exports/
+snapshot.*
+snapshots.*
+backup.*
+backups.*
+export.*
+exports.*
 
 # Working files
 shot-*.png
@@ -25,13 +50,19 @@ pwa_test.py
 final_check.py
 icon-sheet.png
 
-# ---- credentials: never, under any circumstances, in a public repo ----
-# A service-account key reads and writes everything and ignores the security
-# rules. If one of these is ever committed, revoke it in the Firebase console
-# immediately -- removing the commit is not enough, because it is public the
-# moment it is pushed.
+# Credentials
+.env*
+token
+tokens
+secret
+secrets
+**/token
+**/tokens
+**/secret
+**/secrets/
 service_account.json
 *service_account*.json
+*service-account*.json
 *-serviceaccount*.json
 *.pem
 *.p12

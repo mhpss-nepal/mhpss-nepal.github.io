@@ -13,12 +13,31 @@ colour on an unexpected background.
 
 On 16 September 2026 it found 109 failing elements and was run down to 0.
 """
+from pathlib import Path
+from urllib.error import URLError
+from urllib.request import urlopen
 from playwright.sync_api import sync_playwright
-import json, sys
-B = sys.argv[1] if len(sys.argv)>1 else "http://127.0.0.1:9063"
+import json, subprocess, sys, time
+PORT = 9063
+APP_ROOT = Path(__file__).resolve().parents[1]
+B = sys.argv[1] if len(sys.argv)>1 else "http://127.0.0.1:%d" % PORT
 PAGES=["/","/flood-response.html","/bps.html","/iec.html","/referral-directory.html",
        "/resources.html","/videos.html","/contact-us.html","/method.html","/architecture.html","/access-explained.html","/layer3.html"]
 # the hub and the forms: swept in their own repositories since 17 Sep 2026
+
+def wait_for_server(srv):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        try:
+            with urlopen(B + "/", timeout=0.5) as response:
+                if response.status == 200:
+                    return
+        except (OSError, URLError):
+            if srv.poll() is not None:
+                raise RuntimeError("local QA server failed to start")
+        time.sleep(0.05)
+    raise RuntimeError("local QA server was not ready in time")
+
 JS = """() => {
   const lum = c => { const m=c.match(/[\\d.]+/g); if(!m) return null;
     if (m.length>3 && +m[3]===0) return null;
@@ -50,17 +69,42 @@ JS = """() => {
   for(const o of out){const k=o.tag+o.cls+o.px+o.fg; if(!seen.has(k)){seen.add(k);u.push(o);}}
   return u.slice(0,12);
 }"""
+def local_only(route):
+    if route.request.url.startswith("http://127.0.0.1:"):
+        route.continue_()
+    else:
+        route.abort()
+
 bad={}
-with sync_playwright() as p:
-    br=p.chromium.launch()
-    for scheme in ("light","dark"):
-        for path in PAGES:
-            ctx=br.new_context(viewport={"width":1280,"height":900}, color_scheme=scheme)
-            pg=ctx.new_page(); pg.goto(B+path, wait_until="load", timeout=25000); pg.wait_for_timeout(1700)
-            r=pg.evaluate(JS)
-            if r: bad["%s %s"%(scheme,path)]=r
-            ctx.close()
-    br.close()
+srv = None
+if len(sys.argv) == 1:
+    srv = subprocess.Popen([
+        sys.executable, "-m", "http.server", str(PORT), "--bind", "127.0.0.1",
+        "--directory", str(APP_ROOT),
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+try:
+    if srv is not None:
+        wait_for_server(srv)
+    with sync_playwright() as p:
+        br=p.chromium.launch()
+        for scheme in ("light","dark"):
+            for path in PAGES:
+                ctx=br.new_context(viewport={"width":1280,"height":900}, color_scheme=scheme)
+                ctx.route("**/*", local_only)
+                pg=ctx.new_page(); pg.goto(B+path, wait_until="load", timeout=25000); pg.wait_for_timeout(1700)
+                r=pg.evaluate(JS)
+                if r: bad["%s %s"%(scheme,path)]=r
+                ctx.close()
+        br.close()
+finally:
+    if srv is not None:
+        srv.terminate()
+        try:
+            srv.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            srv.kill()
+            srv.wait(timeout=5)
 n=sum(len(v) for v in bad.values())
 print("pages checked: %d   failing elements: %d"%(len(PAGES)*2, n))
 print(json.dumps(bad, indent=1) if bad else "every text element clears its WCAG threshold, light and dark")
+raise SystemExit(1 if bad else 0)

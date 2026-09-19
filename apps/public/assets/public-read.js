@@ -1,12 +1,10 @@
 /* =====================================================================
    MHPSS Nepal -- the public website's only read from the register side
    ---------------------------------------------------------------------
-   Layer 3 reads public_stats: aggregates that a coordinator publishes on
-   purpose. The security rules call this collection "the Layer 3 bridge"
-   and let anyone read it, permanently -- unlike the demonstration window
-   on raw activity reports, which ends on 1 October 2026. Decided
-   16 September 2026: the public pages read published aggregates, never the
-   register itself.
+   Client intent: Layer 3 reads public_stats aggregates rather than the raw
+   register. Whether this read is authorized is a server decision. The
+   authoritative Rules are not versioned here, so server enforcement is
+   unverified and this branch must not be deployed.
 
    What this file does NOT do, on purpose:
      - no sign-in, no account, no queue, no sync strip (that is fb.js, for

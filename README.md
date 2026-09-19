@@ -1,133 +1,74 @@
-# MHPSS Technical Working Group, Nepal — public website
+# MHPSS Nepal monorepo foundation
 
-The public website of the MHPSS Technical Working Group, Nepal, for the
-Rasuwa–Bhotekoshi flood response: helplines, where to find a service, the declared
-affected area, resources, a way to make contact, and the response summary a
-coordinator publishes. It is written for affected people and field partners.
+This branch is an isolated, non-deployed foundation for the three static MHPSS Nepal applications. It combines their source-controlled files without changing runtime behavior, production URLs, or existing repositories.
 
-**→ [mhpss-nepal.github.io](https://mhpss-nepal.github.io/)**
+## Architecture
 
-Draft, September 2026, for discussion with the WHO Nepal mental health team,
-स्वास्थ्य तथा खाद्य स्वच्छता मन्त्रालय / Ministry of Health and Food Safety, and the
-Epidemiology and Disease Control Division (EDCD). **Not yet agreed with EDCD or the
-MHPSS Technical Working Group.**
-
----
-
-## One site, three repositories
-
-Since 17 September 2026 the site is served from three repositories of the
-`mhpss-nepal` organisation, each at its own path on the same address:
-
-| Repository | Served at | What it holds |
+| Source | Build destination | Address preserved |
 |---|---|---|
-| **`mhpss-nepal.github.io`** — this one | [`/`](https://mhpss-nepal.github.io/) | the public website (Layer 3) |
-| `hub` | [`/hub/`](https://mhpss-nepal.github.io/hub/) | the coordination hub (Layer 2) and the shared code the hub and the forms load |
-| `form` | [`/form/`](https://mhpss-nepal.github.io/form/) | the field forms and the printable QR card sheet (Layer 1) |
+| `apps/public/` | `dist/` | `/` |
+| `apps/form/` | `dist/form/` | `/form/` |
+| `apps/hub/` | `dist/hub/` | `/hub/` |
 
-This repository registers no service worker and loads no file from `/hub/`. Its
-`assets/` holds its own `site.css`, `page.css`, `public-read.js`,
-`referral-facilities.js` and `referral-find.js`, and copies of the shared files as
-they were when the hub and the forms moved out (`design.css`, `app.css`, `codes.js`,
-`i18n.js`, `i18n-strings.js`, `icons.js`, `mark.js`, `brand.*`, `fb-config.js`).
+`apps/public/` is the former public repository root. `apps/form/` and `apps/hub/` are working-tree imports; their repository metadata was deliberately excluded. Git history import is deferred.
 
-## The pages
+The build is a byte-for-byte static copy from one immutable Git commit (default: `HEAD`). It sanitizes inherited `GIT_*` variables, pins explicit Git/worktree paths, runs strict object verification, and independently recomputes commit, tree, and blob object IDs before use. Exactly 120 classified application files are mapped from `apps/public`, `apps/form`, and `apps/hub`; extra blobs fail closed. Hard limits bound file count, total and per-file bytes, path length/depth, Git output, time, and tree traversal. Unsafe, ambiguous, operational-data, credential, private-key, spreadsheet, delimited-data, snapshot, backup, export, and dump inputs are rejected. The only JSON/JS data exceptions are the documented source-controlled synthetic demo files.
 
-| Page | What it is |
-|---|---|
-| [`index.html`](index.html) | **Home** — the MHPSS Technical Working Group, its mission and membership (to be agreed), what it does, the helplines |
-| [`flood-response.html`](flood-response.html) | **Flood Response** — the event as its sources state it, the published response summary, helplines, field tools, programme guidance (none yet), and how the response is coordinated |
-| [`bps.html`](bps.html) · [`iec.html`](iec.html) · [`videos.html`](videos.html) | **BPS+ · IEC · Videos** — honestly empty until real, approved Nepal material exists |
-| [`referral-directory.html`](referral-directory.html) | **Referral Directory** — helplines; *Find a service* by service, provider, place and way of reaching it, on a map; the declared affected area; the published directory of partner organisations |
-| [`resources.html`](resources.html) · [`contact-us.html`](contact-us.html) | **Resources · Contact** — sourced items only; roles, names to be confirmed |
-| [`architecture.html`](architecture.html) · [`method.html`](method.html) · [`access-explained.html`](access-explained.html) · [`layer3.html`](layer3.html) | **How this system works** — the architecture, the governance position, the data model and who can see what; reached from the footer, not the menu |
+Files get mode `0644`, directories get mode `0755`, and copied mtimes are normalized to 2000-01-01 UTC. The output path must not exist. The builder opens a real parent directory, creates the output exactly once with exclusive directory-creation semantics, and writes beneath its acquired descriptor. It never replaces, recursively deletes, exchanges, or mutates a pre-existing output. A failed fresh output may remain for manual inspection and removal. The JSON manifest is deterministic and unambiguous.
 
-## Where the content comes from
+Trust boundary: the generator assumes repository metadata, Git objects, and acquired file descriptors are not maliciously mutated by another process running as the same operating-system user while a build is in progress. Descriptor-relative, no-follow, exclusive operations reject or contain tested path substitutions, but this is not a sandbox against a fully malicious same-UID process that can alter files or act through `/proc` after descriptor acquisition. Run builds in a trusted, single-writer workspace.
 
-- **The response summary and the partner directory** read `public_stats`: figures a
-  coordinator publishes on purpose, never the register itself
-  ([`assets/public-read.js`](assets/public-read.js)). Until something is published,
-  both say so. A document published in the hub's demonstration mode is labelled as
-  such on the page.
-- **Hospitals and helplines in *Find a service*** come from
-  [`assets/referral-facilities.js`](assets/referral-facilities.js): every listing
-  quotes the hospital's or the service's own website, with the page and the date it
-  was read. It covers the district and provincial hospitals of the districts on the
-  map and five referral hospitals in Kathmandu and Lalitpur; private hospitals and
-  clinics are not listed. A listing does not mean a service is open today.
-- **The map** draws the palikas the Government declared disaster crisis areas, on
-  OCHA COD-AB Nepal v02 boundaries (Survey Department of Nepal, UN RCO Nepal; HDX
-  dataset `cod-ab-npl`, CC BY-IGO), generated by [`tools/map-build.py`](tools/map-build.py).
-  Counts are shown by palika or by district, never as a point.
+## Commands
 
-**No personal data, and none is to be added.** The site lists services, never
-people. No names, telephone numbers or email addresses of service users or of staff
-appear in this repository, in any branch, however briefly.
-
-**No unpublished operational figures.** The measured defect counts, partner reach
-figures and duplication analysis of the current reporting workbook live in the data
-inventory shared privately with WHO, the Ministry and EDCD. They are deliberately
-absent here: they are unpublished figures attributed to named partners, and they are
-not ours to publish.
-
-## Checks before every deploy
-
-Each of these has been made to fail on purpose.
-
-| Check | Refuses |
-|---|---|
-| `python3 tools/nav.py check` | a page whose navigation, footer or helplines block differs from what the generator writes |
-| `python3 tools/map-build.py check` | a map or list that does not draw exactly the declared palikas; a hospital listing whose tag has no quotation, a quotation or number with no source, a place the map does not draw, or anything that reads as a person's name |
-| `python3 tools/roster-fig.py check` | a site unit chart that no longer matches the site list |
-| `python3 tools/i18n-check.py` | English on a keyed page with no key, or a key with no Nepali on an enforced page |
-| `python3 tools/text-setting-check.py` | running text that is not justified, or that is hyphenated |
-| `python3 tools/contrast-check.py` | a colour token that does not clear WCAG AA on its own surface |
-| `tools/justify-sweep.py` · `tools/contrast-sweep.py` | the same two rules measured in a browser on every page: justification at two widths, contrast in light and dark (these need Playwright) |
-
-## Running it locally
-
-No build step. Serve the folder and open it:
+Only the Python 3 standard library is required; no package or network install is needed.
 
 ```bash
-python3 -m http.server 8080
+# Tests
+python3 -m unittest discover -s tests -v
+
+# Fresh build into an absent path from committed HEAD
+python3 scripts/build.py
+
+# Or pin both operations to the same full commit ID
+python3 scripts/build.py --commit "$(git rev-parse HEAD)"
+
+# Validate exact committed-source/output parity and required addresses
+python3 scripts/validate.py --commit "$(git rev-parse HEAD)"
+
+# Inspect a deterministic JSON content manifest
+python3 scripts/build.py --manifest dist
 ```
 
-The generated parts are committed. After changing the tables they come from, run
-`python3 tools/nav.py apply` (navigation, footer, helplines),
-`python3 tools/roster-fig.py apply` (the site unit chart) or
-`python3 tools/map-build.py build <npl_admin3.geojson>` (the map; needs mapshaper).
+`dist/` is generated and intentionally untracked. Nothing in this foundation deploys, pushes, or merges.
 
-## Language
+## Access ownership target
 
-Pages carry an English and Nepali switch. Nepali comes from a translator: where a
-Nepali string is still awaited the English shows, short machine drafts are announced
-as such, and clinical wording stays in English. `python3 tools/i18n-check.py
---worksheet` writes the worksheet for the translator.
+The Firebase bridge has no personal-email exception or privileged client-side
+identity path. Its role controls express client intent only. The authoritative
+Firestore Rules and role-key scheme are not versioned here, so server enforcement
+is unverified. This non-deployed branch does not migrate credentials or change
+production Rules.
 
-## Known gaps
+## Provenance
 
-Stated rather than smoothed over.
+Imported on the foundation branch from these local working trees:
 
-- **The site list is not agreed.** It is derived from the holding-centre roster
-  sheet, the list of centres from the District Administration Office, Nuwakot, of
-  29 Bhadra 2083, and sites appearing in submitted reports. EDCD and the MHPSS
-  Technical Working Group have not signed it off.
-- **The activity list is not agreed.** Consolidated from what partners have actually
-  submitted, not from an agreed taxonomy.
-- **Three hospital websites could not be opened** on 17 September 2026 — Dhading,
-  Damauli and Madhyabindu. They are not listed until their own pages can be read.
-- **No accessibility audit** has been run beyond the contrast checks above and
-  keyboard checks of *Find a service*.
-- **Most text is not yet in Nepali.**
+| Application | Source | Source commit | Imported source-controlled files |
+|---|---|---|---:|
+| public | repository root before relocation | `68bf197abe56dd0265dca245e61809100b4c3901` | 54 |
+| form | `/root/mhpss-nepal-audit-20260918/form` | `9032bb7a3e198882cce8ca1bf350621aba856db7` | 26 |
+| hub | `/root/mhpss-nepal-audit-20260918/hub` | `ff2d4e2a43327ddc99330f83660ec75abd53a762` | 40 |
 
-## Attribution
+The form and hub source worktrees were clean. Generated `tools/__pycache__/` files present outside source control were not imported. No raw operational or clinical data was read or copied; the hub's source-controlled synthetic `data/demo.json` and `data/demo.js` remain included.
 
-Colours from the Health Cluster's Visual Identity Guidelines (Pantone 299 C and
-Neutral Black C), read on 16 September 2026.
+## Current cross-application dependencies and blockers
 
-**No emblem is used.** WHO emblem use requires express written permission, and the
-national emblem belongs to the Government of Nepal. Institutional naming verified
-against `mohp.gov.np` and `edcd.gov.np` on 15 September 2026 — स्वास्थ्य तथा खाद्य
-स्वच्छता मन्त्रालय / Ministry of Health and Food Safety · Department of Health
-Services · Epidemiology and Disease Control Division · Non-Communicable Disease &
-Mental Health Section.
+The layout preserves today's addresses, so existing relative links continue to resolve in `dist/`; it does not yet make the applications independently buildable.
+
+- Form pages and `sw.js` load shared runtime assets from `../hub/assets/` (resolved as `/hub/assets/` from `/form/`). These include design/app/form CSS; code lists; Layer 1 helpers; QR, store, Firebase bridge/config; branding, marks, icons, and i18n files. The service worker also precaches those cross-app URLs.
+- Hub pages link to `../form/` and individual form pages. Hub navigation links to the public root with `../`; `access.html` links to public `../access-explained.html`.
+- `apps/hub/index.html` dynamically loads the public renderer at `../assets/public-read.js` when publishing Layer 3 output.
+- Public pages link to `form/` and `hub/`; `apps/public/method.html` links into `hub/docs/DATA_MODEL.md`.
+- The form deploy checks assume the hub is a sibling directory. Those assumptions remain intentionally unchanged for this foundation.
+
+Until these boundaries are made explicit in a later change, form and hub cannot be moved, versioned, or deployed independently without coordinating their sibling assets and URLs. Existing application checks also remain app-local and must be run from each app directory when source changes.
