@@ -41,6 +41,26 @@ python3 scripts/build.py --manifest dist
 
 `dist/` is generated and intentionally untracked. Nothing in this foundation deploys, pushes, or merges.
 
+## V2 executable contracts
+
+The local-only V2 backend contract reference is documented in
+[`docs/V2-CONTRACTS.md`](docs/V2-CONTRACTS.md). Its Python standard-library
+modules model immutable UUIDv7 event envelopes, explicit sync states, a
+transactional source/outbox boundary, exact-body ingestion acknowledgement,
+immutable correction projections, data-quality work, reconciliation, and an
+atomic cache/release contract. They use synthetic fixtures and have no network
+or production integration.
+
+```bash
+python3 -m unittest discover -s tests/v2_contract -p 'test_*.py' -v
+```
+
+This is an executable review artifact, not a selected production runtime. The
+browser IndexedDB implementation, production datastore/runtime, authorization,
+retention, institutional ownership, and deployment remain blocked decisions.
+The current candidate is held after two independent adversarial review rounds;
+see `docs/V2-EVIDENCE-LEDGER.md` for the preserved blocking findings.
+
 ## Access ownership target
 
 The Firebase bridge has no personal-email exception or privileged client-side
