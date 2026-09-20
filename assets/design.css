@@ -47,6 +47,39 @@
 
    The orange is LEFT OUT: the project's standing rule is no gold or yellow. If it is ever wanted it is in the guidelines, not invented.
 
+   DEVIATION 1 -- Neutral Black C is replaced by "deep ocean" #153f4c.
+   Decided by the project owner on 19 September 2026, after the Health
+   Cluster's guidelines were read again at their source (page "COLOURS
+   USE": "The Primary Colours are the one found in the logo: Neutral
+   Black C and Pantone 299 C"). This is therefore a KNOWN and DELIBERATE
+   departure from the Health Cluster's identity, not an oversight, and it
+   is recorded here so the next reader does not "correct" it back:
+
+     · the guidelines put Neutral Black C IN THE LOGOTYPE, so a site that
+       claims to sit under the Health Cluster is changing one of the two
+       colours that identify it;
+     · the hue is kept to the same cool family as Pantone 299 C, so the
+       page still reads as one system rather than as an unrelated brand;
+     · contrast IMPROVES, not weakens: 11.37:1 on white against Neutral
+       Black C's 16.88:1 -- both far above AA, and both carry white text
+       as a fill (9.74:1 on --wh-dd is the tighter pair, unchanged).
+
+   Everything else in the guidelines is followed. Neutral Black C is still
+   quoted wherever the Cluster's own material is being credited.
+
+   DEVIATION 2 -- the typeface is Mukta, not the guidelines' Futura.
+   Futura carries no Devanagari, so a page set in it would need a second
+   family for Nepali and the two languages would stop being one document.
+   One family for both scripts was the higher requirement.
+
+   DEVIATION 3 -- the guidelines say "Health Cluster typography is always
+   ranged left" and call full justification "a common mistake". Running
+   text on this site IS justified and does not hyphenate. Kept
+   deliberately: the project's own text-setting rule is explicit and was
+   reaffirmed on 19 September 2026 (option B). Noted because the two
+   standards genuinely disagree, and a reader who finds only one of them
+   should not think the other was missed.
+
    Everything else here is Pantone 299 C held at its own hue (198 degrees) and
    full saturation, lightened and darkened -- because 299 C itself reaches only
    2.97:1 against white and so can never carry text. --wh-d and --wh-dd are the
@@ -70,8 +103,22 @@
      under white text. Keeping them apart is what let the hub's headings and
      links go to 2.6:1 in dark mode before the sweep caught it. */
   --wh-tx:#006996;
-  --hc-ink:#1d1d1b;  /* Neutral Black C -- body text, the footer, flagged state*/
+  /* body text, the footer, the top strip, flagged state, map badges and
+     count pills. Replaces Neutral Black C (29,29,27) -- see DEVIATION 1
+     at the head of this file. Kept as ONE token on purpose: it is both
+     the text colour and a fill under white text, and the two must move
+     together or one of the pairs fails. */
+  --hc-ink:#153f4c;
   --hc-mute:#5c5c5a; /* neutral grey text                                      */
+  /* --wh-on is the ink that sits ON the bright brand blue (--wh), which
+     reaches only 2.97:1 against white and so cannot carry white text: the
+     layer-3 legend chip and the advisory badge are both dark-on-blue. It
+     has to be darker than --hc-ink, because the brand blue is a light
+     surface -- #153f4c on #009fe3 is only 3.83:1, while this is 4.75:1.
+     Deep ocean taken down its own hue, as the other shades here are.
+     Added 19 September 2026: the contrast sweep caught the legend at
+     3.83:1 the moment Neutral Black C was replaced. */
+  --wh-on:#0d2f3c;
   --grey-1:#f6f6f5; --grey-2:#efefee;
   --grey-3:#dadada;  /* Pantone P 427 C                                        */
   --flag-t:#f2f2f1; --flag-b:#cfcfcd;
@@ -285,7 +332,7 @@ a.rc.fill .go{color:#fff}
 .adv{border:1px solid var(--hc-ink);background:var(--hc-ink);border-radius:var(--r-md);
      padding:14px 17px;margin:16px 0 0;display:flex;gap:12px}
 .adv .m{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--wh);
-        color:var(--hc-ink);font:800 13px/20px var(--sans);text-align:center}
+        color:var(--wh-on);font:800 13px/20px var(--sans);text-align:center}
 .adv p{margin:0;font-size:15px;line-height:1.62;color:#ededec;max-width:none}
 .adv b{color:#fff}
 .src{font-size:13.5px;color:var(--hc-mute);margin:14px 0 0;line-height:1.6}
@@ -603,7 +650,7 @@ body > div[style*="d03b3b"]{letter-spacing:.3px!important;
 .playerlist .sw{flex:0 0 auto;width:26px;height:26px;border-radius:3px;
                 font:800 13px/26px var(--sans);text-align:center;color:#fff}
 .playerlist .sw.l4{background:var(--wh-dd)}
-.playerlist .sw.l3{background:var(--wh);color:var(--hc-ink)}
+.playerlist .sw.l3{background:var(--wh);color:var(--wh-on)}
 .playerlist .sw.l2{background:var(--wh-b);color:var(--wh-dd)}
 .playerlist .sw.l1{background:var(--wh-t);color:var(--wh-d);
                    border:1px solid var(--wh-b);line-height:24px}
