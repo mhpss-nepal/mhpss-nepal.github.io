@@ -68,6 +68,23 @@ Recovery note: two prior automated attempts failed for environmental reasons, no
 
 Final full-suite, compile, security, independent review, commit, exact head, clean-worktree, and production-ref results are appended after those commands run.
 
+## Final recovery verification (2026-09-20)
+
+| Check | Command | Result |
+|---|---|---|
+| Focused V2 suite | `python3 -m unittest discover -s tests/v2_contract -t .` | 58 passed, 0 failed |
+| Monorepo gate | `PYTHONPATH=tests python3 -m unittest test_build test_validate test_adversarial test_third_review` | 27 passed, 1 skipped |
+| Total | combined | 85 passed, 1 skipped, 0 failed |
+| Compile | `python3 -m py_compile` on all changed Python modules | Clean |
+| Whitespace | `git diff --check` | Clean |
+| Base | `git rev-parse HEAD` at start | `9347d82197c4117f41e98ecbe971a60538fbeda4` |
+| Head | `git rev-parse HEAD` after commit | `f86eb501bb529ac7e1ce8cb70f8317c04958efd8` |
+| Branch | `git rev-parse --abbrev-ref HEAD` | `architecture/v2-immutable-authority` |
+| Worktree | `git status --short` | Clean |
+| Production ref | `git rev-parse origin/main` | `68bf197abe56dd0265dca245e61809100b4c3901` — unchanged, production frozen |
+
+Status: **DONE — REVIEW ARTIFACT** (HELD). Not production-ready. Independent review lenses were not started by the interrupted worker; they are the next required step and must be decorrelated from this implementation pass.
+
 ## Implemented evidence
 
 - `packages/contracts/mhpss_v2.py`: `mhpss.event/2.0`, trusted-boundary identity, manifest digest in each envelope.
