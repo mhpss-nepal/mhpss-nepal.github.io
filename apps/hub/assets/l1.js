@@ -102,9 +102,9 @@
   /* Returns the refusal message when the record must not be written, and
      "" when it may. Exported so the form page, the queue and the tests all
      ask the same question of the same record. */
-  function safeguardingRefusal(rec) {
-    if (!isReferralRecord(rec)) return "";
-    if (rec.safeguarding_confirmed === true && rec.excludes_gbv_uasc_lifethreat === true) return "";
+  function safeguardingRefusal(rec, kind) {
+    if (kind !== "referral" && !isReferralRecord(rec)) return "";
+    if (rec && rec.safeguarding_confirmed === true && rec.excludes_gbv_uasc_lifethreat === true) return "";
     return SAFEGUARDING_REFUSAL;
   }
   function SafeguardingRefusal(message) {
@@ -115,7 +115,7 @@
 
   function save(kind, obj) {
     /* Fail closed BEFORE the device copy and before the queue. */
-    var refusal = safeguardingRefusal(obj);
+    var refusal = safeguardingRefusal(obj, kind);
     if (refusal) throw SafeguardingRefusal(refusal);
     var list = all(kind);
     obj._saved = new Date().toISOString();

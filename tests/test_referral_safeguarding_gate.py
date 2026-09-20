@@ -108,8 +108,26 @@ async function main(action) {
     const out = capture(() => window.L1.save("referral", UNSAFE));
     return { error: out.error, saved: window.L1.all("referral").length, queued: window.FB.queue().length };
   }
+  if (action === "direct-unsafe-untyped") {
+    const untyped = {
+      district: "RAS",
+      safeguarding_confirmed: false,
+      excludes_gbv_uasc_lifethreat: false
+    };
+    const out = capture(() => window.L1.save("referral", untyped));
+    return { error: out.error, saved: window.L1.all("referral").length, queued: window.FB.queue().length };
+  }
   if (action === "direct-safe") {
     const out = capture(() => window.L1.save("referral", SAFE));
+    return { error: out.error, saved: window.L1.all("referral").length, queued: window.FB.queue().length };
+  }
+  if (action === "direct-safe-untyped") {
+    const untyped = {
+      district: "RAS",
+      safeguarding_confirmed: true,
+      excludes_gbv_uasc_lifethreat: true
+    };
+    const out = capture(() => window.L1.save("referral", untyped));
     return { error: out.error, saved: window.L1.all("referral").length, queued: window.FB.queue().length };
   }
   if (action === "queue-unsafe") {
@@ -181,9 +199,21 @@ class ReferralSafeguardingGateTests(unittest.TestCase):
         self.assertEqual(result["saved"], 0)
         self.assertEqual(result["queued"], 0)
 
+    def test_referral_kind_argument_cannot_bypass_gate_with_untyped_record(self) -> None:
+        result = self.run_node("direct-unsafe-untyped")
+        self.assert_blocked(str(result["error"]))
+        self.assertEqual(result["saved"], 0)
+        self.assertEqual(result["queued"], 0)
+
     # 2. a ticked gate saves and queues exactly as before
     def test_ticked_gate_saves_and_queues(self) -> None:
         result = self.run_node("direct-safe")
+        self.assertEqual(result["error"], "")
+        self.assertEqual(result["saved"], 1)
+        self.assertEqual(result["queued"], 1)
+
+    def test_ticked_referral_kind_argument_still_saves_untyped_record(self) -> None:
+        result = self.run_node("direct-safe-untyped")
         self.assertEqual(result["error"], "")
         self.assertEqual(result["saved"], 1)
         self.assertEqual(result["queued"], 1)

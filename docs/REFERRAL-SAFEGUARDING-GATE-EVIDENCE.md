@@ -10,6 +10,8 @@ Tenant: `mhpss-nepal` · Branch: `architecture/v2-immutable-authority` (review a
 | Head (fix, green) | `ca67fc75b2eb3ea83b2487103ebcc37ab5dc34c0` |
 | Actionable-route test-only commit (red) | `7ca1cf5` |
 | Actionable-route fix commit (green) | `cdf7edb` |
+| Kind-argument bypass test-only commit (red) | working-tree test at `c899439` |
+| Kind-argument bypass fix commit (green) | pending at the time this note was edited |
 | Production ref `origin/main` | `68bf197abe56dd0265dca245e61809100b4c3901` — unchanged; no push/PR/merge/deploy |
 | Worktree | clean after commit |
 
@@ -76,6 +78,16 @@ python3 -m unittest tests.test_referral_safeguarding_gate -v
 # GREEN 2 — at fix commit cdf7edb, actionable routes are in every refusal:
 python3 -m unittest tests.test_referral_safeguarding_gate -v
 #   Ran 10 tests ... OK   (10 passed, 0 failed)
+
+# RED 3 — independent review supplied an untyped record with kind="referral":
+python3 -m unittest \
+  tests.test_referral_safeguarding_gate.ReferralSafeguardingGateTests.\
+test_referral_kind_argument_cannot_bypass_gate_with_untyped_record -v
+#   Ran 1 test ... FAILED (failures=1); unsafe record was saved and queued.
+
+# GREEN 3 — L1.save now treats its explicit kind argument as authoritative:
+python3 -m unittest tests.test_referral_safeguarding_gate -v
+#   Ran 12 tests ... OK   (12 passed, 0 failed)
 ```
 
 An independent mutation check (temporarily disabling the three guards, then
