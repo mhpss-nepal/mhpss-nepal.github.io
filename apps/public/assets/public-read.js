@@ -69,14 +69,20 @@
      The same decision is therefore computed here -- the SAME algorithm as the
      publisher's `redactPublicBody`, so that redacting an already-redacted
      document is a no-op and the page cannot depend on a withheld value:
-       - a document may not declare a floor below this page's own floor;
+       - a document may not declare a floor below this page's own floor, and
+         the floor it DOES declare is the floor it is held to;
        - a row carrying a below-floor count is dropped whole, never drawn as
          "fewer than N" with its category label intact;
        - when any row is dropped, every scalar count outside a row is withheld,
          so the hidden cell cannot be recovered by subtracting the published
          parts from a published total;
+       - an enclosing row whose subtree lost a row is withheld too, so a
+         surviving nested complement cannot be subtracted from its ancestor
+         total (100 minus the surviving 94 would otherwise re-reveal the 6);
        - every count goes through the same floor (organisation and palika
-         counts used to bypass it entirely). */
+         counts used to bypass it entirely);
+       - a shape this code cannot redact is REFUSED: `redact()` throws and the
+         page draws nothing rather than a value it could not suppress. */
   var NOT_A_COUNT = {
     schema: 1, schema_version: 1, suppressed_below: 1,
     period_from: 1, period_to: 1, codes_version: 1
@@ -108,51 +114,88 @@
       ? Math.floor(d.suppressed_below) : FLOOR;
     var floor = Math.max(FLOOR, declared);
     function small(n) { return typeof n === "number" && isFinite(n) && n > 0 && n < floor; }
-    var state = { dropped: false };
+    var state = { dropped: false, tainted: [] };
+    function isTainted(node) { return state.tainted.indexOf(node) !== -1; }
 
     function dropRows(node) {
       if (Array.isArray(node)) {
         var rowFamily = isRowFamily(node);
+        var lost = false;
         var kept = [];
         node.forEach(function (item) {
           if (rowFamily && isPlainObject(item)) {
-            if (rowHasBelowFloor(item, floor)) { state.dropped = true; return; }
-            kept.push(dropRows(item));
+            if (rowHasBelowFloor(item, floor)) { state.dropped = true; lost = true; return; }
+            if (dropRows(item)) { lost = true; state.tainted.push(item); }
+            kept.push(item);
           } else {
-            kept.push(dropRows(item));
+            if (dropRows(item)) lost = true;
+            kept.push(item);
           }
         });
-        return kept;
+        node.length = 0;
+        Array.prototype.push.apply(node, kept);
+        return lost;
       }
       if (isPlainObject(node)) {
-        Object.keys(node).forEach(function (k) { node[k] = dropRows(node[k]); });
+        var lostHere = false;
+        Object.keys(node).forEach(function (k) { if (dropRows(node[k])) lostHere = true; });
+        return lostHere;
       }
-      return node;
+      return false;
     }
-    function nullAggregates(node, inRow) {
+    function nullAggregates(node, inRow, withheld) {
       if (Array.isArray(node)) {
         var rowFamily = isRowFamily(node);
-        node.forEach(function (item) { nullAggregates(item, rowFamily); });
+        node.forEach(function (item) {
+          if (rowFamily && isPlainObject(item)) nullAggregates(item, true, isTainted(item));
+          else nullAggregates(item, false, withheld);
+        });
         return node;
       }
       if (isPlainObject(node)) {
+        var region = withheld || isTainted(node);
         Object.keys(node).forEach(function (k) {
           if (NOT_A_COUNT[k]) return;
           var v = node[k];
           if (typeof v === "number") {
-            if (small(v) || (state.dropped && !inRow)) node[k] = null;
+            if (small(v) || region || (state.dropped && !inRow)) node[k] = null;
           } else {
-            nullAggregates(v, false);
+            nullAggregates(v, false, region);
           }
         });
       }
       return node;
     }
+    /* the value is never returned; only the path, and only so the page can say
+       it refused */
+    function firstBelowFloor(node, path) {
+      if (node === null || typeof node === "boolean" || node === undefined) return "";
+      if (typeof node === "number") return small(node) ? (path || "$") : "";
+      if (Array.isArray(node)) {
+        for (var i = 0; i < node.length; i++) {
+          var hit = firstBelowFloor(node[i], (path || "$") + "[" + i + "]");
+          if (hit) return hit;
+        }
+        return "";
+      }
+      if (typeof node === "object") {
+        var keys = Object.keys(node);
+        for (var j = 0; j < keys.length; j++) {
+          if (NOT_A_COUNT[keys[j]]) continue;
+          var found = firstBelowFloor(node[keys[j]], (path || "$") + "." + keys[j]);
+          if (found) return found;
+        }
+      }
+      return "";
+    }
 
     var out = clone(d);
-    out = dropRows(out);
+    dropRows(out);
     out.suppressed_below = floor;
-    return nullAggregates(out, false);
+    nullAggregates(out, false, false);
+    var leak = firstBelowFloor(out, "$");
+    if (leak) throw new Error("a below-floor count survived redaction at " + leak);
+    return out;
   }
   /* the published basis is a coordinator's sentence; end it before the next one */
   function sentence(v) {
@@ -336,8 +379,18 @@
         setState(o.state, o.panel, "live.schema");
         return;
       }
-      /* ONE redaction for the whole document, before a single value is drawn. */
-      d = redact(d);
+      /* ONE redaction for the whole document, before a single value is drawn.
+         A document this page cannot fully redact is refused: it draws the
+         "cannot be read" state and NOTHING of the document, so an
+         unrecognised shape cannot leak a value the page did not suppress. */
+      try {
+        d = redact(d);
+      } catch (e) {
+        setState(o.state, o.panel, "live.schema");
+        if (o.body) { o.body.innerHTML = noneHTML; if (window.I18N) window.I18N.apply(o.body); }
+        document.dispatchEvent(new CustomEvent("publicstats:" + docId, { detail: null }));
+        return;
+      }
       /* The hub can publish in demonstration mode (small numbers not
          suppressed, for review). Whatever the page shows then says so. */
       setState(o.state, o.panel, d.mode === "demonstration" ? "live.publishedDemo" : "live.published",
@@ -365,7 +418,13 @@
   function preview(o, d) {
     if (!d || d.schema !== 1) { setState(o.state, o.panel, "live.schema"); return; }
     setState(o.state, o.panel, "live.preview", null, true);
-    d = redact(d);
+    try {
+      d = redact(d);
+    } catch (e) {
+      /* the document cannot be fully redacted: draw none of it */
+      if (o.body) { o.body.innerHTML = ""; }
+      return;
+    }
     if (o.body) o.body.innerHTML = o.kind === "referral" ? referralBody(d) : floodBody(d);
   }
 

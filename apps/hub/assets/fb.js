@@ -548,11 +548,15 @@
           as "fewer than N" with its category label intact);
        2. when any row anywhere is dropped, every scalar count OUTSIDE a row is
           WITHHELD, so the hidden cell cannot be recovered by subtracting the
-          published parts from a published total. The survivor rows keep their
-          own figures, which are all at or above the floor;
-       3. a style="..." geometry the reader draws is computed by the reader over
+          published parts from a published total;
+       3. an ENCLOSING row whose own subtree lost a row is TAINTED: its own
+          scalar totals may have included the dropped component, so they are
+          withheld too. A surviving nested row is its own region and keeps its
+          own figures -- otherwise 100 minus the surviving nested 94 would
+          still reconstruct the dropped 6;
+       4. a style="..." geometry the reader draws is computed by the reader over
           the rows it is given, so it is a function of redacted values only;
-       4. every scalar count anywhere passes the same floor.
+       5. every scalar count anywhere passes the same floor.
 
      Rule 2 is deliberately blunt -- it withholds more than the minimum -- and
      the narrower rule is an open question for Adib. The trade is stated in the
@@ -562,46 +566,75 @@
     var out = JSON.parse(JSON.stringify(body));
     var floor = policyFloor(out.suppressed_below);
     out.suppressed_below = floor;
-    var state = { dropped: false };
-    return nullAggregates(dropRows(out, floor, state), floor, state, false);
+    var state = { dropped: false, tainted: [] };
+    dropRows(out, floor, state);
+    return nullAggregates(out, floor, state, false, false);
   }
-  /* pass 1: drop every row that carries a below-floor count */
+  /* an object whose subtree lost a row: its own counts are withheld */
+  function isTainted(state, node) {
+    return state.tainted.indexOf(node) !== -1;
+  }
+  /* pass 1: drop every row that carries a below-floor count. Returns true when
+     a row was dropped anywhere in this subtree, so every ENCLOSING object can
+     be marked tainted: a total that covered the dropped row can no longer be
+     published beside the surviving parts. */
   function dropRows(node, floor, state) {
     if (Array.isArray(node)) {
       var rowFamily = isRowFamily(node);
+      var lost = false;
       var kept = [];
       node.forEach(function (item) {
         if (rowFamily && isPlainObject(item)) {
-          if (rowHasBelowFloor(item, floor)) { state.dropped = true; return; }
-          kept.push(dropRows(item, floor, state));
+          if (rowHasBelowFloor(item, floor)) { state.dropped = true; lost = true; return; }
+          if (dropRows(item, floor, state)) {
+            lost = true;
+            state.tainted.push(item);
+          }
+          kept.push(item);
         } else {
-          kept.push(dropRows(item, floor, state));
+          if (dropRows(item, floor, state)) lost = true;
+          kept.push(item);
         }
       });
-      return kept;
+      node.length = 0;
+      Array.prototype.push.apply(node, kept);
+      return lost;
     }
     if (isPlainObject(node)) {
-      Object.keys(node).forEach(function (k) { node[k] = dropRows(node[k], floor, state); });
-      return node;
+      var lostHere = false;
+      Object.keys(node).forEach(function (k) {
+        if (dropRows(node[k], floor, state)) lostHere = true;
+      });
+      return lostHere;
     }
-    return node;
+    return false;
   }
-  /* pass 2: withhold every scalar count outside a row once anything was
-     dropped, and withhold any scalar count below the floor anywhere. */
-  function nullAggregates(node, floor, state, inRow) {
+  /* pass 2: withholds a scalar count when it is below the floor, when it sits
+     on an object tainted by a dropped row (its own subtree lost a row), or --
+     once anything was dropped anywhere -- when it sits outside a row. A
+     surviving nested row is a fresh region: it keeps its own figures, which are
+     all at or above the floor. */
+  function nullAggregates(node, floor, state, inRow, withheld) {
     if (Array.isArray(node)) {
       var rowFamily = isRowFamily(node);
-      node.forEach(function (item) { nullAggregates(item, floor, state, rowFamily); });
+      node.forEach(function (item) {
+        if (rowFamily && isPlainObject(item)) {
+          nullAggregates(item, floor, state, true, isTainted(state, item));
+        } else {
+          nullAggregates(item, floor, state, false, withheld);
+        }
+      });
       return node;
     }
     if (isPlainObject(node)) {
+      var region = withheld || isTainted(state, node);
       Object.keys(node).forEach(function (k) {
-        var v = node[k];
         if (NOT_A_COUNT[k]) return;
+        var v = node[k];
         if (typeof v === "number") {
-          if (belowFloorValue(v, floor) || (state.dropped && !inRow)) node[k] = null;
+          if (belowFloorValue(v, floor) || region || (state.dropped && !inRow)) node[k] = null;
         } else {
-          nullAggregates(v, floor, state, false);
+          nullAggregates(v, floor, state, false, region);
         }
       });
     }
@@ -677,8 +710,11 @@
     /* ONE redaction for the whole document, before a single value is written. */
     var out = redactPublicBody(body);
     /* Fail closed: whatever the redaction pass could not make safe, this sink
-       refuses rather than writing. The path is named; the value never is. */
-    var leak = firstBelowFloorCount(out, PUBLIC_SUPPRESSION_FLOOR, "$");
+       refuses rather than writing. The path is named; the value never is.
+       The check uses the EFFECTIVE floor of this document -- a document that
+       declares 20 must be held to 20, not merely to the policy default, or a
+       value between the two is written and only the reader is left holding it. */
+    var leak = firstBelowFloorCount(out, policyFloor(out.suppressed_below), "$");
     if (leak) {
       return Promise.reject(new Error(
         "a below-floor count survived redaction at " + leak + "; refusing to publish"));
