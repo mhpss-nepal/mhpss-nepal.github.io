@@ -384,6 +384,24 @@ NESTED_ROW_LEAK = {
     ],
 }
 
+# The same complementary arithmetic without a nested row family. The small
+# component is a scalar inside a plain object; withholding that scalar must
+# propagate to the enclosing district/root totals, or 100 - 94 still reveals 6.
+PLAIN_OBJECT_SCALAR_LEAK = {
+    "schema": 1,
+    "mode": "production",
+    "suppressed_below": 10,
+    "basis": "synthetic fixture, scalar nested in a plain object",
+    "contacts": 100,
+    "districts": [
+        {
+            "code": "A",
+            "contacts": 100,
+            "detail": {"small": 6, "large": 94},
+        },
+    ],
+}
+
 # The document declares floor 20, above the page default of 10, so a matrix
 # value of 15 is below the EFFECTIVE floor even though it clears the default.
 # The unrecognised numeric-array shape must be refused by publisher and reader.
@@ -639,6 +657,22 @@ class BelowFloorRedactionTests(unittest.TestCase):
             ["large"],
         )
 
+    def test_nested_scalar_suppression_taints_every_covering_published_total(self) -> None:
+        """A scalar suppressed inside a plain object must taint its enclosing
+        objects just like a dropped row; otherwise 100-94 reconstructs 6."""
+        body = emitted(run("flood_response", PLAIN_OBJECT_SCALAR_LEAK))
+        assert body is not None, "nothing was written to the public collection"
+        district = body["districts"][0]
+        self.assertIsNone(
+            district.get("contacts"),
+            "the district total survived a nested scalar suppression: 100-94=6",
+        )
+        self.assertIsNone(
+            body.get("contacts"),
+            "the document total survived a nested scalar suppression",
+        )
+        self.assertIsNone(district["detail"].get("small"))
+
     # --- the redaction must not be a blanket refusal -----------------------
 
     def test_a_clean_document_is_still_published_unchanged(self) -> None:
@@ -772,6 +806,23 @@ class BelowFloorRedactionTests(unittest.TestCase):
         )
         blob = json.dumps(body)
         self.assertNotIn("small", blob)
+
+    def test_reader_propagates_nested_scalar_suppression_to_covering_totals(self) -> None:
+        """The reader must repeat the publisher's scalar-taint propagation for
+        raw documents written by an older or foreign publisher."""
+        result = run("flood_response", PLAIN_OBJECT_SCALAR_LEAK)
+        body = result["readerRedacted"]
+        assert body is not None, result["readerError"] or "reader returned no redacted document"
+        district = body["districts"][0]
+        self.assertIsNone(
+            district.get("contacts"),
+            "the reader kept a district total covering a suppressed nested scalar",
+        )
+        self.assertIsNone(
+            body.get("contacts"),
+            "the reader kept a document total covering a suppressed nested scalar",
+        )
+        self.assertIsNone(district["detail"].get("small"))
 
     def test_reader_refuses_against_the_effective_declared_floor(self) -> None:
         result = run("flood_response", DECLARED_FLOOR_UNREDACTABLE)
