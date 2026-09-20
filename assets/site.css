@@ -222,6 +222,29 @@
 .mg-empty{border:1.5px dashed #939391;border-radius:var(--r-md);padding:16px 18px;
   background:var(--grey-1);color:var(--hc-ink);margin:12px 0 0;font-size:15px;line-height:1.6}
 
+/* ---------- contributing organisations (contact) ------------------ */
+/* Two kinds of slot, visibly different on purpose. A slot with a logo shows
+   the emblem the organisation supplied; a slot waiting for one says so in
+   words. Neither is an empty box: a blank logo frame reads as a broken
+   image, and a broken image on a page like this reads as carelessness. */
+.cb-h{margin:0 0 6px;font-size:22px;color:var(--hc-ink)}
+.cb-p{font-size:16px;line-height:1.65;color:var(--hc-ink);margin:0 0 18px;max-width:none}
+.cb-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));
+  margin:0}
+.cb-slot{border:1px solid var(--grey-3);border-radius:var(--r-md);background:#fff;
+  padding:20px 22px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.cb-slot.pending{border-style:solid;border-left:4px solid var(--wh-d);background:var(--grey-1)}
+.cb-slot.open{border-style:dashed;background:transparent}
+.cb-role{font-size:12px;letter-spacing:.7px;text-transform:uppercase;font-weight:700;
+  color:var(--hc-mute)}
+.cb-emblem{display:block;margin:4px 0 2px}
+.cb-emblem img{display:block;height:56px;width:auto;max-width:100%}
+.cb-name{display:block;font-size:17px;font-weight:700;color:var(--hc-ink);line-height:1.35}
+.cb-slot.pending .cb-name{font-size:16.5px}
+.cb-name.none{color:var(--hc-mute);font-weight:700;font-size:15.5px}
+.cb-wait{display:block;font-size:13px;line-height:1.5;color:var(--hc-mute)}
+@media (max-width:620px){ .cb-slot{padding:16px 17px}.cb-emblem img{height:44px} }
+
 /* On a phone the thumbnail sits BESIDE the text instead of above it. A
    two-column grid leaves each card about 158px, and a 4:3 cover above a title
    in that space is neither legible nor compact: the cover text becomes
