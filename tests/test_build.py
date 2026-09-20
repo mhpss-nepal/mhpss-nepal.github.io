@@ -47,9 +47,15 @@ class BuildTests(unittest.TestCase):
                 )
                 self.assertEqual(shown.returncode, 0, shown.stdout + shown.stderr)
                 manifest = json.loads(shown.stdout)
-                self.assertEqual(manifest["schema"], 1)
+                self.assertEqual(manifest["schema"], 2)
                 self.assertEqual(manifest["total_files"], 120)
                 self.assertIsInstance(manifest["files"], list)
+                self.assertIsInstance(manifest["directories"], list)
+                self.assertEqual(manifest["total_directories"], len(manifest["directories"]))
+                self.assertIn(
+                    {"path": "form", "mode": "0755", "mtime_ns": 946684800 * 1_000_000_000},
+                    manifest["directories"],
+                )
                 manifests.append(manifest)
                 for path in (output, *output.rglob("*")):
                     expected = 0o755 if path.is_dir() else 0o644

@@ -76,15 +76,19 @@ class LocalQAServerSafetyTests(unittest.TestCase):
         for relative in self.HELPERS:
             with self.subTest(relative=relative):
                 text = (REPOSITORY_ROOT / relative).read_text(encoding="utf-8")
-                self.assertIn('"--bind", "127.0.0.1"', text)
-                self.assertIn("srv.terminate()", text)
+                # No fixed port and no string-prefix origin check may remain.
+                self.assertNotIn("PORT = 9063", text)
+                self.assertNotIn("PORT = 9071", text)
+                self.assertNotIn('startswith("http://127.0.0.1:")', text)
+                self.assertIn("def allocate_port(", text)
+                self.assertIn("probe.bind((\"127.0.0.1\", 0))", text)
+                self.assertIn('srv.terminate()', text)
                 self.assertIn("srv.wait(", text)
                 self.assertIn("srv.kill()", text)
                 self.assertIn("urlopen", text)
                 self.assertIn('"--directory"', text)
                 self.assertIn("Path(__file__).resolve()", text)
-                self.assertIn('ctx.route("**/*", local_only)', text)
-                self.assertIn('route.request.url.startswith("http://127.0.0.1:")', text)
+                self.assertIn('ctx.route("**/*", local_only(ORIGIN))', text)
 
     def test_hub_active_layer_number_uses_text_safe_blue(self) -> None:
         css = (REPOSITORY_ROOT / "apps" / "hub" / "assets" / "design.css").read_text(encoding="utf-8")

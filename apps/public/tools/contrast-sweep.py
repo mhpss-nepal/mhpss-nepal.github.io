@@ -15,21 +15,38 @@ On 16 September 2026 it found 109 failing elements and was run down to 0.
 """
 from pathlib import Path
 from urllib.error import URLError
+from urllib.parse import urlsplit
 from urllib.request import urlopen
 from playwright.sync_api import sync_playwright
-import json, subprocess, sys, time
-PORT = 9063
+import json, subprocess, sys, time, socket
 APP_ROOT = Path(__file__).resolve().parents[1]
-B = sys.argv[1] if len(sys.argv)>1 else "http://127.0.0.1:%d" % PORT
 PAGES=["/","/flood-response.html","/bps.html","/iec.html","/referral-directory.html",
        "/resources.html","/videos.html","/contact-us.html","/method.html","/architecture.html","/access-explained.html","/layer3.html"]
 # the hub and the forms: swept in their own repositories since 17 Sep 2026
 
-def wait_for_server(srv):
+
+def allocate_port():
+    """Ask the operating system for a free loopback port; never a fixed one."""
+    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    probe.bind(("127.0.0.1", 0))
+    port = probe.getsockname()[1]
+    probe.close()
+    return port
+
+
+def exact_origin(url):
+    """Exact parsed origin, so a look-alike prefix can never be accepted."""
+    parts = urlsplit(url)
+    scheme = parts.scheme.lower()
+    port = parts.port or (443 if scheme == "https" else 80)
+    return "%s://%s:%d" % (scheme, (parts.hostname or "").lower(), port)
+
+
+def wait_for_server(srv, base):
     deadline = time.monotonic() + 10
     while time.monotonic() < deadline:
         try:
-            with urlopen(B + "/", timeout=0.5) as response:
+            with urlopen(base + "/", timeout=0.5) as response:
                 if response.status == 200:
                     return
         except (OSError, URLError):
@@ -69,28 +86,35 @@ JS = """() => {
   for(const o of out){const k=o.tag+o.cls+o.px+o.fg; if(!seen.has(k)){seen.add(k);u.push(o);}}
   return u.slice(0,12);
 }"""
-def local_only(route):
-    if route.request.url.startswith("http://127.0.0.1:"):
-        route.continue_()
-    else:
-        route.abort()
+def local_only(origin):
+    def check(route):
+        if exact_origin(route.request.url) == origin:
+            route.continue_()
+        else:
+            route.abort()
+    return check
 
 bad={}
 srv = None
 if len(sys.argv) == 1:
+    PORT = allocate_port()
+    B = "http://127.0.0.1:%d" % PORT
     srv = subprocess.Popen([
         sys.executable, "-m", "http.server", str(PORT), "--bind", "127.0.0.1",
         "--directory", str(APP_ROOT),
     ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+else:
+    B = sys.argv[1]
+ORIGIN = exact_origin(B)
 try:
     if srv is not None:
-        wait_for_server(srv)
+        wait_for_server(srv, B)
     with sync_playwright() as p:
         br=p.chromium.launch()
         for scheme in ("light","dark"):
             for path in PAGES:
                 ctx=br.new_context(viewport={"width":1280,"height":900}, color_scheme=scheme)
-                ctx.route("**/*", local_only)
+                ctx.route("**/*", local_only(ORIGIN))
                 pg=ctx.new_page(); pg.goto(B+path, wait_until="load", timeout=25000); pg.wait_for_timeout(1700)
                 r=pg.evaluate(JS)
                 if r: bad["%s %s"%(scheme,path)]=r

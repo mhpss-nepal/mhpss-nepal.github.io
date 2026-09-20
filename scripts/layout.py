@@ -173,10 +173,54 @@ _FORBIDDEN_SUFFIXES = {
     ".xlsx",
 }
 _FORBIDDEN_ARTIFACT_WORDS = {"backup", "backups", "export", "exports", "snapshot", "snapshots"}
-_WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL", *(f"COM{number}" for number in range(1, 10)), *(f"LPT{number}" for number in range(1, 10))}
-_ASSIGNMENT_FILE_SUFFIXES = {".cfg", ".conf", ".ini", ".properties", ".txt", ".toml", ".yaml", ".yml"}
-_SECRET_ASSIGNMENT = re.compile(rb"(?im)^\s*(?:export\s+)?[A-Za-z0-9_.-]*(?:secret|token|password|passwd|api[_-]?key|private[_-]?key)[A-Za-z0-9_.-]*\s*[:=]")
+# The complete legacy set: the DOS device names, the console aliases, CLOCK$, and
+# the superscript COM/LPT variants that Windows also resolves as devices. Names
+# are compared after stripping trailing dots/spaces from the pre-extension stem.
+_WINDOWS_RESERVED_BASE = {
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    "CLOCK$",
+    "CONIN$",
+    "CONOUT$",
+    *(f"COM{number}" for number in range(1, 10)),
+    *(f"LPT{number}" for number in range(1, 10)),
+    "COM\u00b9",
+    "COM\u00b2",
+    "COM\u00b3",
+    "LPT\u00b9",
+    "LPT\u00b2",
+    "LPT\u00b3",
+}
+_WINDOWS_RESERVED = {name.rstrip(". ") for name in _WINDOWS_RESERVED_BASE}
+# Suffix-independent secret detection: key/value assignment shapes for secrets,
+# tokens, passwords, and private/API keys. Applied to every bounded blob.
+_SECRET_ASSIGNMENT = re.compile(
+    rb"(?im)^[ \t]*(?:export[ \t]+)?[\"']?([A-Za-z0-9_.$@-]*"
+    rb"(?:secret|token|password|passwd|passphrase|api[_-]?key|private[_-]?key"
+    rb"|access[_-]?key|client[_-]?secret|auth[_-]?token)"
+    rb"[A-Za-z0-9_.$@-]*)[\"']?[ \t]*[:=]"
+)
+# Narrow, explicit, path-and-content-scoped exceptions for known-public
+# configuration only. Each entry records the allowed assignment keys and the
+# reason the material is knowingly public. Nothing else may bypass the scan.
+_PUBLIC_CONFIG_EXCEPTIONS: dict[str, tuple[frozenset[str], str]] = {
+    "apps/hub/assets/fb-config.js": (
+        frozenset({"apikey"}),
+        "Firebase web configuration is a public identifier published in the page source; "
+        "authorization is the (unverified) server-side Firestore Rules, not this key.",
+    ),
+    "apps/public/assets/fb-config.js": (
+        frozenset({"apikey"}),
+        "Firebase web configuration is a public identifier published in the page source; "
+        "authorization is the (unverified) server-side Firestore Rules, not this key.",
+    ),
+}
 _HEX_OBJECT = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})\Z")
+_AWS_ACCESS_KEY = re.compile(rb"AKIA[0-9A-Z]{16}")
+_GITHUB_TOKEN = re.compile(rb"(?i)\bgh[pousr]_[A-Za-z0-9]{30,}")
+_BEARER_TOKEN = re.compile(rb"(?i)\bbearer[ \t]+[A-Za-z0-9._\-]{20,}")
 _SYNTHETIC_DEMOS = {"apps/hub/data/demo.json", "apps/hub/data/demo.js"}
 
 
@@ -220,17 +264,28 @@ def _path_parts(path: Path) -> tuple[str, ...]:
     return tuple(part for part in _absolute_lexical(path).parts[1:] if part != ".")
 
 
+def canonical_path_key(path: str) -> str:
+    """One canonical comparison key: NFC-normalized, case-folded.
+
+    Colliding names must be rejected under a single combined key so that a pair
+    differing only by case folding, only by Unicode normalization, or only by the
+    interaction of both cannot reach two destinations that one filesystem would
+    merge (or that two filesystems would treat differently).
+    """
+    return unicodedata.normalize("NFC", path).casefold()
+
+
 def validate_path_component(component: str, *, label: str) -> None:
     """Reject names with unsafe or cross-platform ambiguous spelling."""
     if not component or component in {".", ".."}:
         raise ValueError(f"unsafe {label} component: {component!r}")
-    if any(ord(character) < 32 or ord(character) == 127 for character in component):
-        raise ValueError(f"unsafe control character in {label}: {component!r}")
+    if any(unicodedata.category(character).startswith("C") for character in component):
+        raise ValueError(f"unsafe control or format character in {label}: {component!r}")
     if component.endswith((".", " ")):
         raise ValueError(f"unsafe trailing dot or space in {label}: {component!r}")
-    if component.casefold() == ".git":
+    if canonical_path_key(component) == ".git":
         raise ValueError(f"forbidden .git path component in {label}: {component!r}")
-    windows_stem = component.split(".", 1)[0].upper()
+    windows_stem = component.split(".", 1)[0].upper().rstrip(". ")
     if windows_stem in _WINDOWS_RESERVED:
         raise ValueError(f"unsafe Windows-reserved name in {label}: {component!r}")
 
@@ -483,21 +538,19 @@ def _parse_tree(data: bytes, oid_bytes: int) -> list[tuple[str, str, str]]:
 
 
 class _PathRegistry:
-    def __init__(self) -> None:
-        self.casefolded: dict[str, str] = {}
-        self.normalized: dict[str, str] = {}
+    """Reject any two classified paths that share one canonical comparison key."""
 
-    def add(self, path: str) -> None:
-        case_key = path.casefold()
-        previous = self.casefolded.get(case_key)
+    def __init__(self) -> None:
+        self.by_key: dict[str, str] = {}
+
+    def add(self, path: str, *, kind: str = "path") -> None:
+        key = canonical_path_key(path)
+        previous = self.by_key.get(key)
         if previous is not None and previous != path:
-            raise ValueError(f"case-fold collision in committed source: {previous!r} and {path!r}")
-        self.casefolded[case_key] = path
-        normalized_key = unicodedata.normalize("NFC", path)
-        previous = self.normalized.get(normalized_key)
-        if previous is not None and previous != path:
-            raise ValueError(f"Unicode-normalization collision in committed source: {previous!r} and {path!r}")
-        self.normalized[normalized_key] = path
+            raise ValueError(
+                f"canonical collision between {kind}s under one key: {previous!r} and {path!r}"
+            )
+        self.by_key[key] = path
 
 
 def _validate_git_path(path: str) -> tuple[str, ...]:
@@ -536,7 +589,24 @@ def _forbidden_path(path: str) -> bool:
     )
 
 
-def _forbidden_content(path: str, data: bytes) -> str | None:
+def _secret_assignment(data: bytes, path: str) -> "re.Match[bytes] | None":
+    """Return the first secret-shaped assignment, honoring narrow exceptions.
+
+    The assignment scan is deliberately independent of the file suffix: an
+    allowlisted ``.html``, ``.js``, ``.css``, or binary blob is scanned in full
+    exactly like a configuration file.
+    """
+    for match in _SECRET_ASSIGNMENT.finditer(data):
+        key = match.group(1).decode("utf-8", "replace").casefold()
+        exception = _PUBLIC_CONFIG_EXCEPTIONS.get(path)
+        if exception is not None and key in exception[0]:
+            continue
+        return match
+    return None
+
+
+def forbidden_content_reason(path: str, data: bytes) -> "str | None":
+    """Classify one bounded blob for excluded content, suffix-independently."""
     upper = data.upper()
     if b"-----BEGIN " in upper and b"PRIVATE KEY-----" in upper:
         return "private-key material"
@@ -545,10 +615,61 @@ def _forbidden_content(path: str, data: bytes) -> str | None:
         b'"private_key_id"' in lowered and b'"client_email"' in lowered
     ):
         return "service-account material"
-    suffix = PurePosixPath(path.casefold()).suffix
-    if suffix in _ASSIGNMENT_FILE_SUFFIXES and _SECRET_ASSIGNMENT.search(data):
+    for label, pattern in (
+        ("AWS access-key id", _AWS_ACCESS_KEY),
+        ("GitHub token", _GITHUB_TOKEN),
+        ("bearer token", _BEARER_TOKEN),
+    ):
+        if pattern.search(data):
+            return label
+    if _secret_assignment(data, path) is not None:
         return "secret/token/password assignment"
     return None
+
+
+class _DuplicateKey(ValueError):
+    """Raised when strict JSON parsing meets a duplicate object key."""
+
+
+def _reject_duplicate_pairs(pairs: "list[tuple[str, object]]") -> dict[str, object]:
+    seen: set[str] = set()
+    for key, _ in pairs:
+        if key in seen:
+            raise _DuplicateKey(key)
+        seen.add(key)
+    return dict(pairs)
+
+
+def _reject_non_finite(token: str) -> object:
+    raise ValueError(f"non-finite JSON value: {token}")
+
+
+def parse_structured_data(path: str, data: bytes) -> object | None:
+    """Strictly parse a classified JSON or web-manifest blob before any output.
+
+    Returns the parsed value, or ``None`` when the path is not structured data.
+    Malformed, duplicate-keyed, or non-finite content raises ``ValueError`` so the
+    whole build fails closed instead of copying ambiguous structured content.
+    """
+    lowered = path.casefold()
+    if not lowered.endswith((".json", ".webmanifest")):
+        return None
+    try:
+        text = data.decode("utf-8", "strict")
+    except UnicodeDecodeError as error:
+        raise ValueError(f"structured data is not valid UTF-8: {path}") from error
+    try:
+        return json.loads(
+            text,
+            object_pairs_hook=_reject_duplicate_pairs,
+            parse_constant=_reject_non_finite,
+        )
+    except _DuplicateKey as error:
+        raise ValueError(f"structured data has a duplicate key: {path} ({error})") from error
+    except json.JSONDecodeError as error:
+        raise ValueError(f"structured data is malformed JSON: {path} ({error})") from error
+    except (ValueError, TypeError) as error:
+        raise ValueError(f"structured data is invalid: {path} ({error})") from error
 
 
 def _destination_for(git_path: str) -> PurePosixPath:
@@ -618,7 +739,8 @@ def inspect_source(source_root: Path, revision: str = "HEAD") -> SourceLayout:
                 raise ValueError("committed tree traversal work limit exceeded")
             path = f"{prefix}/{name}"
             _validate_git_path(path)
-            registry.add(path)
+            entry_kind = "directory" if mode == "40000" else "file"
+            registry.add(path, kind=entry_kind)
             if mode == "40000":
                 walk_tree(oid, path)
                 continue
@@ -634,7 +756,7 @@ def inspect_source(source_root: Path, revision: str = "HEAD") -> SourceLayout:
                 raise ValueError("total byte limit exceeded for committed application files")
             if _forbidden_path(path):
                 raise ValueError(f"forbidden committed source path: {path}")
-            forbidden_reason = _forbidden_content(path, data)
+            forbidden_reason = forbidden_content_reason(path, data)
             if forbidden_reason is not None:
                 raise ValueError(f"forbidden committed source contains {forbidden_reason}: {path}")
             found[path] = SourceEntry(path, _destination_for(path), oid, data)
@@ -668,6 +790,12 @@ def inspect_source(source_root: Path, revision: str = "HEAD") -> SourceLayout:
         raise ValueError(f"missing expected application path: {missing[0]}")
     if file_count != MAX_FILES:
         raise ValueError(f"total file limit requires exactly {MAX_FILES} files, found {file_count}")
+
+    # Strict structured-data parsing, AFTER every resource/allowlist budget has
+    # been enforced and BEFORE any output bytes are materialized: malformed or
+    # ambiguous JSON / web-manifest content fails the whole build closed.
+    for path in sorted(found):
+        parse_structured_data(path, found[path].data)
 
     documentation = found["apps/hub/data/README.md"].data.decode("utf-8", "replace").casefold()
     if "synthetic" not in documentation or not all(PurePosixPath(path).name.casefold() in documentation for path in _SYNTHETIC_DEMOS):
@@ -801,8 +929,25 @@ def read_output_tree(
 
 
 def json_manifest(root: Path) -> str:
-    _, files, _ = read_output_tree(root)
-    records = [
+    """Deterministic JSON manifest covering files AND directories.
+
+    Directories are recorded so the artifact's structure is unambiguous, and both
+    file and directory paths are run through the same canonical collision
+    registry used for source classification, so a cross-platform path collision
+    can never be represented silently.
+    """
+    _, files, directories = read_output_tree(root)
+    registry = _PathRegistry()
+    for item in directories:
+        registry.add(item.path, kind="directory")
+    for item in files:
+        registry.add(item.path, kind="file")
+
+    directory_records = [
+        {"mode": f"{item.mode:04o}", "mtime_ns": item.mtime_ns, "path": item.path}
+        for item in directories
+    ]
+    file_records = [
         {
             "mode": f"{item.mode:04o}",
             "mtime_ns": item.mtime_ns,
@@ -813,9 +958,11 @@ def json_manifest(root: Path) -> str:
         for item in files
     ]
     value = {
-        "files": records,
-        "schema": 1,
-        "total_bytes": sum(record["size"] for record in records),
-        "total_files": len(records),
+        "directories": directory_records,
+        "files": file_records,
+        "schema": 2,
+        "total_bytes": sum(record["size"] for record in file_records),
+        "total_directories": len(directory_records),
+        "total_files": len(file_records),
     }
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"

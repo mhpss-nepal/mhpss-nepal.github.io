@@ -101,6 +101,9 @@ def _normalize_directories(root_descriptor: int, directories: set[PurePosixPath]
 
 def build(source_root: Path, output: Path, revision: str = "HEAD") -> SourceLayout:
     """Build from verified objects, refusing every pre-existing output path."""
+    # First pass: confirm the output path is fresh, then close the parent again so
+    # the whole committed source is scanned BEFORE any output exists. A rejected
+    # source therefore leaves the filesystem untouched and creates nothing to clean.
     parent_descriptor, output_name, output_path = _open_parent(output)
     try:
         try:
@@ -109,12 +112,18 @@ def build(source_root: Path, output: Path, revision: str = "HEAD") -> SourceLayo
             pass
         else:
             raise ValueError(f"output path already exists; choose a fresh path: {output_path}")
+    finally:
+        os.close(parent_descriptor)
 
-        layout = inspect_source(source_root, revision)
-        source_path = layout.root
-        if output_path == source_path or output_path.is_relative_to(source_path) or source_path.is_relative_to(output_path):
-            raise ValueError(f"output and source root must not overlap: {output_path}")
+    layout = inspect_source(source_root, revision)
+    source_path = layout.root
+    if output_path == source_path or output_path.is_relative_to(source_path) or source_path.is_relative_to(output_path):
+        raise ValueError(f"output and source root must not overlap: {output_path}")
 
+    # Second pass: re-open the parent link-free, re-confirm the path is still
+    # absent, and create the output exactly once beneath the acquired descriptor.
+    parent_descriptor, output_name, output_path = _open_parent(output)
+    try:
         try:
             os.mkdir(output_name, mode=0o700, dir_fd=parent_descriptor)
         except FileExistsError as error:

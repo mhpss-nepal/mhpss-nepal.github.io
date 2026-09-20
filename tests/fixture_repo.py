@@ -34,6 +34,8 @@ def fixture_bytes(path: str, label: str = "fixture") -> bytes:
         return b'{"synthetic":true,"records":[]}\n'
     if path == "apps/hub/data/demo.js":
         return b'/* Synthetic demonstration data; never operational data. */\nwindow.DEMO=[];\n'
+    if path == "apps/form/manifest.webmanifest":
+        return b'{"name":"Fixture","start_url":"./","icons":[]}\n'
     if path == "apps/hub/data/README.md":
         return b"# Synthetic demonstration data\n\n`demo.json` and `demo.js` are source-controlled synthetic examples, not real data.\n"
     return f"{label}: {path}\n".encode()
