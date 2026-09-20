@@ -527,9 +527,24 @@ html[lang="ne"] .hlc .np{display:none}
   box-shadow:0 0 0 100vmax var(--wh-dd);clip-path:inset(0 -100vmax)}
 .sheet.hero .stamp{color:var(--wh-b);font-size:13px;letter-spacing:1.4px;text-transform:uppercase;
   font-weight:700}
-.sheet.hero h1.title{color:#fff;font-size:clamp(34px,3.8vw,58px);max-width:none;
+/* The title is SET IN THREE LINES, not wrapped by the browser: "MHPSS" /
+   "Technical Working Group" / "Nepal", as the project owner asked on
+   20 September 2026, carried as <br> in home.p023 so both languages break
+   the same way (the Nepali third line is नेपाल).
+
+   The size is driven by the MIDDLE line, which is the longest: "Technical
+   Working Group" must fit the column on one line, or the forced break stops
+   meaning three lines. Measured in this face at this letter-spacing it needs
+   10.4x the font size in width, and the hero column is about half the
+   viewport once the side column and the gutters are out -- so the size has
+   to track vw, and the cap has to be small enough for the narrowest
+   two-column viewport. 4.6vw sits just under the 4.8vw the measurement
+   allows, for rounding. Checked at 320 through 1920: three lines, both
+   languages, at every width. */
+.sheet.hero h1.title{color:#fff;max-width:none;
+  font-size:clamp(20px,4.6vw,58px);
   letter-spacing:-.9px;line-height:1.1;margin-top:10px}
-.sheet.hero h1.title{text-wrap:balance}
+.sheet.hero h1.title br{line-height:1.1}
 .sheet.hero .subtitle{color:#e8f3f9;font-size:19px;line-height:1.62;margin-top:18px}
 /* the links under the title, in white -- scoped to the title column, so the
    link inside the white helpline card keeps the page's blue */
