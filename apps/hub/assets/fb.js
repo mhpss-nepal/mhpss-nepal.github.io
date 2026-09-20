@@ -593,13 +593,20 @@
     assertNoMixedRowFamilies(out, "$");
     var floor = policyFloor(out.suppressed_below);
     out.suppressed_below = floor;
-    var state = { dropped: false, tainted: [] };
+    var state = { dropped: false, tainted: [], scalarTainted: [], scalarDirect: [] };
     dropRows(out, floor, state);
+    markScalarTaints(out, floor, state);
     return nullAggregates(out, floor, state, false, false);
   }
   /* an object whose subtree lost a row: its own counts are withheld */
   function isTainted(state, node) {
     return state.tainted.indexOf(node) !== -1;
+  }
+  function isScalarTainted(state, node) {
+    return state.scalarTainted.indexOf(node) !== -1;
+  }
+  function isScalarDirect(state, node) {
+    return state.scalarDirect.indexOf(node) !== -1;
   }
   /* pass 1: drop every row that carries a below-floor count. Returns true when
      a row was dropped anywhere in this subtree, so every ENCLOSING object can
@@ -636,6 +643,38 @@
     }
     return false;
   }
+  /* A below-floor scalar nested in a plain child object is the same
+     complementary-cell hazard as a dropped nested row: every enclosing object
+     may carry a total covering it. Mark those ancestors, but not the direct
+     container of the scalar, so an unrelated surviving sibling/complement is
+     not blanked once all covering totals are withheld. Returns true when this
+     subtree contains a scalar that this pass will suppress. */
+  function markScalarTaints(node, floor, state) {
+    if (Array.isArray(node)) {
+      var inArray = false;
+      node.forEach(function (item) {
+        if (markScalarTaints(item, floor, state)) inArray = true;
+      });
+      return inArray;
+    }
+    if (isPlainObject(node)) {
+      var direct = false;
+      var nested = false;
+      Object.keys(node).forEach(function (k) {
+        if (NOT_A_COUNT[k]) return;
+        var v = node[k];
+        if (typeof v === "number") {
+          if (belowFloorValue(v, floor)) direct = true;
+        } else if (markScalarTaints(v, floor, state)) {
+          nested = true;
+        }
+      });
+      if (direct) state.scalarDirect.push(node);
+      if (nested) state.scalarTainted.push(node);
+      return direct || nested;
+    }
+    return belowFloorValue(node, floor);
+  }
   /* pass 2: withholds a scalar count when it is below the floor, when it sits
      on an object tainted by a dropped row (its own subtree lost a row), or --
      once anything was dropped anywhere -- when it sits outside a row. A
@@ -655,13 +694,16 @@
     }
     if (isPlainObject(node)) {
       var region = withheld || isTainted(state, node);
+      var scalarRegion = isScalarTainted(state, node);
+      var scalarDirect = isScalarDirect(state, node);
       Object.keys(node).forEach(function (k) {
         if (NOT_A_COUNT[k]) return;
         var v = node[k];
         if (typeof v === "number") {
-          if (belowFloorValue(v, floor) || region || (state.dropped && !inRow)) node[k] = null;
+          if (belowFloorValue(v, floor) || region || scalarRegion || scalarDirect ||
+              (state.dropped && !inRow)) node[k] = null;
         } else {
-          nullAggregates(v, floor, state, false, region);
+          nullAggregates(v, floor, state, false, region || scalarDirect);
         }
       });
     }

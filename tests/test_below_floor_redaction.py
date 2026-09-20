@@ -672,6 +672,10 @@ class BelowFloorRedactionTests(unittest.TestCase):
             "the document total survived a nested scalar suppression",
         )
         self.assertIsNone(district["detail"].get("small"))
+        self.assertIsNone(
+            district["detail"].get("large"),
+            "the sibling complement survived beside a suppressed scalar",
+        )
 
     # --- the redaction must not be a blanket refusal -----------------------
 
@@ -823,6 +827,10 @@ class BelowFloorRedactionTests(unittest.TestCase):
             "the reader kept a document total covering a suppressed nested scalar",
         )
         self.assertIsNone(district["detail"].get("small"))
+        self.assertIsNone(
+            district["detail"].get("large"),
+            "the reader kept the sibling complement beside a suppressed scalar",
+        )
 
     def test_reader_refuses_against_the_effective_declared_floor(self) -> None:
         result = run("flood_response", DECLARED_FLOOR_UNREDACTABLE)

@@ -137,8 +137,10 @@
       ? Math.floor(d.suppressed_below) : FLOOR;
     var floor = Math.max(FLOOR, declared);
     function small(n) { return typeof n === "number" && isFinite(n) && n > 0 && n < floor; }
-    var state = { dropped: false, tainted: [] };
+    var state = { dropped: false, tainted: [], scalarTainted: [], scalarDirect: [] };
     function isTainted(node) { return state.tainted.indexOf(node) !== -1; }
+    function isScalarTainted(node) { return state.scalarTainted.indexOf(node) !== -1; }
+    function isScalarDirect(node) { return state.scalarDirect.indexOf(node) !== -1; }
 
     function dropRows(node) {
       if (Array.isArray(node)) {
@@ -166,6 +168,30 @@
       }
       return false;
     }
+    function markScalarTaints(node) {
+      if (Array.isArray(node)) {
+        var inArray = false;
+        node.forEach(function (item) { if (markScalarTaints(item)) inArray = true; });
+        return inArray;
+      }
+      if (isPlainObject(node)) {
+        var direct = false;
+        var nested = false;
+        Object.keys(node).forEach(function (k) {
+          if (NOT_A_COUNT[k]) return;
+          var v = node[k];
+          if (typeof v === "number") {
+            if (small(v)) direct = true;
+          } else if (markScalarTaints(v)) {
+            nested = true;
+          }
+        });
+        if (direct) state.scalarDirect.push(node);
+        if (nested) state.scalarTainted.push(node);
+        return direct || nested;
+      }
+      return small(node);
+    }
     function nullAggregates(node, inRow, withheld) {
       if (Array.isArray(node)) {
         var rowFamily = isRowFamily(node);
@@ -177,13 +203,16 @@
       }
       if (isPlainObject(node)) {
         var region = withheld || isTainted(node);
+        var scalarRegion = isScalarTainted(node);
+        var scalarDirect = isScalarDirect(node);
         Object.keys(node).forEach(function (k) {
           if (NOT_A_COUNT[k]) return;
           var v = node[k];
           if (typeof v === "number") {
-            if (small(v) || region || (state.dropped && !inRow)) node[k] = null;
+            if (small(v) || region || scalarRegion || scalarDirect ||
+                (state.dropped && !inRow)) node[k] = null;
           } else {
-            nullAggregates(v, false, region);
+            nullAggregates(v, false, region || scalarDirect);
           }
         });
       }
@@ -214,6 +243,7 @@
 
     var out = clone(d);
     dropRows(out);
+    markScalarTaints(out);
     out.suppressed_below = floor;
     nullAggregates(out, false, false);
     var leak = firstBelowFloor(out, "$");
