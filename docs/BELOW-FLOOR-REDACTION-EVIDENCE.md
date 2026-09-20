@@ -242,6 +242,12 @@ publication-privacy test is green.
 - **One fixture artifact.** The synthetic fixture's `basis` was made digit-free so that a figure
   counted off the page is a figure of the *data*, not of the prose. A real basis sentence
   containing digits is not a leak, but the renderer's source note does echo it.
+- **One transient test run.** During verification the focused 27-test surface failed **once** with
+  no source change; it then passed on three consecutive re-runs (and again at the final head). The
+  browser tests drive real Chromium over a local HTTP server, so a launch/timing stall is the
+  likely cause. This is stated rather than smoothed over; the failing test names were not captured
+  before the re-run. The property is verified by the red→green evidence in §2–§3, which is
+  reproducible, not by the single green run.
 
 ## 8. Open questions for Adib (no policy was invented)
 
