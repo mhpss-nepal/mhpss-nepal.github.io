@@ -175,10 +175,10 @@ class NdrrmaCaptureTests(unittest.TestCase):
             artifact = json.loads((asset / "public" / "latest.json").read_text(encoding="utf-8"))
             version_names = sorted(path.name for path in (asset / "versions").glob("*.json"))
             self.assertTrue(result.changed)
-            self.assertEqual(
-                version_names,
-                ["2026-09-21T0900+0700.json", "2026-09-28T0900+0700.json"],
-            )
+            self.assertEqual(len(version_names), 2)
+            self.assertTrue(version_names[0].startswith("2026-09-21T0900+0700-"))
+            self.assertTrue(version_names[1].startswith("2026-09-28T0900+0700-"))
+            self.assertTrue(all(name.endswith(".json") for name in version_names))
             self.assertEqual(artifact["schema_version"], 1)
             self.assertEqual(artifact["data_date"], "2026-09-26")
             self.assertEqual(artifact["source"]["name"], "NDRRMA 5Ws public Power BI dashboard")
@@ -187,6 +187,66 @@ class NdrrmaCaptureTests(unittest.TestCase):
             self.assertEqual(artifact["aggregates"]["response_headline"], 61612)
             # The public artifact must not leak private per-sector or person-level data.
             self.assertNotIn("sector_totals", artifact)
+
+    def test_two_movements_on_the_same_day_both_survive(self) -> None:
+        """A same-day re-movement must not overwrite the earlier immutable version."""
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            asset = Path(temporary_directory)
+            now = dt.datetime(2026, 9, 21, 9, 0, tzinfo=WIB)
+            first_values = dict(SECTORS)
+            first_values["Protection - MHPSS"] = 5900
+            second_values = dict(SECTORS)
+            second_values["Protection - MHPSS"] = 6001
+            self.capture.capture_payloads(
+                asset, synthetic_sector_payload(first_values), synthetic_date_payload(dt.date(2026, 9, 20)), now=now
+            )
+            second = self.capture.capture_payloads(
+                asset,
+                synthetic_sector_payload(second_values),
+                synthetic_date_payload(dt.date(2026, 9, 21)),
+                now=now + dt.timedelta(hours=3),
+            )
+            ledger_rows = (asset / "ledger.jsonl").read_text(encoding="utf-8").splitlines()
+            versions = sorted(path.name for path in (asset / "versions").glob("*.json"))
+            artifact = json.loads((asset / "public" / "latest.json").read_text(encoding="utf-8"))
+            self.assertTrue(second.changed)
+            self.assertEqual(len(ledger_rows), 2)
+            self.assertEqual(len(versions), 2)
+            self.assertTrue(versions[0].startswith("2026-09-21T0900+0700-"))
+            self.assertTrue(versions[1].startswith("2026-09-21T1200+0700-"))
+            self.assertEqual(artifact["aggregates"]["mhpss_reached"], 6001)
+            # The older immutable version still holds its own figures.
+            older = json.loads((asset / "versions" / versions[0]).read_text(encoding="utf-8"))
+            self.assertEqual(older["aggregates"]["mhpss_reached"], 5900)
+            self.assertEqual(self.capture.verify_artifacts(asset)["rows"], 2)
+
+    def test_two_movements_in_the_same_minute_do_not_overwrite(self) -> None:
+        """Two records inside one clock minute must get distinct immutable files."""
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            asset = Path(temporary_directory)
+            now = dt.datetime(2026, 9, 21, 9, 0, 30, tzinfo=WIB)
+            first_values = dict(SECTORS)
+            first_values["Protection - MHPSS"] = 5900
+            second_values = dict(SECTORS)
+            second_values["Protection - MHPSS"] = 6001
+            self.capture.capture_payloads(
+                asset, synthetic_sector_payload(first_values), synthetic_date_payload(dt.date(2026, 9, 20)), now=now
+            )
+            second = self.capture.capture_payloads(
+                asset,
+                synthetic_sector_payload(second_values),
+                synthetic_date_payload(dt.date(2026, 9, 21)),
+                now=now + dt.timedelta(seconds=25),
+            )
+            versions = sorted(path.name for path in (asset / "versions").glob("*.json"))
+            self.assertTrue(second.changed)
+            self.assertEqual(len(versions), 2, versions)
+            values = sorted(
+                json.loads((asset / "versions" / name).read_text(encoding="utf-8"))["aggregates"]["mhpss_reached"]
+                for name in versions
+            )
+            self.assertEqual(values, [5900, 6001])
+            self.assertEqual(self.capture.verify_artifacts(asset)["rows"], 2)
 
     def test_ledger_and_snapshot_are_traceable_and_verified(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -200,9 +260,12 @@ class NdrrmaCaptureTests(unittest.TestCase):
             expected = {
                 "data/ndrrma/ledger.jsonl",
                 "data/ndrrma/public/latest.json",
-                "data/ndrrma/versions/2026-09-21T0900+0700.json",
             }
-            self.assertEqual(set(self.capture.repository_paths(result, Path("data/ndrrma"))), expected)
+            paths = set(self.capture.repository_paths(result, Path("data/ndrrma")))
+            version_paths = {path for path in paths if path.startswith("data/ndrrma/versions/")}
+            self.assertEqual(paths - version_paths, expected)
+            self.assertEqual(len(version_paths), 1)
+            self.assertRegex(next(iter(version_paths)), r"^data/ndrrma/versions/2026-09-21T0900\+0700-[0-9a-f]{12}\.json$")
             for relative in result.written_paths:
                 absolute = asset / relative
                 self.assertEqual(self.capture.sha256_file(absolute), result.sha256_by_path[relative])
@@ -211,9 +274,11 @@ class NdrrmaCaptureTests(unittest.TestCase):
                 self.capture.sha256_file(asset / ledger_row["version_path"]),
                 ledger_row["version_sha256"],
             )
+            self.assertEqual(ledger_row["source"], "NDRRMA 5Ws public Power BI dashboard")
+            # The mutable pointer must be a byte-for-byte copy of the newest version.
             self.assertEqual(
-                self.capture.sha256_file(asset / ledger_row["public_artifact_path"]),
-                ledger_row["public_artifact_sha256"],
+                (asset / "public" / "latest.json").read_bytes(),
+                (asset / ledger_row["version_path"]).read_bytes(),
             )
 
     def test_corrupted_output_is_caught_by_exact_readback(self) -> None:
@@ -244,7 +309,7 @@ class NdrrmaCaptureTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "read-back"):
                 self.capture.verify_artifacts(asset)
 
-    def test_verify_artifacts_rejects_a_public_artifact_with_a_sector_breakdown(self) -> None:
+    def test_verify_artifacts_rejects_any_extra_aggregate_key(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             asset = Path(temporary_directory)
             self.capture.capture_payloads(
@@ -254,18 +319,19 @@ class NdrrmaCaptureTests(unittest.TestCase):
                 now=dt.datetime(2026, 9, 21, 9, 0, tzinfo=WIB),
             )
             public_path = asset / "public" / "latest.json"
+            version_path = next((asset / "versions").glob("*.json"))
             artifact = json.loads(public_path.read_text(encoding="utf-8"))
-            artifact["aggregates"]["sector_totals"] = {"WASH": 1}
-            public_bytes = (json.dumps(artifact, separators=(",", ":"), sort_keys=True) + "\n").encode("utf-8")
-            public_path.write_bytes(public_bytes)
-            # Keep the ledger digest in step so the *content* rule, not the hash rule, fails.
+            artifact["aggregates"]["unpublished_extra"] = 1
+            tampered = (json.dumps(artifact, separators=(",", ":"), sort_keys=True) + "\n").encode("utf-8")
+            # Keep the pointer consistent with the version so the *content* rule,
+            # not the pointer rule, is what fails.
+            version_path.write_bytes(tampered)
+            public_path.write_bytes(tampered)
             ledger_path = asset / "ledger.jsonl"
             row = json.loads(ledger_path.read_text(encoding="utf-8").splitlines()[0])
-            row["public_artifact_sha256"] = self.capture.sha256_bytes(public_bytes)
-            ledger_path.write_text(
-                json.dumps(row, separators=(",", ":"), sort_keys=True) + "\n", encoding="utf-8"
-            )
-            with self.assertRaisesRegex(ValueError, "per-sector"):
+            row["version_sha256"] = self.capture.sha256_bytes(tampered)
+            ledger_path.write_text(json.dumps(row, separators=(",", ":"), sort_keys=True) + "\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "aggregates must be exactly"):
                 self.capture.verify_artifacts(asset)
 
     def test_archive_root_guard_rejects_a_mismatched_root(self) -> None:

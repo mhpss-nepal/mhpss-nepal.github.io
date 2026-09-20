@@ -46,6 +46,9 @@ SOURCE_ACCESS = "public embed semantic query; read-only; no account or token"
 # sector rows (sector reach is non-additive: max per location).
 RESPONSE_HEADLINE = 61612
 MHPSS_ACTIVITIES = 233
+# The only figures the committed public artifact may carry: each is already
+# published on the source dashboard, so nothing unpublished can reach the repo.
+PUBLIC_AGGREGATE_KEYS = ("mhpss_activities", "mhpss_reached", "response_headline")
 # The full public sector set, used only to reject a partial response. The
 # per-sector breakdown is deliberately not written into the repository.
 EXPECTED_SECTORS = (
@@ -220,6 +223,11 @@ def _load_ledger(path: Path) -> list[dict[str, Any]]:
 
 def _write_verified(path: Path, data: bytes) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
+    # A version record is immutable: refuse to replace a path that already holds
+    # different bytes. The content-hashed name makes this unreachable in normal
+    # use, so reaching it means a naming bug that would otherwise destroy history.
+    if path.parent.name == "versions" and path.exists() and path.read_bytes() != data:
+        raise ValueError(f"refusing to overwrite an existing immutable version: {path}")
     temporary = path.with_name(f".{path.name}.tmp-{os.getpid()}")
     if temporary.exists():
         temporary.unlink()
@@ -240,7 +248,8 @@ def _write_verified(path: Path, data: bytes) -> str:
 def _source_moved(ledger_rows: list[dict[str, Any]], data_date: str, payload_sha256: str) -> bool:
     if not ledger_rows:
         return True
-    newest = max(ledger_rows, key=lambda row: (row["capture_day"], row.get("capture_date", "")))
+    # The ledger is append-only, so the LAST row is the newest observation.
+    newest = ledger_rows[-1]
     return not (
         newest.get("data_date") == data_date
         and newest.get("source_payload_sha256") == payload_sha256
@@ -259,9 +268,6 @@ def capture_payloads(
     asset_dir = _validate_asset_directory(Path(asset_dir), require_existing=False)
     captured_at = _normalize_now(now).isoformat(timespec="minutes")
     capture_day = captured_at[:10]
-    # Version id keeps every movement immutable and unique even if the source
-    # moves twice on the same WIB day; a bare date filename would overwrite.
-    version_id = captured_at.replace(":", "")
     sectors = parse_sector_response(sector_payload)
     data_date = parse_data_date(date_payload)
     source_payload_sha256 = sha256_bytes(_canonical_json(sector_payload))
@@ -291,6 +297,11 @@ def capture_payloads(
         },
     }
     record_bytes = _canonical_json(record)
+    # Immutability needs a name that is unique per *record*, not per clock minute:
+    # the capture stamp is truncated to the minute, so two movements inside one
+    # minute (a manual re-run next to the scheduled run) would otherwise share a
+    # filename and the second would silently overwrite the first.
+    version_id = f"{captured_at.replace(':', '')}-{sha256_bytes(record_bytes)[:12]}"
     version_relative = f"versions/{version_id}.json"
     public_relative = "public/latest.json"
     ledger_entry = {
@@ -304,13 +315,10 @@ def capture_payloads(
         "source_payload_sha256": source_payload_sha256,
         "version_path": version_relative,
         "version_sha256": sha256_bytes(record_bytes),
-        "public_artifact_path": public_relative,
-        "public_artifact_sha256": sha256_bytes(record_bytes),
     }
-    # Append-only: an existing row is never edited. A repeated capture day for the
-    # same movement is already excluded by the movement check above.
+    # Append-only, in observation order: the last row is the newest observation.
+    # No sorting, and no row is ever rewritten.
     ledger_rows.append(ledger_entry)
-    ledger_rows.sort(key=lambda row: (row["capture_day"], row.get("capture_date", "")))
     ledger_bytes = b"".join(_canonical_json(row) for row in ledger_rows)
 
     written = {
@@ -387,13 +395,20 @@ def verify_artifacts(asset_dir: Path) -> dict[str, Any]:
     if not rows:
         raise ValueError("ledger.jsonl is empty")
     for row in rows:
-        for key in ("version_path", "version_sha256", "public_artifact_path", "public_artifact_sha256"):
+        for key in ("version_path", "version_sha256"):
             if not isinstance(row.get(key), str):
                 raise ValueError(f"ledger row {row.get('capture_day')!r} is missing {key}")
         verify_readback(asset_dir / row["version_path"], row["version_sha256"])
-    newest = max(rows, key=lambda row: (row["capture_day"], row.get("capture_date", "")))
-    public_path = asset_dir / newest["public_artifact_path"]
-    verify_readback(public_path, newest["public_artifact_sha256"])
+    # The ledger preserves observation order, so the last row is the newest.
+    newest = rows[-1]
+    public_path = asset_dir / "public" / "latest.json"
+    if not public_path.exists():
+        raise ValueError("public/latest.json is missing")
+    # `public/latest.json` is the single mutable pointer; it must currently be a
+    # byte-for-byte copy of the newest immutable version, never a stale or
+    # hand-edited file.
+    if public_path.read_bytes() != (asset_dir / newest["version_path"]).read_bytes():
+        raise ValueError("public/latest.json does not match the newest immutable version")
     artifact = _strict_json_loads(public_path.read_text(encoding="utf-8"))
     if not isinstance(artifact, dict):
         raise ValueError("public artifact is not a JSON object")
@@ -401,8 +416,14 @@ def verify_artifacts(asset_dir: Path) -> dict[str, Any]:
     for key in required:
         if key not in artifact:
             raise ValueError(f"public artifact is missing {key!r}")
-    if "sector_totals" in artifact.get("aggregates", {}):
-        raise ValueError("public artifact must not contain a per-sector breakdown")
+    # Data minimisation is an allowlist, not a naming convention: only the three
+    # already-public headline figures may appear. Any extra key — however named —
+    # means something unpublished is about to be committed.
+    aggregates = artifact.get("aggregates")
+    if not isinstance(aggregates, dict) or set(aggregates) != set(PUBLIC_AGGREGATE_KEYS):
+        raise ValueError(
+            f"public artifact aggregates must be exactly {sorted(PUBLIC_AGGREGATE_KEYS)}, got {sorted(aggregates) if isinstance(aggregates, dict) else aggregates!r}"
+        )
     if artifact.get("publication", {}).get("classification") != "public":
         raise ValueError("public artifact is not classified public")
     return {

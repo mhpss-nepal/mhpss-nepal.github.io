@@ -33,29 +33,43 @@ organisation.
 1. **Read-only against the source.** The script only POSTs the report's own semantic query
    and parses the reply. It never writes to the source and stores no person-level data.
 2. **Idempotent per source movement.** The ledger keys on `(data_date, source_payload_sha256)`.
-   If the newest ledger row already carries the same pair, **the run writes nothing at all** —
+   If the last ledger row already carries the same pair, **the run writes nothing at all** —
    no ledger row, no version file, no public artifact. That is what makes an unchanged week
    produce no commit and no notification.
-3. **Append-only ledger.** `ledger.jsonl` only ever grows; an existing row is never edited.
+3. **Append-only ledger.** `ledger.jsonl` only ever grows, in observation order; an existing
+   row is never edited, reordered, or rewritten.
 4. **Real freshness/provenance.** Every published record carries `capture_date`, `data_date`,
    `last_successful_refresh` and `success`. The site can therefore say "checked on X, source
    still carries data as of Y" instead of implying a trend.
+   *Honest limit:* on this local path `success` is always `true`, because a failed fetch or
+   parse writes **no record at all** and exits 2 (the failure is visible as a failed Actions
+   run). The field exists so the Layer 3 contract has a place to render a stale or failed
+   refresh; a captured-but-failed run does not yet write one.
 5. **Pinned WIB timezone.** `WIB = UTC+07:00` is pinned in the script; `TZ` is never inherited.
    A UTC-labelled runner instant is still written and displayed as WIB.
 6. **Explicit asset path.** The path comes from `--asset-dir` (default `data/ndrrma`), never
    from `__file__`. A missing directory is a hard failure, not something the script invents.
-7. **Archive-root guard.** `require_archive_root()` refuses an archive whose root name differs
-   from the expected one — the defect that once made a "synced" mirror silently stale.
+7. **Archive-root guard — retained, currently unused.** `require_archive_root()` is carried over
+   and unit-tested, but the GitHub Actions chain performs **no** tar/archive step (there is no
+   mirror sync here), so nothing on this path calls it. It is kept as a tested primitive for the
+   next host that needs an archive swap — not as an active guard. Saying "preserved" would be
+   true; implying it protects this pipeline would not.
 8. **Exact read-back verification.** Every write is re-read and its SHA-256 compared against
    the bytes intended. A successful transfer is never treated as proof of correct content.
+9. **Immutable version per record, not per minute.** A version filename is
+   `<capture-stamp>-<sha256[:12]>.json`, so two movements inside one clock minute get distinct
+   files. `_write_verified` additionally refuses to replace an existing `versions/*.json` with
+   different bytes, so even a naming regression fails loudly instead of destroying history.
+   `public/latest.json` is the one mutable pointer and `--verify` requires it to be a
+   byte-for-byte copy of the newest version.
 
 ## Data contract for Layer 3
 
-The workflow commits two artifacts under `data/ndrrma/`:
+The workflow commits **three** files under `data/ndrrma/`:
 
 ```
-data/ndrrma/public/latest.json          # the artifact Layer 3 consumes statically
-data/ndrrma/versions/<version>.json     # immutable history, same record shape
+data/ndrrma/public/latest.json          # the artifact Layer 3 consumes statically (mutable pointer)
+data/ndrrma/versions/<stamp>-<hash>.json # immutable history, same record shape
 data/ndrrma/ledger.jsonl                # append-only provenance ledger
 ```
 
@@ -92,6 +106,11 @@ rule-gated publishing design:
 - **Only what was already public on the source dashboard is written.** The three aggregate
   figures above are the dashboard's own published numbers. No unpublished operational
   figures, no per-actor rows, no geography rows, no person-level data.
+  *Enforcement:* `--verify` accepts the `aggregates` map only if its keys are exactly those
+  three (`mhpss_activities`, `mhpss_reached`, `response_headline`) — an allowlist, not a
+  substring check, so a differently-named extra key fails rather than silently committing.
+  Note the *control plane* (the query config) does name sectors, because the query filters on
+  them; the *published* artifact does not.
 - **The `success` flag is part of the contract.** Layer 3 must be able to render a failed or
   stale capture as "not refreshed" rather than showing the last good figure as current.
 - **Both dates are always shown.** `data_date` is the source's own refresh date and often does
@@ -99,8 +118,9 @@ rule-gated publishing design:
 - **No additive claims.** MHPSS sector reach is a max-per-location measure, so the artifact
   deliberately carries no sector breakdown and no derived total. Cross-dimension sums disagree
   by design; the response-wide headline is a separate, separately-published figure.
-- **Versioning.** Each movement lands a new immutable `versions/*.json`; the prior version is
-  never overwritten or edited.
+- **Versioning.** Each movement lands a new immutable `versions/<stamp>-<hash>.json`; the prior
+  version is never overwritten or edited. `public/latest.json` is the single mutable pointer and
+  must always be a byte-for-byte copy of the newest version (enforced by `--verify`).
 
 Layer 3's own rules — who may publish, gating, suppression, and the deployed rollout — are
 unchanged and remain `BLOCKED — DECISION`. This document specifies only the artifact that
@@ -174,29 +194,40 @@ with one named, unverified network assumption.
 
 ## Phase 2 — push plan (needs Adib's explicit go-ahead; NOT executed)
 
+**Step 0 — answer reachability first, in a scratch repository.**
+
+Do not enable the real workflow on faith. Create `mhpss-nepal/ndrrma-egress-probe` and run the
+probe above. If it does not return HTTP 200, stop: the fallback is a self-hosted runner inside
+institution infrastructure, or leaving the capture where it already works. Only a passing probe
+justifies Step 1.
+
+**Step 1 — the real workflow (only after Step 0 passes).**
+
 **Repository and path.**
 
 - Repository: `mhpss-nepal/mhpss-nepal.github.io` (the public site's own repository, which is
   already the Layer 3 publication surface).
 - Path: exactly the files in the "What is in this change" table above. No other paths.
-- The **first** run is the probe question above; run it here first, not in the scratch repo, only
-  after the scratch-repo probe has already answered the reachability question. The safest order
-  is: scratch probe first, then this repository.
 
 **Permissions.**
 
 - Workflow `permissions: contents: write` only; the `GITHUB_TOKEN` is used solely for the
   commit-back push. No PAT, no deploy key, no service account, no third-party secret.
-- Branch protection: if `main` is protected, add the automation app/bot as an allowed pusher or
-  the commit-back push will be rejected (that rejection is safe — it just means no commit).
+- Branch protection: if the default branch is protected, the bypass that will actually be
+  needed is for the **GitHub Actions bot** (`github-actions[bot]`, app id `41898282`), because
+  that is the identity the commit-back uses with `github.token`. Without a bypass or an
+  allowed push, the push is rejected — safely (no commit lands), but the automation is then
+  dead and the probe passing would have been wasted.
 - `persist-credentials: false`, and the token is passed only on the explicit `git push` URL.
+  Note that a URL-embedded token is visible in the runner process's argv; acceptable on a
+  hosted runner, but do not add `set -x` to that step.
 
 **Evidence that a first run worked (all four, in order).**
 
 1. The Actions run log shows the capture step exiting 0 and a `changed: true` JSON line.
 2. Exactly one new commit `data: capture NDRRMA public aggregates` touching only `data/ndrrma/`.
 3. `data/ndrrma/public/latest.json` carries today's `capture_date`, a `data_date` no later than
-   it, `success: true`, and the three aggregate figures.
+   it, `success: true`, and exactly the three aggregate keys.
 4. A second, immediate manual `workflow_dispatch` run produces **no** new commit and logs
    "NDRRMA public source is unchanged; no commit required."
 
