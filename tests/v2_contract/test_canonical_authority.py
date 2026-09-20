@@ -165,6 +165,48 @@ class CanonicalAuthorityTests(unittest.TestCase):
             self.assertFalse(forked["clean"])
             self.assertIn("AUTHORITY_INTEGRITY_FAILURE", {item["code"] for item in forked["differences"]})
 
+    def test_identical_conflicting_retry_is_idempotent_and_keeps_the_authority_readable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = Path(temporary_directory) / "canonical.sqlite3"
+            store = IngestStore(database)
+            original = submission(11)
+            conflicting = {**original, "payload": {"count": 999, "label": "conflicting"}}
+            other = {**original, "payload": {"count": 1_000, "label": "other-conflicting"}}
+            original_body = canonical_bytes(original)
+            conflicting_body = canonical_bytes(conflicting)
+            accepted = store.ingest(original_body)
+            self.assertEqual(accepted["outcome"], "accepted")
+
+            first = store.ingest(conflicting_body)
+            second = store.ingest(conflicting_body)
+            third = store.ingest(conflicting_body)
+
+            self.assertEqual(first["outcome"], "conflict")
+            self.assertEqual(second["outcome"], "conflict")
+            self.assertEqual(third["outcome"], "conflict")
+            self.assertEqual(second["error"], first["error"])
+            self.assertEqual(third["error"], first["error"])
+            self.assertEqual(second["error"]["code"], "EVENT_ID_BODY_CONFLICT")
+
+            self.assertEqual(store.integrity_check(), "ok")
+            self.assertEqual(store.counts()["conflicts"], 1)
+            self.assertEqual(store.counts()["events"], 1)
+            self.assertEqual(store.event_body(original["event_id"]), original_body)
+            self.assertEqual(store.ingest(original_body)["outcome"], "replayed")
+            self.assertNotIn(
+                "AUTHORITY_INTEGRITY_FAILURE",
+                {item["code"] for item in store.reconcile(client_receipts=[receipt(accepted)])["differences"]},
+            )
+
+            reopened = IngestStore(database)
+            self.assertEqual(reopened.integrity_check(), "ok")
+            self.assertEqual(reopened.counts()["conflicts"], 1)
+            self.assertEqual(reopened.event_body(original["event_id"]), original_body)
+
+            self.assertEqual(store.ingest(canonical_bytes(other))["outcome"], "conflict")
+            self.assertEqual(store.counts()["conflicts"], 2)
+            self.assertEqual(store.integrity_check(), "ok")
+
     def test_process_termination_at_canonical_commit_boundaries_is_idempotent(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
