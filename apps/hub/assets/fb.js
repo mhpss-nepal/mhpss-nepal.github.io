@@ -526,8 +526,34 @@
   function isPlainObject(v) {
     return !!v && typeof v === "object" && !Array.isArray(v);
   }
+  /* Arrays that contain aggregate row objects must contain ONLY row objects.
+     A null/primitive mixed into the family makes its meaning ambiguous: treating
+     it as a non-row array bypasses whole-row suppression, while filtering it
+     silently invents a repair policy. Reject that document instead. */
+  function assertNoMixedRowFamilies(node, path) {
+    if (Array.isArray(node)) {
+      var hasRows = false;
+      var hasOther = false;
+      for (var i = 0; i < node.length; i++) {
+        if (isPlainObject(node[i])) hasRows = true;
+        else hasOther = true;
+      }
+      if (hasRows && hasOther) {
+        throw new Error("mixed row family at " + (path || "$") + "; refusing to publish");
+      }
+      for (var j = 0; j < node.length; j++) {
+        assertNoMixedRowFamilies(node[j], (path || "$") + "[" + j + "]");
+      }
+      return;
+    }
+    if (isPlainObject(node)) {
+      Object.keys(node).forEach(function (k) {
+        assertNoMixedRowFamilies(node[k], (path || "$") + "." + k);
+      });
+    }
+  }
   function isRowFamily(v) {
-    return Array.isArray(v) && v.length > 0 && isPlainObject(v[0]);
+    return Array.isArray(v) && v.length > 0 && v.every(isPlainObject);
   }
   /* Does this ROW carry a count below the floor? Every numeric field of a row
      in an aggregate document is a count, so any one of them puts the row
@@ -564,6 +590,7 @@
      document publishable. */
   function redactPublicBody(body) {
     var out = JSON.parse(JSON.stringify(body));
+    assertNoMixedRowFamilies(out, "$");
     var floor = policyFloor(out.suppressed_below);
     out.suppressed_below = floor;
     var state = { dropped: false, tainted: [] };

@@ -88,7 +88,29 @@
     period_from: 1, period_to: 1, codes_version: 1
   };
   function isPlainObject(v) { return !!v && typeof v === "object" && !Array.isArray(v); }
-  function isRowFamily(v) { return Array.isArray(v) && v.length > 0 && isPlainObject(v[0]); }
+  function assertNoMixedRowFamilies(node, path) {
+    if (Array.isArray(node)) {
+      var hasRows = false;
+      var hasOther = false;
+      for (var i = 0; i < node.length; i++) {
+        if (isPlainObject(node[i])) hasRows = true;
+        else hasOther = true;
+      }
+      if (hasRows && hasOther) {
+        throw new Error("mixed row family at " + (path || "$") + "; refusing to render");
+      }
+      for (var j = 0; j < node.length; j++) {
+        assertNoMixedRowFamilies(node[j], (path || "$") + "[" + j + "]");
+      }
+      return;
+    }
+    if (isPlainObject(node)) {
+      Object.keys(node).forEach(function (k) {
+        assertNoMixedRowFamilies(node[k], (path || "$") + "." + k);
+      });
+    }
+  }
+  function isRowFamily(v) { return Array.isArray(v) && v.length > 0 && v.every(isPlainObject); }
   /* a deep copy of the plain structure; a non-plain value (a Firestore
      Timestamp on computed_at, say) is kept by reference so its methods survive */
   function clone(node) {
@@ -110,6 +132,7 @@
     return false;
   }
   function redact(d) {
+    assertNoMixedRowFamilies(d, "$");
     var declared = (typeof d.suppressed_below === "number" && isFinite(d.suppressed_below))
       ? Math.floor(d.suppressed_below) : FLOOR;
     var floor = Math.max(FLOOR, declared);
