@@ -76,7 +76,9 @@ const context = {
 };
 window.window = window; window.document = document; window.localStorage = localStorage;
 vm.createContext(context);
-vm.runInContext(fs.readFileSync(process.argv[1], "utf8"), context, { filename: "l1.js" });
+if (process.argv[3] !== "queue-unsafe-no-l1") {
+  vm.runInContext(fs.readFileSync(process.argv[1], "utf8"), context, { filename: "l1.js" });
+}
 vm.runInContext(fs.readFileSync(process.argv[2], "utf8"), context, { filename: "fb.js" });
 
 const UNSAFE = {
@@ -111,6 +113,11 @@ async function main(action) {
     return { error: out.error, saved: window.L1.all("referral").length, queued: window.FB.queue().length };
   }
   if (action === "queue-unsafe") {
+    const out = await window.FB.submit(UNSAFE).then(
+      () => ({ error: "" }), (e) => ({ error: String(e && e.message || e) }));
+    return { error: out.error, queued: window.FB.queue().length };
+  }
+  if (action === "queue-unsafe-no-l1") {
     const out = await window.FB.submit(UNSAFE).then(
       () => ({ error: "" }), (e) => ({ error: String(e && e.message || e) }));
     return { error: out.error, queued: window.FB.queue().length };
@@ -162,8 +169,10 @@ class ReferralSafeguardingGateTests(unittest.TestCase):
     def assert_blocked(self, error: str) -> None:
         self.assertIn("STOP", error)
         self.assertIn("Do not record this case here", error)
-        self.assertIn("specialised pathway", error)
+        self.assertIn("specialised route", error)
         self.assertIn("यहाँ अभिलेख नगर्नुहोस्", error)
+        for route in ("1145", "1098", "100", "102"):
+            self.assertIn(route, error)
 
     # 1. the gate refuses at the shared write boundary
     def test_unticked_gate_cannot_save_or_enqueue(self) -> None:
@@ -182,6 +191,11 @@ class ReferralSafeguardingGateTests(unittest.TestCase):
     # 3a. the queue API refuses an unsafe referral directly, with no write
     def test_queue_api_rejects_unticked_referral(self) -> None:
         result = self.run_node("queue-unsafe")
+        self.assert_blocked(str(result["error"]))
+        self.assertEqual(result["queued"], 0)
+
+    def test_queue_gate_is_independent_when_write_layer_is_absent(self) -> None:
+        result = self.run_node("queue-unsafe-no-l1")
         self.assert_blocked(str(result["error"]))
         self.assertEqual(result["queued"], 0)
 
@@ -221,6 +235,8 @@ class ReferralSafeguardingGateTests(unittest.TestCase):
         self.assertIn('role="alertdialog"', source)
         self.assertIn("Do not record this case here", source)
         self.assertIn("यहाँ अभिलेख नगर्नुहोस्", source)
+        for route in ("1145", "1098", "100", "102", "16600102005"):
+            self.assertIn(route, source)
         # the checkbox wording itself is unchanged
         self.assertIn("This is not a GBV case, not an unaccompanied or separated child, and not an immediate risk to life", source)
         self.assertIn("If you cannot tick this, close the form and use the specialised pathway.", source)
