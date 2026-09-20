@@ -13,7 +13,7 @@ Tenant: `mhpss-nepal` · Branch: `architecture/v2-immutable-authority` (review a
 | Kind-argument bypass test-only commit (red) | working-tree test at `c899439` |
 | Kind-argument bypass fix commit (green) | `c14b27a` |
 | Untyped queue/retry bypass test (red) | working-tree tests at `5578091` after independent review 2 |
-| Untyped queue/retry fix (green) | pending at the time this note was edited |
+| Untyped queue/retry fix (green) | `737844b` |
 | Production ref `origin/main` | `68bf197abe56dd0265dca245e61809100b4c3901` — unchanged; no push/PR/merge/deploy |
 | Worktree | clean after commit |
 
@@ -32,7 +32,7 @@ unticked, press **Save**, and a GBV / unaccompanied-or-separated-child / immedia
 risk-to-life case was written to the device and enqueued for the coordination
 register. A warning label is not a control.
 
-## 2. What changed (minimal diff, 3 files)
+## 2. What changed (4 files: 3 runtime + tests; evidence note)
 
 - `apps/hub/assets/l1.js` — the shared Layer-1 write boundary now refuses an
   unticked referral **before** the device write and **before** the queue, so no
@@ -133,6 +133,14 @@ and drive the actual functions — not copies of them.
 | 6 | Re-opened previously-saved unsafe record, re-saved | `l1.js` | **Throws**; not re-queued | Saves |
 | 7 | Hub import of an exported/register row (`forms.html`) | local read path | No re-enqueue path exists (rows are added to a display store, never re-submitted) | n/a |
 | 8 | Other forms (contact, phq9, selfreport, 5ws) | `l1.js` | Unaffected (tested) | Unaffected |
+| 9 | `L1.save("referral", record)` where the record has **no** `kind`/`schema` | `l1.js` write boundary | **Throws** (kind argument is authoritative — found by independent review 1) | Writes, `kind` stamped onto the record | 
+| 10 | `FB.submit(record)` / flush of a queue entry with **no** `kind`/`schema` | `fb.js` | **Rejects / pruned** as unclassified (found by independent review 2) | n/a — classified records only |
+
+Two adversarial review rounds found the same class of hole twice — a gate that
+trusted the record's own metadata could be walked around by omitting it. Both are
+closed: `L1.save`'s explicit `kind` is authoritative and is stamped onto the record,
+and the queue refuses and prunes any unclassified record rather than treating
+"cannot tell" as "safe".
 
 ## 5. Service-worker cache (required for the fix to reach a phone)
 
@@ -188,17 +196,19 @@ follow-ups, not reasons to weaken or remove the block.
 ## 8. Environment notes (corroborating, not caused by this diff)
 
 - The worktree is **shared while this task runs** (a sibling task's
-  `tests/test_form_registry.py` appeared and then vanished). Only the three files
-  above plus `tests/test_referral_safeguarding_gate.py` were touched.
+  `tests/test_form_registry.py` appeared and then vanished). Only `l1.js`, `fb.js`,
+  `referral.html`, this note, and `tests/test_referral_safeguarding_gate.py` were
+  touched.
 - One pre-existing test fails in this environment:
   `test_third_review.LocalQAServerSafetyTests.test_browser_helpers_serve_the_
   application_root_from_any_cwd` — the two `justify-sweep.py` helpers use a fixed
   port (9071) and attach to a stale local server, producing "404". This reproduces
   on an **untouched `git archive HEAD`** export and touches none of the changed
   files.
-- Full suite on this tree: `Ran 95 tests ... FAILED (failures=1, errors=1)`, the
-  only failing item being the pre-existing sweep above (plus, when several test
-  modules run together, the fixed-port collision it causes).
+- Full suite on this tree (later rounds, after the sibling below-floor fix landed):
+  `Ran 155 tests ... ` with the pre-existing fixed-port sweep failure above; the
+  second intermittent failure is suite interference (it passes alone and at base)
+  and touches no changed file.
 
 ## 9. Constraints respected
 
@@ -211,7 +221,7 @@ follow-ups, not reasons to weaken or remove the block.
 ## 10. Reproduce
 
 ```bash
-python3 -m unittest tests.test_referral_safeguarding_gate -v     # 9 passed
+python3 -m unittest tests.test_referral_safeguarding_gate -v     # 14 passed
 node --check apps/hub/assets/l1.js && node --check apps/hub/assets/fb.js
 python3 -c "import re,pathlib; s=pathlib.Path('apps/form/referral.html').read_text(); \
   open('/tmp/inline.js','w').write(max(re.findall(r'<script>(.*?)</script>',s,re.S),key=len))" \
