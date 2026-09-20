@@ -182,7 +182,7 @@ python3 -m unittest discover -s tests                          # see §5.1
 
 ```text
 $ python3 -m unittest discover -s tests
-Ran 132 tests in 217.378s
+Ran 133 tests in 217.060s
 FAILED (failures=1)
 ```
 
