@@ -10,9 +10,11 @@
 # 16 Sep 2026: all eight pages are keyed from the day they were written, so no
 # English prose can be added to them without a key. Nepali is still awaited
 # for the long prose -- short strings carry machine drafts, marked as such.
+# bps.html withdrawn 20 Sep 2026 on the Coordinator's instruction: the BPS+
+# course is not part of this response, so the page and its keys were retired
+# rather than left standing as an empty promise.
 index.html keyed
 flood-response.html keyed
-bps.html keyed
 iec.html keyed
 referral-directory.html keyed
 resources.html keyed

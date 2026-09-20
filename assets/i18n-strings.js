@@ -126,16 +126,6 @@ window.I18N_STRINGS = {
          human   = written or checked by a person
        A key absent from both is simply not translated yet. */
     source: { machine: [
-      "bps.p001",
-      "bps.p002",
-      "bps.p003",
-      "bps.p004",
-      "bps.p005",
-      "bps.p006",
-      "bps.p007",
-      "bps.p008",
-      "bps.p009",
-      "bps.p010",
       "contact.p001",
       "contact.p002",
       "contact.p003",
@@ -498,7 +488,6 @@ window.I18N_STRINGS = {
       "mt.dismiss",
       "mt.readEnglish",
       "nav.access",
-      "nav.band.bps",
       "nav.band.contact",
       "nav.band.flood",
       "nav.band.home",
@@ -990,7 +979,6 @@ window.I18N_STRINGS = {
     "foot.cards": "Printable form cards",
     "nav.band.home": "Home",
     "nav.band.flood": "Flood Response",
-    "nav.band.bps": "BPS+",
     "nav.band.iec": "IEC",
     "nav.band.referral": "Referral Directory",
     "nav.band.resources": "Resources",
@@ -1426,18 +1414,7 @@ window.I18N_STRINGS = {
     "flood.p177": "26 August 2026, 8:40 AM",
     "flood.p178": "When",
 
-    /* ---- swept prose: bps ---- */
-    "bps.p001": "BPS+",
-    "bps.p002": "This page is for a basic psychosocial skills course adapted to Nepal and to this response, module by module and in the languages the course is taught in. Nothing is posted until real, approved material exists; a course is not described here before it has been written.",
-    "bps.p003": "A short course in basic psychosocial skills for frontline workers in the flood response.",
-    "bps.p004": "Basic psychosocial skills",
-    "bps.p005": "No course material has been published here yet",
-    "bps.p006": "The guide such a course starts from",
-    "bps.p007": "ENGLISH",
-    "bps.p008": "WHO, 2011",
-    "bps.p009": "ENGLISH",
-    "bps.p010": "Inter-Agency Standing Committee Reference Group on Mental Health and Psychosocial Support, 2020",
-
+    
     /* ---- swept prose: iec ---- */
     "iec.p001": "<b>Source</b> — Ministry of Health and Food Safety, Health Emergency and Disaster Management Unit, <a href=\"https://giwmscdnone.gov.np/media/pdf_upload/EN_SitRep_21_Health_Sector_Response_to_Flash_Flood_in_Rasuwa_15-09-2026_lenybiz.pdf\">Situation Report #21</a> on the health sector response to the flash flood in Rasuwa, 15 September 2026.",
     "iec.p002": "The Ministry of Health and Food Safety reports that “Mental Health IEC materials are being distributed” in the response. Those materials are not on this site. They will be listed here, by topic, once they are approved for publication.",
@@ -1619,16 +1596,6 @@ window.I18N_STRINGS = {
      vocabulary that then fails to match the national one. */
   ne: {
     /* ==== BEGIN public-pages (machine drafts of the eight public pages, 17 Sep 2026; a Nepali speaker checks them against the check sheet) ==== */
-    "bps.p001": "BPS+ तालिम",
-    "bps.p002": "यो पृष्ठ नेपाल तथा यस प्रतिकार्यअनुरूप अनुकूलन गरिएको आधारभूत मनोसामाजिक सीपसम्बन्धी तालिमका लागि हो, जुन मोड्युलअनुसार तथा तालिम दिइने भाषाहरूमा यहाँ राखिनेछ। वास्तविक तथा स्वीकृत सामग्री नभएसम्म यहाँ केही पनि राखिँदैन; कुनै तालिम लेखिनुअघि नै यहाँ त्यसको वर्णन गरिँदैन।",
-    "bps.p003": "बाढी प्रतिकार्यका अग्रपंक्तिमा खटिने कार्यकर्ताका लागि आधारभूत मनोसामाजिक सीपसम्बन्धी छोटो तालिम।",
-    "bps.p004": "आधारभूत मनोसामाजिक सीप",
-    "bps.p005": "यहाँ अहिलेसम्म कुनै तालिम सामग्री प्रकाशित गरिएको छैन",
-    "bps.p006": "यस्तो तालिमको आधार बन्ने मार्गदर्शिका",
-    "bps.p007": "अंग्रेजी",
-    "bps.p008": "विश्व स्वास्थ्य संगठन (WHO), २०११",
-    "bps.p009": "अंग्रेजी",
-    "bps.p010": "Inter-Agency Standing Committee Reference Group on Mental Health and Psychosocial Support, २०२०",
     "contact.p001": "सम्पर्क",
     "contact.p002": "जानाजानी नै यस पृष्ठमा न सम्पर्क फारम राखिएको छ, न कुनै व्यक्तिगत फोन नम्बर सूचीकृत गरिएको छ। फारम राखिएमा त्यसले प्रयोगकर्ताहरूका बारेमा सूचना संकलन गर्नेछ, र समूहले व्यक्तिहरूका बारेमा कुनै सूचना राख्दैन।",
     "contact.p003": "यस समूहले सेवाहरूको समन्वय गर्दछ; सेवा आफैँ प्रदान गर्दैन। अहिले नै सहयोग चाहिने व्यक्तिका लागि हेल्पलाइनहरू <a href=\"flood-response.html#helplines\">बाढी प्रतिकार्य</a> तथा <a href=\"referral-directory.html#helplines\">रेफरल निर्देशिका</a> पृष्ठमा दिइएका छन्।",
@@ -2181,7 +2148,6 @@ window.I18N_STRINGS = {
     "foot.cards": "छाप्न मिल्ने फारम कार्ड",
     "nav.band.home": "गृहपृष्ठ",
     "nav.band.flood": "बाढी प्रतिकार्य",
-    "nav.band.bps": "BPS+ तालिम",
     "nav.band.iec": "IEC सामग्री",
     "nav.band.referral": "रेफरल निर्देशिका",
     "nav.band.resources": "स्रोत सामग्री",

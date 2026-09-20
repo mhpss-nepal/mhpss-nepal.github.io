@@ -16,7 +16,7 @@ On 16 September 2026 it found 109 failing elements and was run down to 0.
 from playwright.sync_api import sync_playwright
 import json, sys
 B = sys.argv[1] if len(sys.argv)>1 else "http://127.0.0.1:9063"
-PAGES=["/","/flood-response.html","/bps.html","/iec.html","/referral-directory.html",
+PAGES=["/","/flood-response.html","/iec.html","/referral-directory.html",
        "/resources.html","/videos.html","/contact-us.html","/method.html","/architecture.html","/access-explained.html","/layer3.html"]
 # the hub and the forms: swept in their own repositories since 17 Sep 2026
 JS = """() => {
