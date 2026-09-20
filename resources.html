@@ -65,7 +65,7 @@
     <p class="subtitle" data-i18n="res.p003"></p>
   </header>
 
-  <section class="sec2">
+  <section class="sec2" data-media-source>
     <div class="resgroup">
       <h3 data-i18n="res.p008"></h3>
       <ul class="srclist">
@@ -111,6 +111,12 @@
     <p class="src" data-i18n="res.p002" data-i18n-html></p>
   </section>
 
+  <!-- The gallery is built from the list above by assets/media-gallery.js:
+       one cover, publisher, language and format per item, with its real
+       action. It is empty here on purpose -- the script owns it -- and the
+       list above stays complete for a browser that runs no scripts. -->
+  <div data-media-gallery></div>
+
 </div>
 
 <!--NAV:foot resources-->
@@ -146,5 +152,6 @@
 <script src="assets/icons.js"></script>
 <script src="assets/i18n-strings.js"></script>
 <script src="assets/i18n.js"></script>
+<script src="assets/media-gallery.js"></script>
 </body>
 </html>
