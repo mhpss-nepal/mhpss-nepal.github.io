@@ -487,30 +487,128 @@
      Client intent: public_stats contains previewed aggregates rather than
      register records. This client stamps computed_at, requires `basis`, and
      limits the document shape. Server read/write enforcement is unverified
-     until the authoritative Rules are reviewed and versioned. */
+     until the authoritative Rules are reviewed and versioned.
+
+     SAFETY, ON THIS SIDE, BECAUSE A RAW VALUE IN THE COLLECTION IS ALREADY
+     EXPOSED. Two properties are established here, before any value is emitted:
+
+       A. Nothing reaches the collection the public website reads with small-cell
+          suppression switched off. A demonstration/review document is staged to
+          a DIFFERENT collection (`preview_stats`), and a document may not
+          declare a floor below the page policy floor.
+
+       B. Redaction is computed for the WHOLE document before any part of it is
+          emitted, not per number. A below-floor row is dropped (never shown as
+          "fewer than N"), and any total a dropped row contributed to is
+          withheld, so a hidden cell cannot be recovered by subtracting the
+          published parts from the published total. Organisation and palika
+          counts go through the same floor.
+
+     The reader (the public site's public-read.js) applies the same redaction
+     again as defence in depth, but the fix is here first: the publisher is the
+     only place that can stop a raw value being written. */
+  var PUBLIC_SHELF = "public_stats";     /* the collection the public site reads */
+  var STAGED_SHELF = "preview_stats";    /* staged/review documents; NOT public */
+  var POLICY_FLOOR = 10;                 /* the floor the public shelf always carries */
+  /* The only documents approved to reach the public aggregate. flood_response is
+     the schema-1 summary the public page draws. referral_directory is referral
+     content (organisation x palika) and our own rule forbids it structurally
+     reaching the public aggregate; coordination_full carries names and full
+     detail. Both are staged, not published, until a human decides otherwise. */
+  var PUBLIC_IDS = { flood_response: true };
+
+  function policyFloor(declared) {
+    return (typeof declared === "number" && isFinite(declared) && declared > POLICY_FLOOR)
+      ? Math.floor(declared) : POLICY_FLOOR;
+  }
+  function belowFloorValue(n, floor) {
+    return typeof n === "number" && isFinite(n) && n > 0 && n < floor;
+  }
+  /* The whole-document decision: one suppression pass, before anything is sent. */
+  function redactPublicBody(body) {
+    var out = JSON.parse(JSON.stringify(body));
+    var floor = policyFloor(out.suppressed_below);
+    out.suppressed_below = floor;
+    var withheldTotal = false;
+    if (Array.isArray(out.districts)) {
+      var keptDistricts = [];
+      out.districts.forEach(function (r) {
+        if (belowFloorValue(r.contacts, floor) || belowFloorValue(r.reports, floor)) {
+          withheldTotal = true; return;              /* drop the row, not the label */
+        }
+        if (belowFloorValue(r.organisations, floor)) r.organisations = null;
+        keptDistricts.push(r);
+      });
+      out.districts = keptDistricts;
+    }
+    if (Array.isArray(out.families)) {
+      var keptFamilies = [];
+      out.families.forEach(function (f) {
+        if (belowFloorValue(f.contacts, floor)) { withheldTotal = true; return; }
+        keptFamilies.push(f);
+      });
+      out.families = keptFamilies;
+    }
+    ["contacts", "reports", "organisations", "palikas",
+     "people_reported", "distinct_people_reported"].forEach(function (key) {
+      if (!(key in out)) return;
+      var withhold = belowFloorValue(out[key], floor);
+      if (withheldTotal && (key === "contacts" || key === "reports")) withhold = true;
+      if (withhold) out[key] = null;
+    });
+    return out;
+  }
+
+  /* Decide where a document goes, and what it carries, before it is written. */
+  function preparePublicRelease(docId, body) {
+    if (!body || typeof body !== "object") {
+      return { refused: true, reason: "a published document must be an object" };
+    }
+    var staged = JSON.parse(JSON.stringify(body));
+    /* A demonstration/review document is staged: it must never reach the
+       collection the public reads with suppression switched off. */
+    if (body.mode === "demonstration") {
+      return { collection: STAGED_SHELF, body: staged, reason: "demonstration documents are staged, not published" };
+    }
+    /* Anything not on the approved public list is staged rather than published. */
+    if (!PUBLIC_IDS[docId]) {
+      return { collection: STAGED_SHELF, body: staged, reason: "not an approved public document; staged" };
+    }
+    return { collection: PUBLIC_SHELF, body: redactPublicBody(body) };
+  }
+
   function publish(docId, body) {
     if (!state.ready) return Promise.reject(new Error("not connected"));
     if (!state.user) return Promise.reject(new Error("not signed in"));
     if (!body || typeof body.basis !== "string" || !body.basis.trim()) {
       return Promise.reject(new Error("a published document must say in `basis` what it counts"));
     }
-    var out = JSON.parse(JSON.stringify(body));
+    var prepared = preparePublicRelease(docId, body);
+    if (prepared.refused) return Promise.reject(new Error(prepared.reason || "refused"));
+    var out = JSON.parse(JSON.stringify(prepared.body));
     for (var i = 0; i < NEVER_SENT.length; i++) delete out[NEVER_SENT[i]];
     if (Object.keys(out).length + 1 >= 40) return Promise.reject(new Error("too many top-level fields for the client publication limit (< 40)"));
     out.computed_at = api.serverTimestamp();
     out.published_by_role = "coordinator";
-    return api.setDoc(api.doc(db, "public_stats", docId), out).then(function () { return docId; });
+    return api.setDoc(api.doc(db, prepared.collection, docId), out).then(function () { return prepared.collection; });
   }
   /* the published copy, as anyone would see it (no account needed) */
   function readPublic(docId) {
     if (!state.ready) return Promise.reject(new Error("not connected"));
-    return api.getDoc(api.doc(db, "public_stats", docId)).then(function (d) { return d.exists() ? d.data() : null; });
+    return api.getDoc(api.doc(db, PUBLIC_SHELF, docId)).then(function (d) { return d.exists() ? d.data() : null; });
+  }
+  /* the staged copy: demonstration/review documents live here, not on the
+     public shelf. Read behind the hub, never by the public page. */
+  function readStaged(docId) {
+    if (!state.ready) return Promise.reject(new Error("not connected"));
+    return api.getDoc(api.doc(db, STAGED_SHELF, docId)).then(function (d) { return d.exists() ? d.data() : null; });
   }
 
   window.FB = {
     status: status,
     myRole: myRole, listRoles: listRoles, grantRole: grantRole, revokeRole: revokeRole,
-    publish: publish, readPublic: readPublic,
+    publish: publish, readPublic: readPublic, readStaged: readStaged,
+    preparePublicRelease: preparePublicRelease, REDACTION_FLOOR: POLICY_FLOOR,
     sendLink: sendLink, ROLES: ROLE_LIST,
     onStatus: function (f) { stateCbs.push(f); f(status()); },
     onUser: function (f) { userCbs.push(f); f(state.user); },

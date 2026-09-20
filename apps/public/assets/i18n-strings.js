@@ -32,7 +32,7 @@ window.I18N_STRINGS = {
       { code: "ne", label: "NEP", name: "नेपाली",   html: "ne" }
     ],
     // Bumped whenever the English changes, so a stale translation is visible.
-    revision: "2026-09-17-ne",
+    revision: "2026-09-20",
 
     /* ---- strings that NO machine may translate --------------------------
        Matched as prefixes, so a PHQ-9 item added next month is protected
@@ -1019,7 +1019,7 @@ window.I18N_STRINGS = {
     "live.schema": "A summary was published in a form this page cannot read yet.",
     "live.preview": "Preview — not published",
     "live.published": "Published {when} — it changes only when a coordinator publishes again",
-    "live.publishedDemo": "Published {when} for demonstration and review — small numbers are not suppressed",
+    "live.publishedDemo": "Published {when} for demonstration and review — small numbers are still withheld",
     "live.fewer": "fewer than {n}",
     "live.basis": "What is counted",
     "live.period": "Reports dated {from} to {to}.",
@@ -1906,7 +1906,7 @@ window.I18N_STRINGS = {
     "live.period": "मिति {from} देखि {to} सम्मका प्रतिवेदन।",
     "live.preview": "पूर्वावलोकन — प्रकाशित गरिएको छैन",
     "live.published": "{when} मा प्रकाशित — कुनै coordinator ले फेरि प्रकाशित गरेपछि मात्र यो परिवर्तन हुन्छ",
-    "live.publishedDemo": "प्रदर्शन तथा समीक्षाका लागि {when} मा प्रकाशित — साना संख्या लुकाइएका छैनन्",
+    "live.publishedDemo": "प्रदर्शन तथा समीक्षाका लागि {when} मा प्रकाशित — साना संख्याहरू अझै लुकाइन्छन्",
     "live.ref.empty": "प्रकाशित निर्देशिकामा अहिलेसम्म कुनै सेवा सूचीकृत छैन।",
     "live.ref.none": "<b>निर्देशिका अझै प्रकाशित भएको छैन।</b> Technical Working Group ले प्रकाशन गर्न सकिने सहमति जनाएपछि, यसले साझेदारहरूले बुझाउने गतिविधि प्रतिवेदनका आधारमा कुन पालिकामा कुन संस्थाले कुन मानसिक स्वास्थ्य तथा मनोसामाजिक सेवा प्रदान गर्छ भन्ने सूची दिनेछ।",
     "live.schema": "यो पृष्ठले अझै पढ्न नसक्ने ढाँचामा सारांश प्रकाशित गरिएको छ।",

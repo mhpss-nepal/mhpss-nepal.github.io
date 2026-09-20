@@ -437,13 +437,16 @@
     <!-- PUBLISH -->
     <div class="panel pub" id="p-pub">
       <h2 class="sechead">What the public website is given</h2>
-      <p class="secsay">The website never reads the register. It reads three documents on a public shelf that a coordinator writes on purpose, from this screen, with the filters above applied.</p>
-      <div class="banner warn"><b>Demonstration mode, until the review by WHO and the Ministry.</b> Everything this
-        dashboard computes is published as it stands — site level, organisation names, no small-cell
-        suppression — so the full behaviour of the system can be judged. Two things are never published:
-        the free-text description of a report, and any focal-point contact, which never reaches the
-        register at all. After the review, what is public and what is not is decided and a reviewed
-        server policy is versioned. Server enforcement is unverified in this branch.</div>
+      <p class="secsay">The website never reads the register. It reads the public aggregate a coordinator publishes on purpose, from this screen, with the filters above applied.</p>
+      <div class="banner warn"><b>Demonstration mode, until the review by WHO and the Ministry.</b> Every
+        document is tagged as a demonstration and is <b>staged</b> to a review shelf, not published to the
+        public aggregate — except the Flood response summary, which is the one document approved for the
+        public page. Small-cell suppression is <b>always on</b>: counts below 10 are withheld, and a row
+        below the floor is dropped rather than labelled, so the hidden value cannot be recovered by
+        subtracting the published parts from a total. Two things are never written: the free-text
+        description of a report, and any focal-point contact, which never reaches the register at all.
+        After the review, what is public and what is not is decided and a reviewed server policy is
+        versioned. Server enforcement is unverified in this branch.</div>
 
       <div class="docs" id="pubDocs"></div>
 
@@ -1553,17 +1556,31 @@
     S.download("mhpss_np_coverage_gaps_" + S.stamp() + ".csv", "﻿" + head + body + "\n", "text/csv");
   });
   /* ---------- publish: the public shelf --------------------------------
-     public_stats is the only thing the public website reads. Three documents:
-       flood_response      schema 1 -- the summary the Flood Response page shows
-       referral_directory  schema 1 -- organisation x palika x activities
-       coordination_full   schema 2 -- everything this screen computes, with
-                           names inline so the public site depends on no file
-                           of ours
+     public_stats is the only thing the public website reads. Two shelves:
+       public_stats    the public aggregate the site draws (approved docs only)
+       preview_stats   staged / review documents; NOT read by the public page
+
      Demonstration mode (decided 17 Sep 2026, until the WHO / Ministry review):
-     no small-cell suppression (suppressed_below: 1), site level, organisation
-     names. Never published by this client: `description` (free text) or
-     focal-point contact. Client validation requires computed_at, a `basis`
-     string and fewer than 40 top-level fields. Server enforcement is unverified. */
+     site level, organisation names, and -- until a human decides otherwise --
+     STAGED to preview_stats rather than published to public_stats. It no longer
+     carries a small-cell floor of 1: FB.publish() computes a whole-document
+     redaction against the page policy floor before anything is written, and
+     routes any demonstration/review document to preview_stats. A demonstration
+     publish is therefore not a rehearsal of a public release; it cannot switch
+     the floor off on the collection the public reads.
+
+     The documents:
+       flood_response      schema 1 -- the summary the Flood Response page shows.
+                           The only document approved for public_stats.
+       referral_directory  schema 1 -- organisation x palika x activities.
+                           Referral content: our own rule forbids it structurally
+                           reaching the public aggregate, so it is staged.
+       coordination_full   schema 2 -- everything this screen computes, names
+                           inline. Staged, not published.
+
+     Never written by this client: `description` (free text) or focal-point
+     contact. Client validation requires computed_at, a `basis` string and fewer
+     than 40 top-level fields. Server enforcement is unverified. */
   var PUB_IDS = ["flood_response", "referral_directory", "coordination_full"];
   var PUB_ROLE = null;
 
@@ -1580,7 +1597,7 @@
     return "Activity reports in the register (kind = activity), read from " + SRC +
       (dates.length ? ", dated " + dates[0] + " to " + dates[dates.length - 1] : "") +
       ": " + DATA.length + " reports, " + pubFilters() +
-      ". Counts are attendances (service contacts: one report per session, its attendance) unless a report filed before 17 September 2026 says it counted people. Activity codes follow the list of 17 September 2026; records filed under the previous list are read through its crosswalk where the match is one-to-one and are otherwise marked not yet placed. Demonstration mode: no small-cell suppression.";
+      ". Counts are attendances (service contacts: one report per session, its attendance) unless a report filed before 17 September 2026 says it counted people. Activity codes follow the list of 17 September 2026; records filed under the previous list are read through its crosswalk where the match is one-to-one and are otherwise marked not yet placed. Counts below 10 are not shown.";
   }
   function buildPublicDocs() {
     if (!PUBSRC) render();
@@ -1605,10 +1622,24 @@
     var byF = {};
     rows.forEach(function (r) { var f = actLayer(r.activity); byF[f] = (byF[f] || 0) + n(r.reachedTotal); });
     var families = Object.keys(byF).sort().map(function (f) { return { family: f, contacts: byF[f] }; });
-    var common = { basis: basis, mode: "demonstration", period_from: dates[0] || "", period_to: dates[dates.length - 1] || "",
+    /* DEMONSTRATION_MODE is the single switch, decided 17 Sep 2026, and it
+       matters in two places:
+
+         mode: "demonstration" / "published"  -- what the document says it is.
+             Until the WHO / Ministry review clears the public surface, every
+             document is tagged demonstration so the public page says so.
+
+         suppressed_below  -- the small-cell floor. It is NEVER 1. The whole
+             document is redacted against FB.REDACTION_FLOOR by the publisher
+             before it is written, and a document may not declare a lower floor:
+             a floor of 1 switches suppression off, and one such document in the
+             collection is enough for every later publish to inherit it. */
+    var DEMONSTRATION_MODE = true;
+    var PUB_MODE = DEMONSTRATION_MODE ? "demonstration" : "published";
+    var common = { basis: basis, mode: PUB_MODE, period_from: dates[0] || "", period_to: dates[dates.length - 1] || "",
                    source: SRC, filters: pubFilters() };
 
-    var flood = Object.assign({ schema: 1, suppressed_below: 1, reports: rows.length, contacts: contacts,
+    var flood = Object.assign({ schema: 1, reports: rows.length, contacts: contacts,
       people_reported: people, distinct_people_reported: distinct, organisations: orgSet.size, palikas: palSet.size,
       districts: districts, families: families }, common);
 
@@ -1677,7 +1708,7 @@
     C.ACTIVITIES_V03.forEach(function (a) { names.activities[a.code] = a.name + " (previous list)"; });
     names.activity_groups = {}; C.ACTIVITY_GROUPS.forEach(function (g) { names.activity_groups[g.code] = g.name; });
     C.ORGS.forEach(function (o) { names.organisations[o.code] = o.name; });
-    var full = Object.assign({ schema: 2, suppressed_below: 1, reports: rows.length, contacts: contacts, people_reported: people,
+    var full = Object.assign({ schema: 2, reports: rows.length, contacts: contacts, people_reported: people,
       distinct_people_reported: distinct, organisations_count: orgSet.size, palikas_count: palSet.size,
       roster_total: P.ROSTER.length, roster_reached: P.ROSTER.length - P.GAPS.length,
       districts: districts, families: families, sites: sites, organisations: organisations, activities: activities,
@@ -1687,13 +1718,22 @@
     return { flood_response: flood, referral_directory: referral, coordination_full: full };
   }
 
+  /* the shelf each document goes to: the public aggregate, or the staged shelf.
+     flood_response is the only document approved for the public shelf; the other
+     two are staged until a human decides. */
+  function pubShelf(id) { return id === "flood_response" ? "public_stats" : "preview_stats"; }
+
   function pubDocsPanel() {
     var el = $("pubDocs");
     if (!el.innerHTML) {
       el.innerHTML = PUB_IDS.map(function (id) {
         var title = id === "flood_response" ? "Flood response summary" : id === "referral_directory" ? "Referral directory" : "Full coordination picture";
-        var reads = id === "coordination_full" ? "read by whoever builds on it (names inline)" : "read live by the public website";
-        return '<div class="doc"><h3>' + title + '</h3><div class="id">public_stats/' + id + '</div><p class="st" id="pubst-' + id + '">' + reads + ' · checking what is published…</p></div>';
+        var reads = id === "flood_response"
+          ? "read live by the public website"
+          : id === "referral_directory"
+            ? "staged (referral content: never the public aggregate)"
+            : "staged (names inline; not for the public page)";
+        return '<div class="doc"><h3>' + title + '</h3><div class="id">' + pubShelf(id) + '/' + id + '</div><p class="st" id="pubst-' + id + '">' + reads + ' · checking what is published…</p></div>';
       }).join("");
       refreshPubStatus();
     }
@@ -1706,10 +1746,12 @@
     if (!window.FB || !window.FB.readPublic) return;
     PUB_IDS.forEach(function (id) {
       var st = $("pubst-" + id); if (!st) return;
-      window.FB.readPublic(id).then(function (d) {
-        st.innerHTML = d ? "published <b>" + esc(whenOf(d.computed_at)) + "</b> · schema " + esc(d.schema) + (d.mode ? " · " + esc(d.mode) : "") +
+      var staged = id !== "flood_response" && window.FB.readStaged;
+      var read = staged ? window.FB.readStaged(id) : window.FB.readPublic(id);
+      read.then(function (d) {
+        st.innerHTML = d ? "<b>" + (staged ? "staged" : "published") + "</b> " + esc(whenOf(d.computed_at)) + " · schema " + esc(d.schema) + (d.mode ? " · " + esc(d.mode) : "") +
           (typeof d.reports === "number" ? " · " + d.reports + " reports" : "") + (d.rows ? " · " + d.rows.length + " rows" : "")
-          : "<b>nothing published yet</b>";
+          : "<b>nothing " + (staged ? "staged" : "published") + " yet</b>";
       }).catch(function (e) { st.innerHTML = "could not read: " + esc(e && e.message ? e.message : e); });
     });
   }
@@ -1748,30 +1790,47 @@
     t.addEventListener("click", function () { if (t.getAttribute("data-p") === "pub") { pubDocsPanel(); pubAuthPaint(); } });
   });
 
-  /* the preview: our own tables, and the public website's own renderer for
-     the two schema-1 documents when its file can be loaded (root assets) */
+  /* the preview: exactly what the publisher would emit, on the shelf it would
+     go to, plus the public website's own renderer for the schema-1 document.
+     The prepared body is what FB.publish() would write -- redacted, and routed
+     to public_stats or preview_stats -- so a coordinator sees the real thing,
+     not the raw computation. */
+  function pubNum(v) { return (typeof v === "number" && isFinite(v)) ? v.toLocaleString("en-GB") : "—"; }
+  function pubPrep(id, raw) {
+    try {
+      return window.FB && window.FB.preparePublicRelease
+        ? window.FB.preparePublicRelease(id, raw)
+        : { collection: pubShelf(id), body: raw };
+    } catch (e) { return { refused: true, reason: String(e && e.message ? e.message : e) }; }
+  }
   function pubRenderPreview(docs) {
     var out = [];
-    var f = docs.flood_response, d = docs.referral_directory, full = docs.coordination_full;
-    out.push('<div class="pubprev"><h3>Flood response summary <span class="xs">public_stats/flood_response</span></h3>' +
-      '<div class="kpis"><div class="kpi"><span class="n">' + f.reports + '</span><span class="l">reports</span></div>' +
-      '<div class="kpi"><span class="n">' + f.contacts.toLocaleString() + '</span><span class="l">service contacts</span></div>' +
-      '<div class="kpi"><span class="n">' + f.organisations + '</span><span class="l">organisations</span></div>' +
-      '<div class="kpi"><span class="n">' + f.palikas + '</span><span class="l">palikas</span></div></div>' +
+    var pf = pubPrep("flood_response", docs.flood_response);
+    var f = pf.body || {};
+    var pd = pubPrep("referral_directory", docs.referral_directory);
+    var d = pd.body || {};
+    var pfull = pubPrep("coordination_full", docs.coordination_full);
+    var full = pfull.body || {};
+    out.push('<div class="pubprev"><h3>Flood response summary <span class="xs">' + pf.collection + '/flood_response</span></h3>' +
+      '<div class="kpis"><div class="kpi"><span class="n">' + pubNum(f.reports) + '</span><span class="l">reports</span></div>' +
+      '<div class="kpi"><span class="n">' + pubNum(f.contacts) + '</span><span class="l">service contacts</span></div>' +
+      '<div class="kpi"><span class="n">' + pubNum(f.organisations) + '</span><span class="l">organisations</span></div>' +
+      '<div class="kpi"><span class="n">' + pubNum(f.palikas) + '</span><span class="l">palikas</span></div></div>' +
       '<table><thead><tr><th>District</th><th class="n">Reports</th><th class="n">Contacts</th><th class="n">Organisations</th></tr></thead><tbody>' +
-      f.districts.map(function (x) { return "<tr><td>" + esc(x.name) + '</td><td class="n">' + x.reports + '</td><td class="n">' + x.contacts.toLocaleString() + '</td><td class="n">' + x.organisations + "</td></tr>"; }).join("") +
+      (f.districts || []).map(function (x) { return "<tr><td>" + esc(x.name) + '</td><td class="n">' + pubNum(x.reports) + '</td><td class="n">' + pubNum(x.contacts) + '</td><td class="n">' + pubNum(x.organisations) + "</td></tr>"; }).join("") +
       '</tbody></table><div id="pubL3flood" style="margin-top:10px"></div>' +
       '<details><summary>the document as the website will read it</summary><pre>' + esc(JSON.stringify(f, null, 1)) + "</pre></details></div>");
-    out.push('<div class="pubprev"><h3>Referral directory <span class="xs">public_stats/referral_directory · ' + d.rows.length + ' rows</span></h3>' +
+    out.push('<div class="pubprev"><h3>Referral directory <span class="xs">' + pd.collection + '/referral_directory · ' + (d.rows ? d.rows.length : 0) + ' rows</span></h3>' +
+      '<p class="xs" style="margin:0 0 8px">Referral content: staged, never the public aggregate.</p>' +
       '<table><thead><tr><th>District</th><th>Palika</th><th>Organisation</th><th>Activities</th><th>Last report</th></tr></thead><tbody>' +
-      d.rows.slice().sort(function (a, b) { return (a.district + a.palika + a.org_name).localeCompare(b.district + b.palika + b.org_name); }).map(function (r) {
+      (d.rows || []).slice().sort(function (a, b) { return (a.district + a.palika + a.org_name).localeCompare(b.district + b.palika + b.org_name); }).map(function (r) {
         return "<tr><td>" + esc(distName(r.district)) + "</td><td>" + esc(r.palika) + "</td><td>" + esc(r.org_name) + "</td><td>" + esc(r.activities.map(actName).join(", ")) + "</td><td>" + esc(r.last_report) + "</td></tr>"; }).join("") +
       '</tbody></table><div id="pubL3dir" style="margin-top:10px"></div>' +
       '<details><summary>the document as the website will read it</summary><pre>' + esc(JSON.stringify(d, null, 1)) + "</pre></details></div>");
-    out.push('<div class="pubprev"><h3>Full coordination picture <span class="xs">public_stats/coordination_full · schema 2</span></h3>' +
-      '<p class="xs" style="margin:0 0 8px">' + full.sites.length + " sites (" + full.roster_reached + " of " + full.roster_total + " roster sites reached, " + full.gaps.length + " gaps) · " +
-      full.organisations.length + " organisations · " + full.activities.length + " activities · " + full.matrix.length + " matrix rows · " + full.duplication.length + " site-days flagged · " +
-      "disaggregated " + full.sadd.disaggregated_total.toLocaleString() + " of " + full.sadd.total.toLocaleString() + ". Not included: " + esc(full.excluded.join("; ")) + ".</p>" +
+    out.push('<div class="pubprev"><h3>Full coordination picture <span class="xs">' + pfull.collection + '/coordination_full · schema 2</span></h3>' +
+      '<p class="xs" style="margin:0 0 8px">' + (full.sites ? full.sites.length : 0) + " sites · " +
+      (full.organisations ? full.organisations.length : 0) + " organisations · " + (full.activities ? full.activities.length : 0) + " activities. Staged: names inline, not for the public page. Not included: " +
+      esc((full.excluded || []).join("; ")) + ".</p>" +
       '<details><summary>the document in full (' + Math.round(JSON.stringify(full).length / 1024) + ' KB)</summary><pre>' + esc(JSON.stringify(full, null, 1)) + "</pre></details></div>");
     $("pubPrev").innerHTML = out.join("");
     /* the website's own renderer, if its file loads -- exactly what the public page will draw */
@@ -1804,19 +1863,30 @@
     if ($("pubDir").checked) want.push("referral_directory");
     if ($("pubFull").checked) want.push("coordination_full");
     if (!want.length) return toast("Tick at least one document", true);
-    var b = $("pubGo"); b.disabled = true; b.textContent = "Publishing…";
+    var b = $("pubGo"); b.disabled = true; b.textContent = "Writing…";
     pubRenderPreview(docs);
     var done = [];
     want.reduce(function (chain, id) {
-      return chain.then(function () { return window.FB.publish(id, docs[id]).then(function () { done.push(id); $("pubMsg").textContent = "Published: " + done.join(", "); }); });
+      return chain.then(function () {
+        return window.FB.publish(id, docs[id]).then(function (shelf) {
+          done.push({ id: id, shelf: typeof shelf === "string" ? shelf : pubShelf(id) });
+          $("pubMsg").textContent = "Written: " + done.map(function (x) { return x.id; }).join(", ");
+        });
+      });
     }, Promise.resolve()).then(function () {
       b.disabled = false; b.textContent = "Publish to the public website";
-      $("pubMsg").innerHTML = "<b>Published " + done.join(", ") + " at " + new Date().toLocaleTimeString("en-GB", { hour12: false }) + ".</b> The public pages update within seconds.";
-      toast("Published to the public shelf");
+      var pub = done.filter(function (x) { return x.shelf === "public_stats"; }).map(function (x) { return x.id; });
+      var stg = done.filter(function (x) { return x.shelf !== "public_stats"; }).map(function (x) { return x.id; });
+      var line = "<b>Written at " + new Date().toLocaleTimeString("en-GB", { hour12: false }) + ".</b>";
+      if (pub.length) line += " Published to the public website: " + pub.join(", ") + " (the public pages update within seconds).";
+      if (stg.length) line += " Staged for review, NOT public: " + stg.join(", ") + " (kept in preview_stats).";
+      $("pubMsg").innerHTML = line;
+      toast(pub.length ? "Written to the public shelf" : "Staged for review — nothing public");
       refreshPubStatus();
     }).catch(function (e) {
       b.disabled = false; b.textContent = "Publish to the public website";
-      $("pubMsg").innerHTML = '<span style="color:var(--critical,#9b2c2c)">' + (done.length ? "Published " + done.join(", ") + "; then refused: " : "Refused: ") +
+      $("pubMsg").innerHTML = '<span style="color:var(--critical,#9b2c2c)">' +
+        (done.length ? "Written " + done.map(function (x) { return x.id; }).join(", ") + "; then refused: " : "Refused: ") +
         esc(e && e.message ? e.message : e) + "</span>";
       refreshPubStatus();
     });

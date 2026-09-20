@@ -51,11 +51,62 @@
   function num(n) {
     return (typeof n === "number" && isFinite(n)) ? n.toLocaleString("en-GB") : "—";
   }
-  /* A count below the floor is shown as "fewer than N", never as itself. */
+  /* A count below the floor is shown as "fewer than N", never as itself.
+
+     This is now only a last-ditch guard. Redaction is applied to the WHOLE
+     document before anything is drawn (see `redact` below), so a suppressed
+     row is dropped rather than labelled. `safe` remains so that a value the
+     publisher let through is still not drawn as itself. */
   function safe(n, floor) {
     if (typeof n !== "number" || !isFinite(n)) return "—";
     if (n > 0 && n < floor) return t("live.fewer", { n: floor });
     return num(n);
+  }
+  /* ---------- analysis-wide redaction (defence in depth) ----------------
+     The publisher drops a below-floor row and withholds the totals it fed. This
+     page must never trust a document to have done that: a raw value already
+     written to the collection is exposed to anyone who reads the document
+     directly, and this renderer must not be the place that reveals it.
+
+     So the same decision is computed here, for the whole document, before a
+     single value is drawn:
+       - a document may not declare a floor below the page default;
+       - a below-floor row is dropped, never drawn as "fewer than N" with its
+         category label intact;
+       - when a row is dropped, the totals it contributed to are withheld, so
+         the hidden cell cannot be recovered by subtracting the published parts;
+       - organisation and palika counts go through the same floor. */
+  function redact(d) {
+    var declared = typeof d.suppressed_below === "number" && isFinite(d.suppressed_below)
+      ? Math.floor(d.suppressed_below) : FLOOR;
+    var floor = Math.max(FLOOR, declared);
+    function small(n) { return typeof n === "number" && isFinite(n) && n > 0 && n < floor; }
+    var out = {};
+    for (var k in d) { if (Object.prototype.hasOwnProperty.call(d, k)) out[k] = d[k]; }
+    out.suppressed_below = floor;
+    var withheld = false;
+    if (Array.isArray(d.districts)) {
+      out.districts = d.districts.filter(function (r) {
+        if (small(r.contacts) || small(r.reports)) { withheld = true; return false; }
+        return true;
+      }).map(function (r) {
+        var c = {}; for (var k in r) { if (Object.prototype.hasOwnProperty.call(r, k)) c[k] = r[k]; }
+        if (small(r.organisations)) c.organisations = null;
+        return c;
+      });
+    }
+    if (Array.isArray(d.families)) {
+      out.families = d.families.filter(function (f) {
+        if (small(f.contacts)) { withheld = true; return false; }
+        return true;
+      });
+    }
+    ["contacts", "reports", "organisations", "palikas",
+     "people_reported", "distinct_people_reported"].forEach(function (key) {
+      if (!(key in out)) return;
+      if (small(out[key]) || (withheld && (key === "contacts" || key === "reports"))) out[key] = null;
+    });
+    return out;
   }
   /* the published basis is a coordinator's sentence; end it before the next one */
   function sentence(v) {
@@ -228,6 +279,8 @@
         setState(o.state, o.panel, "live.schema");
         return;
       }
+      /* ONE redaction for the whole document, before a single value is drawn. */
+      d = redact(d);
       /* The hub can publish in demonstration mode (small numbers not
          suppressed, for review). Whatever the page shows then says so. */
       setState(o.state, o.panel, d.mode === "demonstration" ? "live.publishedDemo" : "live.published",
@@ -255,6 +308,7 @@
   function preview(o, d) {
     if (!d || d.schema !== 1) { setState(o.state, o.panel, "live.schema"); return; }
     setState(o.state, o.panel, "live.preview", null, true);
+    d = redact(d);
     if (o.body) o.body.innerHTML = o.kind === "referral" ? referralBody(d) : floodBody(d);
   }
 
