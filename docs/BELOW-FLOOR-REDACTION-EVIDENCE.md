@@ -13,7 +13,8 @@ Tenant `mhpss-nepal` · branch `architecture/v2-immutable-authority` (review art
 | Test-only commits (round 2, red) | `904b4fd`, `a1b76ca`, `b1eed00` |
 | Fix commit (round 2, green) | `1627307` — withhold enclosing row totals after a nested drop; verify against the effective floor |
 | Head | the commit carrying this file; its SHA-1 and SHA-256 are recorded in the kanban completion metadata, so this document does not embed its own id |
-| Production refs | public `68bf197`, form `9032bb7`, hub `ff2d4e2` — **unchanged**; no push / PR / merge / deploy |
+| Production refs | public `68bf197`, form `9032bb7`, hub `ff2d4e2` — **no push / PR / merge / deploy by this task** |
+| ⚠ Public `main` moved during the work | to `c32b6e8`, **by another actor, not this task** — see §12 |
 | Worktree after the fix | clean |
 | Status | **DONE - REVIEW ARTIFACT** with open questions for Adib (§8) |
 
@@ -177,11 +178,14 @@ category are *absent* — which is strictly stronger.
 python3 coordination/evidence/layer3-below-floor-reconstruction/mhpss_public_aggregate_privacy_demo.py
 python3 coordination/evidence/layer3-below-floor-reconstruction/test_mhpss_public_aggregate_privacy_demo.py
 
-# failing-first, round 2: app files checked out at the round-1 head, tests kept
-git checkout 86a4054 -- apps/hub/assets/fb.js apps/public/assets/public-read.js
+# failing-first, round 2, at the TEST-COMPLETE commit with the fix not yet applied
+# (scratch worktree at b1eed00 — the true forward direction, not a checkout of app files)
+git worktree add --detach /tmp/redpoint-b1eed00 b1eed00
+cd /tmp/redpoint-b1eed00
 python3 -m unittest tests.test_below_floor_redaction           # FAILED (failures=12)  [RED]
 python3 -m unittest tests.test_below_floor_redaction_browser   # FAILED (failures=2)   [RED]
-git checkout HEAD -- apps/hub/assets/fb.js apps/public/assets/public-read.js
+# (fsck-style check that the fix is genuinely absent here: `grep -c tainted` = 0 in both app files)
+cd -; git worktree remove /tmp/redpoint-b1eed00
 
 # after the round-2 fix
 python3 -m unittest tests.test_below_floor_redaction           # OK, 23 tests
@@ -474,4 +478,48 @@ Stated plainly, so this is not read as "the class is closed for all aggregate do
 
 A future publisher change that adds a new item family adds a new surface; the checklist in
 `references/aggregate-privacy-and-small-cells.md` is the right instrument for it, not this doc.
+
+## 12. The production public ref moved during this work — not by this task
+
+The task's constraint was that production refs stay unchanged. At the start of round 2 they were
+public `68bf197`, form `9032bb7`, hub `ff2d4e2`. Re-checking at the end:
+
+```text
+$ git -C mhpss-nepal-audit-20260918/mhpss-nepal.github.io rev-parse --short HEAD
+c32b6e8
+
+$ git -C mhpss-nepal-audit-20260918/hub  rev-parse --short HEAD     # ff2d4e2
+$ git -C mhpss-nepal-audit-20260918/form rev-parse --short HEAD     # 9032bb7
+```
+
+`mhpss-nepal.github.io` `main` is now `c32b6e8` ("Contact emblems, an audit/assessment group, and
+a real publisher on every card", authored 2026-09-20 12:57Z), where this session started at
+`68bf197`.
+
+**This task did not move it.** Evidence:
+
+- Its reflog holds exactly two entries — the original clone, then
+  `c32b6e8 main@{0}: merge origin/main: Fast-forward`, i.e. someone fetched and fast-forwarded the
+  production checkout, which this task has no workflow for (it never ran `git fetch` or `git merge`
+  in that repository, and never pushed anything from anywhere).
+- `c32b6e8` is **not** an ancestor of this task's branch — this task never pulled it.
+- The same subject is the HEAD of the *other* worktree
+  `/root/mhpss-nepal-work/public-layer3` (`e191d27`, same message), i.e. the change is the public
+  layer-3 line of work reaching production over its own release path, concurrently with this
+  session.
+
+**Does it affect this finding?** No, and that is checked, not assumed:
+
+- `git diff --quiet 68bf197 c32b6e8` shows **zero** change to `assets/public-read.js`,
+  `hub/assets/fb.js`, and `hub/index.html` — the three files this ticket touches. The 24 changed
+  files are site content/CSS/assets.
+- The deployed reader is still the vulnerable one, byte for byte, at **both** refs:
+  `sha256( live assets/public-read.js )` =
+  `c176d35779f9406c970023e123197e2b3e41c68d908363dfbcb5d211e3820f55`, identical to `68bf197` and
+  to `c32b6e8`.
+
+**What is still true:** the fix in this ticket is **not deployed and not reachable from
+`main`** — `c32b6e8` does not contain it — so the below-floor reconstruction channel remains live
+on the public site, exactly as the audit found. Nothing here changes that; it is also the reminder
+that releasing this fix is a separate, deliberate step, as the standing rule requires.
 
