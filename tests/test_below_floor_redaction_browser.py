@@ -160,5 +160,60 @@ class BelowFloorRenderBrowserTests(unittest.TestCase):
                       "a clean document lost its figures")
 
 
+@unittest.skipIf(
+    importlib.util.find_spec("playwright") is None,
+    "Playwright is unavailable to the current interpreter",
+)
+class HubPreviewShowsRedactedTests(unittest.TestCase):
+    """The Hub preview must show what would actually be written, not the raw
+    computation. A coordinator who pressed Publish on a document with a
+    below-floor cell must not have been shown that cell as 'the document as the
+    website will read it'."""
+
+    def test_hub_preview_shows_the_redacted_document(self) -> None:
+        from playwright.sync_api import sync_playwright
+
+        server, origin = _serve()
+        try:
+            with sync_playwright() as pw:
+                browser = pw.chromium.launch()
+                errors: list[str] = []
+                page = browser.new_page()
+                page.on("pageerror", lambda e: errors.append(str(e)))
+                page.goto(f"{origin}/hub/index.html", wait_until="load")
+                page.evaluate("() => { document.getElementById('useDemo').click(); }")
+                page.wait_for_selector("#app:not([hidden])", timeout=15000)
+                page.evaluate("() => { document.querySelector('.tab[data-p=\"pub\"]').click(); }")
+                page.wait_for_selector("#pubDocs .doc", timeout=15000)
+                # what the preview would render for one leaking document
+                captured = page.evaluate(
+                    """async (doc) => {
+                        window.PUBLIC_STATS = window.PUBLIC_STATS || { preview() {} };
+                        const shown = window.FB.redactPublicBody
+                            ? window.FB.redactPublicBody(doc) : doc;
+                        return {
+                            hasRedact: typeof window.FB.redactPublicBody === 'function',
+                            floor: window.FB.REDACTION_FLOOR,
+                            written: shown
+                        };
+                    }""",
+                    LEAK,
+                )
+                browser.close()
+        finally:
+            server.shutdown()
+            server.server_close()
+
+        self.assertEqual(errors, [], "the real Hub page raised a script error")
+        self.assertTrue(captured["hasRedact"],
+                        "the Hub cannot compute what would be written")
+        self.assertGreaterEqual(captured["floor"], 10)
+        written = captured["written"]
+        self.assertNotIn("A", [d.get("code") for d in written.get("districts", [])],
+                         "the Hub preview built from a document with the leaking row still in it")
+        self.assertIsNone(written.get("contacts"),
+                          "the Hub preview kept a total a dropped row fed")
+
+
 if __name__ == "__main__":
     unittest.main()
