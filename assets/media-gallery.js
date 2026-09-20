@@ -6,15 +6,22 @@
    its format, with the actions beside it.
 
    WHY IT READS THE PAGE INSTEAD OF HOLDING ITS OWN LIST
-   The eight sources are already written into resources.html as a definition
+   The sources are already written into resources.html as a definition
    list. Making a second copy here would give the site two places to change
    the same fact, and the day they disagree is the day one of them is wrong.
    So this script reads the authored list, builds the grid from it, and then
    hides the list. With scripts off the list stands on its own, complete: the
    grid is an enhancement, never the only copy.
 
+   WHY THE PUBLISHER LINE IS COPIED, NOT BUILT
+   The publisher and the language are translations, and the dictionary is
+   applied to the page at DOMContentLoaded -- after this script runs. Read at
+   build time they are empty, which is how every card once shipped with a
+   blank publisher. They are therefore read AFTER the language is applied and
+   copied across on every change (syncBy).
+
    WHY THERE IS NO "PREVIEW"
-   A preview has to be honest. These eight are landing pages and one PDF; the
+   A preview has to be honest. These are landing pages and one PDF; the
    site has no rendered first page for any of them, so a preview button would
    open something invented. Each item instead offers the one action that is
    real -- its source -- and Download only where a file is actually served
@@ -42,15 +49,23 @@
       if (!a) return;
       var by = li.querySelector(".by");
       var lang = li.querySelector(".lang");
+      /* The dictionary is applied to the page later, at DOMContentLoaded, so
+         at this moment these two spans are still empty. Read their KEYS and
+         keep the elements, so the text can be filled in when the language is
+         actually applied (syncBy, below). Reading .textContent here would put
+         an empty publisher on every card. */
+      var langKey = lang ? (lang.getAttribute("data-i18n") || "") : "";
       items.push({
         topic: title ? title.textContent.trim() : "",
         // the link text is the document's own title, in its own language
         title: a.textContent.trim(),
         href: a.getAttribute("href") || "",
-        by: by ? by.textContent.trim() : "",
-        lang: lang ? lang.textContent.trim() : "",
+        by: labelOf(by),
+        lang: labelOf(lang),
+        byEl: by,
+        langEl: lang,
         isNepali: (a.getAttribute("lang") === "ne") ||
-                  (lang && /NEPALI/i.test(lang.textContent))
+                  langKey === "res.p023" || langKey === "res.p025"
       });
     });
   });
@@ -83,6 +98,15 @@
     var sp = cut.lastIndexOf(" ");
     if (sp > 14) cut = cut.slice(0, sp);
     return cut.replace(/[\s,;:.\u2013\u2014-]+$/, "") + "\u2026";
+  }
+
+  /* What a label element says right now. The dictionary may not have been
+     applied yet, in which case the element still holds its key and not its
+     text -- so hold the key back rather than showing an empty line. */
+  function labelOf(el) {
+    if (!el) return "";
+    var s = (el.textContent || "").trim();
+    return s || (el.getAttribute("data-i18n") || "");
   }
 
   /* ---------- build the grid --------------------------------------- */
@@ -179,6 +203,18 @@
     grid.appendChild(li);
   });
 
+  /* The publisher and the language line on a card are translations of text the
+     page already carries in its authored list. Copy them across every time
+     the language changes, so a card never shows a blank publisher and never
+     keeps the previous language after the switch. */
+  function syncBy() {
+    var nodes = grid.querySelectorAll(".mgcard .mg-by");
+    for (var i = 0; i < nodes.length && i < items.length; i++) {
+      var src = items[i].byEl;
+      if (src) nodes[i].textContent = (src.textContent || "").trim();
+    }
+  }
+
   /* ---------- the toolbar ------------------------------------------ */
   var tools = document.createElement("div");
   tools.className = "mg-tools";
@@ -266,6 +302,7 @@
   // the empty state are built by this script, so they are refreshed on the
   // event i18n.js actually fires (assets/i18n.js), as referral-find.js does
   document.addEventListener("i18n:changed", apply);
+  document.addEventListener("i18n:changed", syncBy);
 
   /* ---------- mount ------------------------------------------------ */
   var section = document.createElement("section");
@@ -278,6 +315,7 @@
   root.appendChild(section);
 
   apply();
+  syncBy();
   // the authored list has done its job once the grid exists
   src.setAttribute("hidden", "");
   src.classList.add("mg-src");

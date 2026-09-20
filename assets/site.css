@@ -237,13 +237,13 @@
 .cb-slot.open{border-style:dashed;background:transparent}
 .cb-role{font-size:12px;letter-spacing:.7px;text-transform:uppercase;font-weight:700;
   color:var(--hc-mute)}
-.cb-emblem{display:block;margin:4px 0 2px}
-.cb-emblem img{display:block;height:56px;width:auto;max-width:100%}
+.cb-emblem{display:flex;align-items:center;min-height:64px;margin:4px 0 2px}
+.cb-emblem img{display:block;height:64px;width:auto;max-width:100%}
 .cb-name{display:block;font-size:17px;font-weight:700;color:var(--hc-ink);line-height:1.35}
 .cb-slot.pending .cb-name{font-size:16.5px}
 .cb-name.none{color:var(--hc-mute);font-weight:700;font-size:15.5px}
 .cb-wait{display:block;font-size:13px;line-height:1.5;color:var(--hc-mute)}
-@media (max-width:620px){ .cb-slot{padding:16px 17px}.cb-emblem img{height:44px} }
+@media (max-width:620px){ .cb-slot{padding:16px 17px}.cb-emblem{min-height:52px}.cb-emblem img{height:52px} }
 
 /* On a phone the thumbnail sits BESIDE the text instead of above it. A
    two-column grid leaves each card about 158px, and a 4:3 cover above a title

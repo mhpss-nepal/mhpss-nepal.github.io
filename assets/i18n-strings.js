@@ -694,6 +694,11 @@ window.I18N_STRINGS = {
   },
 
   en: {
+    "res.p032": "Inter-Agency Standing Committee — MHPSS Reference Group",
+    "res.p027": "Audit, evaluation and assessment",
+    "res.p029": "Inter-Agency Standing Committee, 2022",
+    "res.p030": "Inter-Agency Standing Committee, 2021",
+    "res.p031": "World Health Organization, 2015",
     /* ---- shared chrome ---- */
     "nav.hub":            "Hub",
     "nav.forms":          "Field forms",
@@ -1216,11 +1221,11 @@ window.I18N_STRINGS = {
     "flood.p060": "Each fact below is quoted from the body that published it, with the source beside it. The sources do not agree on how far the flood reached, because they were written on different days and for different purposes, so no number on this page is given without naming where it came from.",
     "res.p002": "<b>Adding a resource</b> — send the published link through the roles on the <a href=\"contact-us.html\">Contact page</a>. A resource is listed when it can be opened at its source, and under the name its publisher gives it.",
     "contact.contrib.h": "Contributing organisations",
-    "contact.contrib.p": "The organisations below contribute to the mental health and psychosocial support response. A logo is shown only where the organisation has supplied the file and given written permission to use it; until then the organisation is named in writing.",
+    "contact.contrib.p": "The organisations below contribute to the mental health and psychosocial support response in Nepal. WHO Nepal and the Ministry of Health and Food Safety are shown with their emblems; every other organisation is listed once it has agreed to be named, and its emblem is added once it has supplied the file.",
     "contact.contrib.role.who": "With the support of",
     "contact.contrib.role.mohp": "In coordination with",
     "contact.contrib.role.partner": "Contributing partner",
-    "contact.contrib.awaitingLogo": "Logo awaited from the organisation, with written permission.",
+    "contact.contrib.awaitingLogo": "Emblem awaited from the organisation.",
     "contact.contrib.openSlot": "Not yet named",
     "contact.contrib.openSlotWhy": "Named once the organisation has agreed to be listed.",
     "res.gallery.heading": "Browse the collection",
@@ -1603,6 +1608,19 @@ window.I18N_STRINGS = {
      general translation engine cannot do that, and would invent its own
      vocabulary that then fails to match the national one. */
   ne: {
+    "res.p032": "Inter-Agency Standing Committee — MHPSS सन्दर्भ समूह",
+    "res.p027": "लेखापरीक्षण, मूल्यांकन तथा मूल्याङ्कन",
+    "res.p029": "Inter-Agency Standing Committee, २०२२",
+    "res.p030": "Inter-Agency Standing Committee, २०२१",
+    "res.p031": "विश्व स्वास्थ्य संगठन (WHO), २०१५",
+    "contact.contrib.h": "योगदान गर्ने संस्थाहरू",
+    "contact.contrib.p": "तलका संस्थाहरूले नेपालमा मानसिक स्वास्थ्य र मनोसामाजिक सहयोग प्रतिकार्यमा योगदान गर्नुहुन्छ। WHO नेपाल र स्वास्थ्य तथा खाद्य स्वच्छता मन्त्रालय आफ्नै प्रतीकचिन्हसहित देखाइएका छन्; अन्य संस्था नाम राख्न सहमत भएपछि सूचीबद्ध हुन्छन् र प्रतीकचिन्ह उपलब्ध गराएपछि थपिन्छन्।",
+    "contact.contrib.awaitingLogo": "प्रतीकचिन्ह संस्थाबाट प्राप्त हुन बाँकी।",
+    "contact.contrib.openSlot": "अझै नाम तोकिएको छैन",
+    "contact.contrib.openSlotWhy": "संस्था सूचीबद्ध हुन सहमत भएपछि नाम राखिनेछ।",
+    "contact.contrib.role.who": "सहयोग सहित",
+    "contact.contrib.role.mohp": "समन्वयमा",
+    "contact.contrib.role.partner": "योगदानकर्ता साझेदार",
     /* ==== BEGIN public-pages (machine drafts of the eight public pages, 17 Sep 2026; a Nepali speaker checks them against the check sheet) ==== */
     "contact.p001": "सम्पर्क",
     "contact.p002": "जानाजानी नै यस पृष्ठमा न सम्पर्क फारम राखिएको छ, न कुनै व्यक्तिगत फोन नम्बर सूचीकृत गरिएको छ। फारम राखिएमा त्यसले प्रयोगकर्ताहरूका बारेमा सूचना संकलन गर्नेछ, र समूहले व्यक्तिहरूका बारेमा कुनै सूचना राख्दैन।",
