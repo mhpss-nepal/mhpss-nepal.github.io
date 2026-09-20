@@ -220,6 +220,16 @@ context.__api = api;
   out.htmlEmitted = draw(prepared ? prepared.body : raw);
   out.htmlOfWritten = out.publicBodies.length ? draw(out.publicBodies[0]) : null;
 
+  // 4. idempotency: redacting an already-redacted body is a no-op, so a
+  //    re-publish of what was published cannot change what the page shows.
+  if (typeof window.FB.redactPublicBody === "function" && out.publicBodies.length) {
+    try {
+      var again = window.FB.redactPublicBody(out.publicBodies[0]);
+      out.redactIdempotent = JSON.stringify(again) === JSON.stringify(out.publicBodies[0]);
+      out.stillLeaks = window.FB.belowFloorCount(again, window.FB.REDACTION_FLOOR, "$");
+    } catch (e) { out.redactIdempotent = false; out.stillLeaks = "error: " + e.message; }
+  }
+
   process.stdout.write(JSON.stringify(out));
 })().catch((e) => { console.error((e && e.stack) || e); process.exit(1); });
 """
@@ -249,7 +259,7 @@ PUBLISHED_LEAK = {
     "schema": 1,
     "mode": "production",
     "suppressed_below": 10,
-    "basis": "synthetic fixture: total 100, complement 94, hidden cell 6",
+    "basis": "synthetic fixture: total, one visible complement, one hidden cell",
     "reports": 100,
     "contacts": 100,
     "organisations": 20,
@@ -281,7 +291,7 @@ SCHEMA2_LEAK = {
     "schema": 2,
     "mode": "production",
     "suppressed_below": 10,
-    "basis": "synthetic fixture, schema 2",
+    "basis": "synthetic fixture, schema two",
     "reports": 100,
     "contacts": 100,
     "organisations_count": 20,
@@ -303,6 +313,44 @@ SCHEMA2_LEAK = {
         "total": 100,
         "disaggregated_total": 100,
     },
+}
+
+# A document in which every published count is at or above the floor. It must
+# still be published -- the redaction must not be a blanket refusal.
+CLEAN_DOC = {
+    "schema": 1,
+    "mode": "production",
+    "suppressed_below": 10,
+    "basis": "synthetic fixture, every count at or above the floor",
+    "reports": 200,
+    "contacts": 2000,
+    "organisations": 20,
+    "palikas": 14,
+    "districts": [
+        {"code": "A", "name": "Alpha", "reports": 100, "contacts": 1000, "organisations": 12},
+        {"code": "B", "name": "Bravo", "reports": 100, "contacts": 1000, "organisations": 14},
+    ],
+    "families": [
+        {"family": "one", "contacts": 1000},
+        {"family": "two", "contacts": 1000},
+    ],
+}
+
+# A below-floor SCALAR with no row below the floor: the scalar goes, the rows
+# stay. This is the narrower-withholding case and it must still fail closed for
+# the scalar itself.
+SCALAR_LEAK = json.loads(json.dumps(CLEAN_DOC))
+SCALAR_LEAK["organisations"] = 4
+
+# A shape this code does not know how to redact: a below-floor count held in a
+# numeric array (the matrix rows are published as arrays). The sink must
+# REFUSE rather than write it.
+UNREDACTABLE = {
+    "schema": 2,
+    "mode": "production",
+    "suppressed_below": 10,
+    "basis": "synthetic fixture, a count this code cannot redact",
+    "matrix": [["Org", "RAS", "Palika", "P0001", "A1", "Activity", 6, 6]],
 }
 
 
@@ -426,6 +474,41 @@ class BelowFloorRedactionTests(unittest.TestCase):
             below_floor_numbers(body), [],
             "a below-floor count survived inside a nested schema-2 breakdown",
         )
+
+    # --- the redaction must not be a blanket refusal -----------------------
+
+    def test_a_clean_document_is_still_published_unchanged(self) -> None:
+        body = emitted(run("flood_response", CLEAN_DOC))
+        assert body is not None, "a clean document was refused, so the surface is broken"
+        for key in ("reports", "contacts", "organisations", "palikas"):
+            self.assertEqual(body.get(key), CLEAN_DOC[key], f"{key} was withheld needlessly")
+        self.assertEqual(len(body.get("districts", [])), 2)
+        self.assertEqual(len(body.get("families", [])), 2)
+
+    def test_a_below_floor_scalar_is_withheld_while_clean_rows_survive(self) -> None:
+        """The narrower case: nothing is a row-level leak, so only the scalar
+        below the floor is withheld and the rows stay."""
+        body = emitted(run("flood_response", SCALAR_LEAK))
+        assert body is not None, "the document was refused instead of redacted"
+        self.assertIsNone(body.get("organisations"),
+                          "a below-floor scalar count was published")
+        self.assertEqual(len(body.get("districts", [])), 2,
+                         "clean rows were dropped for a scalar-only leak")
+
+    def test_a_shape_that_cannot_be_redacted_is_refused_not_written(self) -> None:
+        """Fail closed: a below-floor count this code does not recognise (here
+        a numeric array, the matrix shape) must stop the write entirely."""
+        result = run("coordination_full", UNREDACTABLE)
+        self.assertEqual(result["publishWrites"], [],
+                         "a document with an unredactable below-floor count was written")
+        self.assertIn("below-floor", result["publishError"])
+
+    def test_redaction_of_an_already_redacted_document_is_a_no_op(self) -> None:
+        result = run("flood_response", PUBLISHED_LEAK)
+        self.assertTrue(result.get("redactIdempotent"),
+                        "re-redacting a published document changed it")
+        self.assertEqual(result.get("stillLeaks"), "",
+                         "a below-floor count survives the redaction pass")
 
     # ==================================================================
     # B. the READER: what the page SHOWS, from a raw document

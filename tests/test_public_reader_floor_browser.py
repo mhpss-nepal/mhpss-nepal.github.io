@@ -78,7 +78,10 @@ class PublicReaderFloorBrowserTests(unittest.TestCase):
         self.assertEqual(errors, [])
         # The exact below-floor value must never be drawn as itself.
         self.assertNotIn("6", drawn.replace("100", "").replace("94", ""))
-        self.assertIn("fewer than 10", drawn)
+        # This ticket supersedes "fewer than N": a below-floor row is DROPPED
+        # rather than labelled, and its category does not appear either.
+        self.assertNotIn("fewer than", drawn.lower())
+        self.assertNotIn("PSS", drawn, "the below-floor category is still drawn")
         # The page says the floor it actually used, not the document's claim.
         self.assertIn("10", drawn)
 
