@@ -20,6 +20,8 @@ __pycache__/
 *.json
 !apps/hub/data/demo.json
 !package.json
+!config/application-paths.json
+!provenance/frontend-sources.json
 **/snapshot/
 **/snapshots/
 **/backup/

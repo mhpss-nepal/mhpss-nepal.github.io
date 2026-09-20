@@ -17,7 +17,16 @@ from pathlib import Path, PurePosixPath
 
 NORMALIZED_MTIME = 946684800  # 2000-01-01T00:00:00Z
 APP_DESTINATIONS = {"public": PurePosixPath("."), "form": PurePosixPath("form"), "hub": PurePosixPath("hub")}
-MAX_FILES = 120
+# The classified file set is not a hardcoded literal: it is the reviewed
+# ``config/application-paths.json`` manifest, which the verified landing tool
+# (``scripts/land.py``) extends when an approved frontend commit adds paths.
+# ``MAX_FILES`` is only the anti-runaway upper bound; the exact expected count is
+# the manifest length. Both the manifest and its paths are read from the resolved
+# commit's immutable tree, so a dirty worktree cannot change the allowlist.
+APPLICATION_PATH_MANIFEST = "config/application-paths.json"
+MANIFEST_SCHEMA = 1
+MAX_FILES = 4096
+MAX_MANIFEST_BYTES = 512 * 1024
 MAX_TOTAL_BYTES = 8 * 1024 * 1024
 MAX_FILE_BYTES = 1024 * 1024
 MAX_PATH_DEPTH = 12
@@ -26,133 +35,6 @@ MAX_TRAVERSAL_WORK = 256
 MAX_OBJECT_BYTES = 2 * 1024 * 1024
 MAX_GIT_STDERR = 128 * 1024
 GIT_TIMEOUT_SECONDS = 60
-
-EXPECTED_APPLICATION_PATHS = frozenset(
-    {
-        "apps/form/.gitignore",
-        "apps/form/.nojekyll",
-        "apps/form/4ws-report.html",
-        "apps/form/5ws-report.html",
-        "apps/form/README.md",
-        "apps/form/cards.html",
-        "apps/form/contact.html",
-        "apps/form/icons/apple-touch-icon.png",
-        "apps/form/icons/icon-192.png",
-        "apps/form/icons/icon-512.png",
-        "apps/form/icons/maskable-512.png",
-        "apps/form/index.html",
-        "apps/form/manifest.webmanifest",
-        "apps/form/phq9.html",
-        "apps/form/pwa.js",
-        "apps/form/referral.html",
-        "apps/form/selfreport.html",
-        "apps/form/sw.js",
-        "apps/form/tools/i18n-check.py",
-        "apps/form/tools/i18n-pages.txt",
-        "apps/form/tools/precache.sha",
-        "apps/form/tools/qr-build.py",
-        "apps/form/tools/qr-check.py",
-        "apps/form/tools/site.conf",
-        "apps/form/tools/sw-precache-check.py",
-        "apps/form/tools/text-setting-check.py",
-        "apps/hub/.gitignore",
-        "apps/hub/.nojekyll",
-        "apps/hub/README.md",
-        "apps/hub/access.html",
-        "apps/hub/assets/app.css",
-        "apps/hub/assets/brand.css",
-        "apps/hub/assets/brand.js",
-        "apps/hub/assets/codes.js",
-        "apps/hub/assets/design.css",
-        "apps/hub/assets/fb-config.js",
-        "apps/hub/assets/fb.js",
-        "apps/hub/assets/form.css",
-        "apps/hub/assets/hub.css",
-        "apps/hub/assets/hub.js",
-        "apps/hub/assets/i18n-strings.js",
-        "apps/hub/assets/i18n.js",
-        "apps/hub/assets/icons.js",
-        "apps/hub/assets/l1.js",
-        "apps/hub/assets/mark.js",
-        "apps/hub/assets/qr.js",
-        "apps/hub/assets/store.js",
-        "apps/hub/coverage.html",
-        "apps/hub/data/README.md",
-        "apps/hub/data/demo.js",
-        "apps/hub/data/demo.json",
-        "apps/hub/docs/DATA_MODEL.md",
-        "apps/hub/forms.html",
-        "apps/hub/gen.js",
-        "apps/hub/inbox.html",
-        "apps/hub/index.html",
-        "apps/hub/tools/contrast-check.py",
-        "apps/hub/tools/contrast-sweep.py",
-        "apps/hub/tools/i18n-check.py",
-        "apps/hub/tools/i18n-pages.txt",
-        "apps/hub/tools/justify-sweep.py",
-        "apps/hub/tools/key-chrome.py",
-        "apps/hub/tools/key-prose.py",
-        "apps/hub/tools/rail.py",
-        "apps/hub/tools/site.conf",
-        "apps/hub/tools/text-setting-check.py",
-        "apps/public/.gitignore",
-        "apps/public/.nojekyll",
-        "apps/public/README.md",
-        "apps/public/access-explained.html",
-        "apps/public/architecture.html",
-        "apps/public/assets/app.css",
-        "apps/public/assets/brand.css",
-        "apps/public/assets/brand.js",
-        "apps/public/assets/codes.js",
-        "apps/public/assets/design.css",
-        "apps/public/assets/fb-config.js",
-        "apps/public/assets/i18n-strings.js",
-        "apps/public/assets/i18n.js",
-        "apps/public/assets/icons.js",
-        "apps/public/assets/mark.js",
-        "apps/public/assets/page.css",
-        "apps/public/assets/public-read.js",
-        "apps/public/assets/referral-facilities.js",
-        "apps/public/assets/referral-find.js",
-        "apps/public/assets/referral-geo.js",
-        "apps/public/assets/referral-map.js",
-        "apps/public/assets/site.css",
-        "apps/public/assets/vendor/leaflet/LICENSE.txt",
-        "apps/public/assets/vendor/leaflet/leaflet.css",
-        "apps/public/assets/vendor/leaflet/leaflet.js",
-        "apps/public/assets/workforce-view.js",
-        "apps/public/assets/workforce.js",
-        "apps/public/bps.html",
-        "apps/public/contact-us.html",
-        "apps/public/coordination/admin.html",
-        "apps/public/coordination/inbox.html",
-        "apps/public/coordination/index.html",
-        "apps/public/dashboard/index.html",
-        "apps/public/flood-response.html",
-        "apps/public/iec.html",
-        "apps/public/index.html",
-        "apps/public/layer3.html",
-        "apps/public/method.html",
-        "apps/public/referral-directory.html",
-        "apps/public/resources.html",
-        "apps/public/tools/contrast-check.py",
-        "apps/public/tools/contrast-sweep.py",
-        "apps/public/tools/i18n-check.py",
-        "apps/public/tools/i18n-pages.txt",
-        "apps/public/tools/justify-sweep.py",
-        "apps/public/tools/key-chrome.py",
-        "apps/public/tools/key-prose.py",
-        "apps/public/tools/map-build.py",
-        "apps/public/tools/nav.py",
-        "apps/public/tools/roster-fig.py",
-        "apps/public/tools/site.conf",
-        "apps/public/tools/text-setting-check.py",
-        "apps/public/tools/workforce-build.py",
-        "apps/public/videos.html",
-    }
-)
-if len(EXPECTED_APPLICATION_PATHS) != MAX_FILES:
-    raise RuntimeError("the application allowlist must contain exactly 120 files")
 
 _FORBIDDEN_SUFFIXES = {
     ".bak",
@@ -680,6 +562,48 @@ def _destination_for(git_path: str) -> PurePosixPath:
     return destination
 
 
+def _load_application_paths(
+    repository: Path,
+    git_dir: Path,
+    root_tree: list[tuple[str, str, str]],
+    oid_bytes: int,
+) -> frozenset[str]:
+    """Read the reviewed classified-path manifest from the resolved commit tree.
+
+    The allowlist is data in the same immutable commit as the applications, not a
+    Python literal, so landing new paths is a reviewable one-line manifest change
+    and a dirty worktree can never alter what the builder accepts.
+    """
+    matches = [(mode, oid) for mode, name, oid in root_tree if name == "config"]
+    if len(matches) != 1 or matches[0][0] != "40000":
+        raise ValueError("verified commit must contain exactly one config tree")
+    config_tree = _parse_tree(_read_object(repository, git_dir, matches[0][1], "tree"), oid_bytes)
+    files = [(mode, oid) for mode, name, oid in config_tree if name == "application-paths.json"]
+    if len(files) != 1 or files[0][0] not in {"100644", "100755"}:
+        raise ValueError("verified commit must contain exactly one application-paths.json manifest")
+    raw = _read_object(repository, git_dir, files[0][1], "blob")
+    if len(raw) > MAX_MANIFEST_BYTES:
+        raise ValueError("application path manifest exceeds its byte limit")
+    value = parse_structured_data(APPLICATION_PATH_MANIFEST, raw)
+    if not isinstance(value, dict) or value.get("schema") != MANIFEST_SCHEMA:
+        raise ValueError("application path manifest has an unsupported schema")
+    paths = value.get("paths")
+    if not isinstance(paths, list) or not paths:
+        raise ValueError("application path manifest must list at least one path")
+    registry = _PathRegistry()
+    for path in paths:
+        if not isinstance(path, str):
+            raise ValueError("application path manifest contains a non-string path")
+        parts = path.split("/")
+        if len(parts) < 3 or parts[0] != "apps" or parts[1] not in APP_DESTINATIONS or not parts[2]:
+            raise ValueError(f"application path manifest contains an unclassified path: {path}")
+        _validate_git_path(path)
+        registry.add(path, kind="manifest path")
+    if len(paths) > MAX_FILES:
+        raise ValueError("application path manifest exceeds the file budget")
+    return frozenset(paths)
+
+
 def inspect_source(source_root: Path, revision: str = "HEAD") -> SourceLayout:
     """Resolve and independently verify one exact committed application tree."""
     repository, git_dir, source_path = _discover_repository(source_root)
@@ -725,6 +649,8 @@ def inspect_source(source_root: Path, revision: str = "HEAD") -> SourceLayout:
     apps_matches = [(mode, oid) for mode, name, oid in root_tree if name == "apps"]
     if len(apps_matches) != 1 or apps_matches[0][0] != "40000":
         raise ValueError("verified commit must contain exactly one apps tree")
+
+    expected_paths = _load_application_paths(repository, git_dir, root_tree, oid_bytes)
 
     file_count = 0
     total_bytes = 0
@@ -778,18 +704,20 @@ def inspect_source(source_root: Path, revision: str = "HEAD") -> SourceLayout:
     for app in sorted(app_roots):
         walk_tree(app_roots[app], f"apps/{app}")
 
-    extra = sorted(set(found) - EXPECTED_APPLICATION_PATHS)
+    extra = sorted(set(found) - expected_paths)
     if extra:
         if len(extra) == 1:
             raise ValueError(f"unclassified application path: {extra[0]}")
         raise ValueError(
-            f"total file limit exceeded: expected exactly {MAX_FILES} classified application files"
+            f"total file limit exceeded: expected exactly {len(expected_paths)} classified application files"
         )
-    missing = sorted(EXPECTED_APPLICATION_PATHS - set(found))
+    missing = sorted(expected_paths - set(found))
     if missing:
         raise ValueError(f"missing expected application path: {missing[0]}")
-    if file_count != MAX_FILES:
-        raise ValueError(f"total file limit requires exactly {MAX_FILES} files, found {file_count}")
+    if file_count != len(expected_paths):
+        raise ValueError(
+            f"classified path manifest requires exactly {len(expected_paths)} files, found {file_count}"
+        )
 
     # Strict structured-data parsing, AFTER every resource/allowlist budget has
     # been enforced and BEFORE any output bytes are materialized: malformed or

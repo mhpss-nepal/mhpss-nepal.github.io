@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -25,8 +26,20 @@ def _git(repository: Path, *arguments: str, check: bool = True) -> subprocess.Co
 TRACKED_APPLICATION_PATHS = tuple(
     _git(REPOSITORY_ROOT, "ls-tree", "-r", "--name-only", "HEAD", "--", "apps").stdout.splitlines()
 )
-if len(TRACKED_APPLICATION_PATHS) != 120:
-    raise RuntimeError(f"test fixture expected 120 application paths, found {len(TRACKED_APPLICATION_PATHS)}")
+# The classified path allowlist is committed data (``config/application-paths.json``),
+# not a Python literal, so a landing can add paths in a reviewable manifest change.
+MANIFEST_PATHS = tuple(
+    json.loads((REPOSITORY_ROOT / "config" / "application-paths.json").read_text(encoding="utf-8"))["paths"]
+)
+
+
+def write_path_manifest(repository: Path, paths: tuple[str, ...] = TRACKED_APPLICATION_PATHS) -> None:
+    manifest = repository / "config" / "application-paths.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(
+        json.dumps({"paths": sorted(paths), "schema": 1}, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
 
 
 def fixture_bytes(path: str, label: str = "fixture") -> bytes:
@@ -49,6 +62,13 @@ def create_repository(root: Path, label: str = "fixture") -> tuple[Path, Path, s
         path = repository / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(fixture_bytes(relative, label))
+    write_path_manifest(repository)
+    provenance = repository / "provenance" / "frontend-sources.json"
+    provenance.parent.mkdir(parents=True, exist_ok=True)
+    provenance.write_text(
+        json.dumps({"applications": {}, "schema": 1}, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
     commit = commit_all(repository, label)
     return repository, repository / "apps", commit
 
