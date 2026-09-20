@@ -206,6 +206,10 @@
   text-align:left;hyphens:none;-webkit-hyphens:none;word-break:normal;
   overflow-wrap:normal}
 .mg-sheet .r{height:3px;background:currentColor;opacity:.28;flex:0 0 auto}
+/* A real document cover. object-fit:cover on a 4:3 frame would crop the
+   title off a portrait cover, so the whole page is shown and the frame's
+   own colour stands in for the margins. */
+.mg-cover{width:100%;height:100%;object-fit:contain;display:block}
 .mg-sheet.ne{background:var(--wh-dd);border-color:var(--wh-dd);color:#fff;
   box-shadow:5px 5px 0 var(--wh-b)}
 @media (max-width:700px){ .mg-sheet{padding:8px 7px;gap:6px}

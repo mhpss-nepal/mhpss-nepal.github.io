@@ -54,12 +54,19 @@
          keep the elements, so the text can be filled in when the language is
          actually applied (syncBy, below). Reading .textContent here would put
          an empty publisher on every card. */
+      /* A real first page, where the item's authored line carries one. The
+         file is the document's own cover, rendered from the document itself
+         -- not a stock image and not a mock-up. Items without one keep the
+         title-block sheet below. */
+      var cover = li.getAttribute("data-cover") || "";
+
       var langKey = lang ? (lang.getAttribute("data-i18n") || "") : "";
       items.push({
         topic: title ? title.textContent.trim() : "",
         // the link text is the document's own title, in its own language
         title: a.textContent.trim(),
         href: a.getAttribute("href") || "",
+        cover: cover,
         by: labelOf(by),
         lang: labelOf(lang),
         byEl: by,
@@ -139,26 +146,39 @@
     var card = document.createElement("article");
     card.className = "mgcard";
 
-    // cover: a short form of the REAL title on a sheet of the page's own
-    // palette, with a rule under it, the way a report cover carries a title
-    // block. Nothing invented: no made-up page image, no fake logo.
+    // cover: the document's own first page where one has been rendered, and
+    // otherwise a short form of the REAL title on a sheet of the page's own
+    // palette. Nothing invented either way: no made-up page image, no fake logo.
     var thumb = document.createElement("div");
     thumb.className = "mg-thumb";
     var badge = document.createElement("span");
     badge.className = "mg-format";
     badge.setAttribute("data-i18n", "res.gallery.type." + fmt);
     badge.textContent = t("res.gallery.type." + fmt) || fmt.toUpperCase();
-    var sheet = document.createElement("div");
-    sheet.className = "mg-sheet" + (lc === "ne" ? " ne" : "");
-    if (lc === "ne") sheet.setAttribute("lang", "ne");
-    var st = document.createElement("span");
-    st.className = "t";
-    st.textContent = coverTitle(it.title);
-    var sr = document.createElement("span");
-    sr.className = "r";
-    sr.setAttribute("aria-hidden", "true");
-    sheet.appendChild(st); sheet.appendChild(sr);
-    thumb.appendChild(badge); thumb.appendChild(sheet);
+    thumb.appendChild(badge);
+
+    if (it.cover) {
+      var img = document.createElement("img");
+      img.className = "mg-cover";
+      img.src = it.cover;
+      // an illustrative cover is decorative next to the full title beside it
+      img.alt = "";
+      img.loading = "lazy";
+      img.decoding = "async";
+      thumb.appendChild(img);
+    } else {
+      var sheet = document.createElement("div");
+      sheet.className = "mg-sheet" + (lc === "ne" ? " ne" : "");
+      if (lc === "ne") sheet.setAttribute("lang", "ne");
+      var st = document.createElement("span");
+      st.className = "t";
+      st.textContent = coverTitle(it.title);
+      var sr = document.createElement("span");
+      sr.className = "r";
+      sr.setAttribute("aria-hidden", "true");
+      sheet.appendChild(st); sheet.appendChild(sr);
+      thumb.appendChild(sheet);
+    }
 
     // body
     var body = document.createElement("div");

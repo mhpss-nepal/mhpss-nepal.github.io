@@ -694,6 +694,7 @@ window.I18N_STRINGS = {
   },
 
   en: {
+    "res.p033": "Covers on this page are the first page of each document, taken from the document itself. Items that are web pages, not documents, have no cover and show their title instead.",
     "res.p032": "Inter-Agency Standing Committee — MHPSS Reference Group",
     "res.p027": "Audit, evaluation and assessment",
     "res.p029": "Inter-Agency Standing Committee, 2022",
@@ -956,7 +957,7 @@ window.I18N_STRINGS = {
     "sr.clinicalNote": "<b>Why there is no screening questionnaire on this page.</b> An anonymous form filled in by whoever walks past is the worst possible place for a clinical instrument: you cannot consent someone properly, you cannot give them the result, you cannot follow up a positive answer, and the people who answer are not a sample of anything. So this form asks about needs and about access to services \u2014 questions an anonymous respondent can actually answer usefully \u2014 and the clinical measure sits on the <a href=\"phq9.html\">PHQ-9 form</a>, with a named worker, consent, and a referral pathway behind it.",
 
     /* ==== BEGIN layer3-shared: the public website's shared blocks (tools/nav.py), live panels (assets/public-read.js) and map (tools/map-build.py). 16 Sep 2026 ==== */
-    "mast.cluster": "Health Cluster · Nepal",
+    "mast.cluster": "Mental health and psychosocial support",
     "mast.place": "Rasuwa · Nuwakot · flood response",
     "mast.hub": "Coordination hub",
     "ref.strip": "How this system works",
@@ -1216,7 +1217,7 @@ window.I18N_STRINGS = {
     /* ==== END layer3-shared ==== */
 
     /* ---- swept prose: home ---- */
-    "home.p002": "<span>Health Cluster · Nepal</span>",
+    "home.p002": "<span>Mental health and psychosocial support · Nepal</span>",
     "home.p012": "The group coordinates mental health and psychosocial support, which the IASC Guidelines define in these words:",
     "flood.p060": "Each fact below is quoted from the body that published it, with the source beside it. The sources do not agree on how far the flood reached, because they were written on different days and for different purposes, so no number on this page is given without naming where it came from.",
     "res.p002": "<b>Adding a resource</b> — send the published link through the roles on the <a href=\"contact-us.html\">Contact page</a>. A resource is listed when it can be opened at its source, and under the name its publisher gives it.",
@@ -1255,7 +1256,7 @@ window.I18N_STRINGS = {
     "home.p006": "A standing meeting and one shared table for who is doing what and where, so the health and protection tracks see the same picture without either giving up its own reporting line.",
     "home.p007": "<span class=\"state\">To be confirmed</span> Membership is listed by category, not by name, until the group confirms its own participant list. Naming an organisation before it has agreed to be named would be a claim, not a record.",
     "home.p008": "Organisations whose main work is not MHPSS, but whose work carries mental health or psychosocial components, belong in the same picture:",
-    "home.p009": "MHPSS in Nepal has long been coordinated through two tracks: a mental health sub-cluster under the Health Cluster, and a psychosocial working group under Protection. One shared table does not ask anyone to leave their own.",
+    "home.p009": "MHPSS in Nepal has been coordinated through more than one track: a mental health side and a psychosocial side, sitting in different sectors, each with its own reporting. They belong to one response, not two. The Technical Working Group is the table where both meet, and one shared table does not ask anyone to leave their own.",
     "home.p010": "<span class=\"state\">To be agreed</span> The group’s own mission statement will be published here, in its members’ words, once they have agreed it.",
     "home.p011": "“The composite term mental health and psychosocial support is used in this document to describe any type of local or outside support that aims to protect or promote psychosocial well-being and/or prevent or treat mental disorder.”",
     "home.p013": "<a href=\"flood-response.html\">Flood Response →</a> <a href=\"referral-directory.html\">Referral Directory →</a> <a href=\"resources.html\">Resources →</a>",
@@ -1277,7 +1278,7 @@ window.I18N_STRINGS = {
     "home.p029": "Coordination",
     "home.p030": "Across sectors",
     "home.p031": "Partners",
-    "home.p032": "Convened under the Health Cluster",
+    "home.p032": "Convened by",
     "home.p033": "Forms and dashboard built; field pilot next",
     "home.p034": "Referral pathways to be agreed",
     "home.p035": "Meeting rhythm to be set",
@@ -1608,6 +1609,7 @@ window.I18N_STRINGS = {
      general translation engine cannot do that, and would invent its own
      vocabulary that then fails to match the national one. */
   ne: {
+    "res.p033": "यस पृष्ठका आवरण सम्बन्धित कागजातकै पहिलो पृष्ठबाट लिइएका हुन्। कागजात नभई वेब पृष्ठ भएका सामग्रीको आवरण हुँदैन, तिनमा शीर्षक मात्र देखाइन्छ।",
     "res.p032": "Inter-Agency Standing Committee — MHPSS सन्दर्भ समूह",
     "res.p027": "लेखापरीक्षण, मूल्यांकन तथा मूल्याङ्कन",
     "res.p029": "Inter-Agency Standing Committee, २०२२",
@@ -1860,7 +1862,7 @@ window.I18N_STRINGS = {
     "hl.tpo.meta": "TPO Nepal। हरेक दिन बिहान ९ बजेदेखि बेलुका ५ बजेसम्म। Nepal Telecom को नेटवर्कबाट निःशुल्क।",
     "hl.tpo.name": "मनोसामाजिक सहयोग हेल्पलाइन",
     "home.cite": "IASC, <a href=\"https://interagencystandingcommittee.org/iasc-task-force-mental-health-and-psychosocial-support-emergency-settings/iasc-guidelines-mental-health-and-psychosocial-support-emergency-settings-2007\">Guidelines on Mental Health and Psychosocial Support in Emergency Settings</a>, २००७, पृष्ठ १",
-    "home.p002": "<span>स्वास्थ्य क्लस्टर · नेपाल</span>",
+    "home.p002": "<span>मानसिक स्वास्थ्य तथा मनोसामाजिक सहयोग · नेपाल</span>",
     "home.p012": "यस समूहले मानसिक स्वास्थ्य तथा मनोसामाजिक सहयोगको समन्वय गर्दछ, अर्थात् IASC Guidelines ले निम्न शब्दमा परिभाषित गरेको सहयोग:",
     "flood.p060": "तल दिइएको प्रत्येक तथ्य त्यसलाई प्रकाशित गर्ने निकायबाटै उद्धृत गरिएको छ, र छेउमै त्यसको स्रोत दिइएको छ। बाढी कहाँसम्म फैलियो भन्ने विषयमा स्रोतहरू एकमत छैनन्, किनभने ती फरक-फरक दिनमा र फरक-फरक उद्देश्यले लेखिएका थिए; त्यसैले यस पृष्ठमा कुनै पनि सङ्ख्या त्यसको आफ्नै स्रोतबिना दिइएको छैन।",
     "res.p002": "<b>स्रोत सामग्री थप्न</b> — प्रकाशित लिङ्क <a href=\"contact-us.html\">सम्पर्क</a> पृष्ठमा दिइएका भूमिकामार्फत पठाउनुहोस्। कुनै स्रोत सामग्री त्यसको स्रोतमै खोल्न सकिएमा सूचीकृत गरिन्छ, र त्यसको प्रकाशकले दिएकै नाममा सूचीकृत गरिन्छ।",
@@ -1870,7 +1872,7 @@ window.I18N_STRINGS = {
     "home.p006": "नियमित बैठक तथा कसले, कहाँ, के गरिरहेको छ भन्ने एउटै साझा टेबल, जसबाट स्वास्थ्य तथा protection दुवै धारले आ-आफ्नो प्रतिवेदन गर्ने माध्यम नछाडीकनै एउटै चित्र देख्न सक्छन्।",
     "home.p007": "<span class=\"state\">पुष्टि हुन बाँकी</span> समूहले आफ्नो सहभागी सूची पुष्टि नगरेसम्म सदस्यहरूलाई नामअनुसार होइन, श्रेणीअनुसार सूचीकृत गरिएको छ। कुनै संस्थाले आफ्नो नाम उल्लेख गर्न सहमति जनाउनुअघि नै त्यसको नाम उल्लेख गर्नु अभिलेख होइन, दाबी हुनेछ।",
     "home.p008": "जसको मुख्य काम MHPSS होइन, तर जसको काममा मानसिक स्वास्थ्य वा मनोसामाजिक पक्ष समावेश हुन्छ, ती संस्थाहरू पनि यही चित्रमा समेटिनुपर्दछ:",
-    "home.p009": "नेपालमा MHPSS को समन्वय लामो समयदेखि दुई धारमा हुँदै आएको छ: स्वास्थ्य क्लस्टर अन्तर्गतको मानसिक स्वास्थ्य sub-cluster, र Protection अन्तर्गतको मनोसामाजिक working group। एउटै साझा टेबलका लागि कसैले पनि आफ्नो टेबल छाड्नुपर्दैन।",
+    "home.p009": "नेपालमा MHPSS को समन्वय एकभन्दा बढी धारमा हुँदै आएको छ: मानसिक स्वास्थ्य पक्ष र मनोसामाजिक पक्ष, फरक-फरक क्षेत्रमा, आ-आफ्नै प्रतिवेदनसहित। ती दुई होइन, एउटै प्रतिकार्यका अंग हुन्। Technical Working Group दुवै भेट हुने टेबल हो, र एउटै साझा टेबलका लागि कसैले पनि आफ्नो टेबल छाड्नुपर्दैन।",
     "home.p010": "<span class=\"state\">सहमति हुन बाँकी</span> समूहको आफ्नै ध्येय वक्तव्य सदस्यहरूले त्यसमा सहमति जनाएपछि उनीहरूकै शब्दमा यहाँ प्रकाशित गरिनेछ।",
     "home.p011": "“The composite term mental health and psychosocial support is used in this document to describe any type of local or outside support that aims to protect or promote psychosocial well-being and/or prevent or treat mental disorder.” (मूल अंग्रेजी उद्धरण)",
     "home.p013": "<a href=\"flood-response.html\">बाढी प्रतिकार्य →</a> <a href=\"referral-directory.html\">रेफरल निर्देशिका →</a> <a href=\"resources.html\">स्रोत सामग्री →</a>",
@@ -1892,7 +1894,7 @@ window.I18N_STRINGS = {
     "home.p029": "समन्वय",
     "home.p030": "विभिन्न क्षेत्रहरूमा",
     "home.p031": "साझेदारहरू",
-    "home.p032": "स्वास्थ्य क्लस्टर अन्तर्गत आह्वान गरिएको",
+    "home.p032": "आह्वान गर्ने निकाय",
     "home.p033": "फारम तथा ड्यासबोर्ड तयार; अब field pilot",
     "home.p034": "Referral pathways बारे सहमति हुन बाँकी",
     "home.p035": "बैठकको नियमित समय तय हुन बाँकी",
@@ -2147,7 +2149,7 @@ window.I18N_STRINGS = {
     "nav.method": "विधि",
     "nav.whoSees": "कसले के देख्न सक्छ",
     /* ==== BEGIN layer3-shared (machine drafts, short strings only) ==== */
-    "mast.cluster": "स्वास्थ्य क्लस्टर · नेपाल",
+    "mast.cluster": "मानसिक स्वास्थ्य तथा मनोसामाजिक सहयोग",
     "mast.place": "रसुवा · नुवाकोट · बाढी प्रतिकार्य",
     "mast.hub": "समन्वय केन्द्र",
     "ref.strip": "यो प्रणाली कसरी काम गर्छ",
