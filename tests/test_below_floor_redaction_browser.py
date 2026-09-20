@@ -71,6 +71,28 @@ CLEAN = {
     ],
 }
 
+# The reviewer's second reproduction: a district row carries its own total AND a
+# nested breakdown, one member of which is below the floor. Dropping the nested
+# member must withhold the enclosing row total, or 100 - 94 = 6 on the page.
+NESTED = {
+    "schema": 1,
+    "mode": "production",
+    "suppressed_below": 10,
+    "basis": "synthetic fixture, nested complementary cell",
+    "contacts": 100,
+    "districts": [
+        {
+            "code": "A",
+            "name": "Alpha",
+            "contacts": 100,
+            "breakdown": [
+                {"family": "small", "contacts": 6},
+                {"family": "large", "contacts": 94},
+            ],
+        },
+    ],
+}
+
 
 def _readable(html: str) -> list[int]:
     text = re.sub(r"<[^>]*>", " ", html)
@@ -158,6 +180,94 @@ class BelowFloorRenderBrowserTests(unittest.TestCase):
                       "a clean document lost its rows: the redaction is too broad")
         self.assertIn("1000", clean["text"].replace(",", ""),
                       "a clean document lost its figures")
+
+    def _redact_on_page(self, page, doc) -> dict:
+        return page.evaluate(
+            """(doc) => {
+                try {
+                    return { ok: true, out: window.PUBLIC_STATS.redact(doc), error: '' };
+                } catch (e) {
+                    return { ok: false, out: null, error: String((e && e.message) || e) };
+                }
+            }""",
+            doc,
+        )
+
+    def test_the_real_page_does_not_reconstruct_a_nested_dropped_cell(self) -> None:
+        """The reviewer's reproduction at the page's own redaction layer: a
+        nested below-floor member must withhold the enclosing row total, so the
+        document the page would render from cannot yield 100-94=6."""
+        from playwright.sync_api import sync_playwright
+
+        server, origin = _serve()
+        try:
+            with sync_playwright() as pw:
+                browser = pw.chromium.launch()
+                errors: list[str] = []
+                page = browser.new_page()
+                page.on("pageerror", lambda e: errors.append(str(e)))
+                page.goto(f"{origin}/flood-response.html", wait_until="load")
+                page.wait_for_timeout(800)
+                redacted = self._redact_on_page(page, NESTED)
+                leak = self._draw(page, NESTED)
+                browser.close()
+        finally:
+            server.shutdown()
+            server.server_close()
+
+        self.assertEqual(errors, [], "the real public page raised a script error")
+        self.assertTrue(redacted["ok"], redacted["error"] or "the page could not redact the document")
+        body = redacted["out"]
+        district = body["districts"][0]
+        self.assertIsNone(
+            district.get("contacts"),
+            "the page kept an enclosing total whose nested component it dropped: 100-94=6",
+        )
+        # and nothing the page DRAWS carries the surviving nested complement
+        numbers = _readable(leak["html"])
+        self.assertFalse(
+            100 in numbers and 94 in numbers,
+            "the enclosing total and the surviving nested complement are both "
+            "readable on the page, so 100-94=6",
+        )
+
+    def test_the_real_page_refuses_a_value_below_its_effective_floor(self) -> None:
+        """A document declaring floor 20 makes 15 below-floor even though it
+        clears the default 10. The real page's redaction layer must refuse it
+        and draw none of it, rather than show the 15."""
+        from playwright.sync_api import sync_playwright
+
+        doc = {
+            "schema": 1,
+            "mode": "production",
+            "suppressed_below": 20,
+            "basis": "synthetic fixture, declared floor above default",
+            "matrix": [["Org", "RAS", "Palika", "P0001", "A1", "Activity", 15, 15]],
+        }
+        server, origin = _serve()
+        try:
+            with sync_playwright() as pw:
+                browser = pw.chromium.launch()
+                errors: list[str] = []
+                page = browser.new_page()
+                page.on("pageerror", lambda e: errors.append(str(e)))
+                page.goto(f"{origin}/flood-response.html", wait_until="load")
+                page.wait_for_timeout(800)
+                redacted = self._redact_on_page(page, doc)
+                drawn = self._draw(page, doc)
+                browser.close()
+        finally:
+            server.shutdown()
+            server.server_close()
+
+        self.assertEqual(errors, [], "the real public page raised a script error")
+        self.assertFalse(
+            redacted["ok"],
+            "the page accepted a value below its effective floor",
+        )
+        self.assertIn("below-floor", redacted["error"])
+        self.assertNotIn("15", drawn["text"],
+                         "the page drew a value below its effective floor")
 
 
 @unittest.skipIf(
