@@ -90,7 +90,16 @@
   var SAFEGUARDING_FALLBACK =
     "STOP. Do not record this case here. The referral's safeguarding check is not ticked; " +
     "it may be a GBV case, an unaccompanied or separated child, or an immediate risk to life. " +
-    "Close the form and use the specialised pathway.";
+    "Close the form and use the specialised route now: GBV 1145; child crisis or an " +
+    "unaccompanied or separated child 1098; immediate danger 100 (police) or 102 (ambulance); " +
+    "clinical care at the nearest OCMC; MHPSS support 16600102005 (08:00–18:00, not 24/7). " +
+    "District pathways may be disrupted.\u000a" +
+    "रोक्नुहोस्। यो केस यहाँ अभिलेख नगर्नुहोस्। सुरक्षा जाँच गरिएको छैन, त्यसैले यो GBV केस, " +
+    "वा छोडिएको वा अलग भएको बालबालिका, वा जीवनमा तत्काल जोखिम हुन सक्छ। फारम बन्द गर्नुहोस् र " +
+    "अहिले विशेष मार्ग प्रयोग गर्नुहोस्: GBV 1145; बाल संकट वा छोडिएको/अलग भएको बालबालिका " +
+    "1098; जीवनमा तत्काल खतरा भए 100 (प्रहरी) वा 102 (एम्बुलेन्स); चिकित्सकीय सेवाका लागि " +
+    "नजिकको OCMC; MHPSS सहयोग 16600102005 (08:00–18:00, 24/7 होइन)। जिल्लाका मार्गहरू " +
+    "अवरुद्ध हुन सक्छन्।";
   function isUnsafeReferral(rec) {
     if (!rec) return false;
     var referral = rec.kind === "referral" ||

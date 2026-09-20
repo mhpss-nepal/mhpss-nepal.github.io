@@ -8,12 +8,14 @@ Tenant: `mhpss-nepal` · Branch: `architecture/v2-immutable-authority` (review a
 | Base | `d4d45d870a7bde423b787c6addf847069898b1fc` |
 | Test-only commit (red) | `98ddacfe7025025f3330679d11ce979353675ffe` |
 | Head (fix, green) | `ca67fc75b2eb3ea83b2487103ebcc37ab5dc34c0` |
+| Actionable-route test-only commit (red) | `7ca1cf5` |
+| Actionable-route fix commit (green) | pending at the time this note was edited |
 | Production ref `origin/main` | `68bf197abe56dd0265dca245e61809100b4c3901` — unchanged; no push/PR/merge/deploy |
 | Worktree | clean after commit |
 
-Status: **BLOCKED — DECISION** (see "The specialised pathway"). The code control is
-complete and every test passes; the block is a single, explicit decision about the
-destination the refusal sends a worker to. Nothing was improvised.
+Status: **DONE — REVIEW ARTIFACT** (release integration still required). The code control is
+complete and every test passes. The refusal now names the parent-verified routes and numbers;
+it does not claim that every district pathway is functioning.
 
 ---
 
@@ -65,6 +67,15 @@ python3 -m unittest tests.test_referral_safeguarding_gate -v
 git checkout HEAD -- apps/hub/assets/l1.js apps/hub/assets/fb.js apps/form/referral.html
 python3 -m unittest tests.test_referral_safeguarding_gate -v
 #   Ran 9 tests ... OK   (9 passed, 0 failed)
+
+# RED 2 — at test-only commit 7ca1cf5, before the route fix:
+python3 -m unittest tests.test_referral_safeguarding_gate -v
+#   Ran 10 tests ... FAILED (failures=5)
+#   Missing 1145 / 1098 / 100 / 102 / 16600102005 from the refusal paths.
+
+# GREEN 2 — actionable routes added to the shared, fallback, and visible refusals:
+python3 -m unittest tests.test_referral_safeguarding_gate -v
+#   Ran 10 tests ... OK   (10 passed, 0 failed)
 ```
 
 An independent mutation check (temporarily disabling the three guards, then
@@ -115,26 +126,28 @@ cache version must move together in the monorepo integration (see
   professionally translated. This task did not add `safeguard.*` keys (which would
   trip the sibling page-keying work); the mechanism is flagged for that task.
 
-## 7. The specialised pathway — decision required
+## 7. The specialised routes named by the refusal
 
-The refusal tells the worker to use "the specialised pathway". **No such pathway
-exists as an operational destination inside this system.** What exists is only the
-form's own English prose (`referral.html` banner): the protection cluster's
-survivor-centred pathway (GBV), child-protection case management (children), and
-"act first" (immediate risk to life) — plus public helpline numbers (e.g. 1166,
-National Suicide Prevention Helpline Service).
+The parent task supplied independent verification for the reachable national routes
+and directed that the refusal name them rather than an abstract cluster pathway:
 
-That prose is **an existing, owner-authored statement**, so reusing it invents no
-destination. But there is no SOP, no named focal point, no confirmed routing, and
-no confirmed GBV/service-mapping reference in this repository. **The specialised
-pathway this gate sends people to is unconfirmed.**
+| Situation | Route named | Operating qualification |
+|---|---|---|
+| GBV | **1145** | National Women Commission Khabar Garaun; reported 24/7, free and confidential |
+| Child crisis / unaccompanied or separated child | **1098** | Child Helpline Nepal; reported 24/7 and free |
+| Immediate risk to life | **100** police / **102** ambulance | Act first; never wait on this form |
+| Clinical / medical | nearest **OCMC** | Use the nearest functioning centre; district availability remains an open operational check |
+| MHPSS-specific | **16600102005** | TPO Nepal, 08:00–18:00; explicitly not 24/7 |
 
-**Decision required:** confirm the operational specialised pathway(s) — GBV
-survivor-centred route, child-protection case-management route, and the immediate-
-risk-to-life route — including owner, contact, and whether the form should name
-them. Until that is confirmed, enabling this blocking gate in the field would send
-a worker to a destination that may not exist, which degrades safety rather than
-improving it. No destination was improvised.
+The refusal says district pathways **may be disrupted**. It does not claim that a
+local service map, focal point, or OCMC is functioning everywhere. The parent cited
+independent government, World Bank, UN Women, UNICEF and CWIN checks for the numbers;
+this evidence note records that handoff rather than reproducing sensitive contacts.
+
+Residual human ownership: confirm the district-level GBV and child-protection focal
+points, report the pathway gap to the Protection Cluster if required, and check
+whether the nearest OCMC for Nuwakot/Rasuwa is functioning. These are operational
+follow-ups, not reasons to weaken or remove the block.
 
 ## 8. Environment notes (corroborating, not caused by this diff)
 
