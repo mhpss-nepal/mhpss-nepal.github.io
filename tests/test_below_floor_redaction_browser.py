@@ -93,6 +93,28 @@ NESTED = {
     ],
 }
 
+MIXED_ROW_FAMILIES = [
+    (
+        "leading null",
+        [None, {"family": "small", "contacts": 6}, {"family": "large", "contacts": 94}],
+    ),
+    (
+        "leading primitive",
+        ["unexpected", {"family": "small", "contacts": 6}, {"family": "large", "contacts": 94}],
+    ),
+]
+
+
+def mixed_row_document(families):
+    return {
+        "schema": 1,
+        "mode": "production",
+        "suppressed_below": 10,
+        "basis": "synthetic fixture, malformed mixed row family",
+        "contacts": 100,
+        "families": families,
+    }
+
 
 def _readable(html: str) -> list[int]:
     text = re.sub(r"<[^>]*>", " ", html)
@@ -110,18 +132,28 @@ class BelowFloorRenderBrowserTests(unittest.TestCase):
                 const host = document.createElement('div');
                 host.innerHTML = '<p data-s></p><div data-b></div>';
                 document.body.appendChild(host);
-                window.PUBLIC_STATS.preview({
-                    state: host.querySelector('[data-s]'),
-                    body: host.querySelector('[data-b]'),
-                    panel: host,
-                    kind: 'flood'
-                }, doc);
                 const body = host.querySelector('[data-b]');
-                return {
-                    html: body.innerHTML,
-                    text: body.innerText,
-                    zeroWidthBars: body.innerHTML.split('width:0%').length - 1
-                };
+                try {
+                    window.PUBLIC_STATS.preview({
+                        state: host.querySelector('[data-s]'),
+                        body: body,
+                        panel: host,
+                        kind: 'flood'
+                    }, doc);
+                    return {
+                        html: body.innerHTML,
+                        text: body.innerText,
+                        zeroWidthBars: body.innerHTML.split('width:0%').length - 1,
+                        error: ''
+                    };
+                } catch (e) {
+                    return {
+                        html: body.innerHTML,
+                        text: body.innerText,
+                        zeroWidthBars: 0,
+                        error: String((e && e.message) || e)
+                    };
+                }
             }""",
             doc,
         )
@@ -268,6 +300,36 @@ class BelowFloorRenderBrowserTests(unittest.TestCase):
         self.assertIn("below-floor", redacted["error"])
         self.assertNotIn("15", drawn["text"],
                          "the page drew a value below its effective floor")
+
+    def test_the_real_page_refuses_mixed_row_families_without_throwing(self) -> None:
+        """Leading null/primitive members must not make later aggregate rows
+        bypass classification, and the real page must fail closed rather than
+        throw while rendering the malformed list."""
+        from playwright.sync_api import sync_playwright
+
+        server, origin = _serve()
+        try:
+            with sync_playwright() as pw:
+                browser = pw.chromium.launch()
+                page = browser.new_page()
+                page.goto(f"{origin}/flood-response.html", wait_until="load")
+                page.wait_for_timeout(800)
+                for label, families in MIXED_ROW_FAMILIES:
+                    with self.subTest(shape=label):
+                        doc = mixed_row_document(families)
+                        redacted = self._redact_on_page(page, doc)
+                        drawn = self._draw(page, doc)
+                        self.assertFalse(redacted["ok"],
+                                         f"{label}: page accepted a mixed row family")
+                        self.assertIn("mixed row family", redacted["error"].lower())
+                        self.assertEqual(drawn["html"], "",
+                                         f"{label}: malformed document rendered content")
+                        self.assertEqual(drawn["error"], "",
+                                         f"{label}: renderer threw instead of failing closed")
+                browser.close()
+        finally:
+            server.shutdown()
+            server.server_close()
 
 
 @unittest.skipIf(

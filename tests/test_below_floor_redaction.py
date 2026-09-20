@@ -395,6 +395,33 @@ DECLARED_FLOOR_UNREDACTABLE = {
     "matrix": [["Org", "RAS", "Palika", "P0001", "A1", "Activity", 15, 15]],
 }
 
+# Malformed-but-JSON row families. A list containing aggregate row objects and
+# non-row members has no safe interpretation: treating it as a non-row list
+# leaves category labels and complements beside a covering total, while
+# silently filtering the foreign member invents a repair policy. Publisher and
+# reader must therefore refuse the whole document.
+MIXED_ROW_FAMILIES = [
+    (
+        "leading null",
+        [None, {"family": "small", "contacts": 6}, {"family": "large", "contacts": 94}],
+    ),
+    (
+        "leading primitive",
+        ["unexpected", {"family": "small", "contacts": 6}, {"family": "large", "contacts": 94}],
+    ),
+]
+
+
+def mixed_row_document(families):
+    return {
+        "schema": 1,
+        "mode": "production",
+        "suppressed_below": 10,
+        "basis": "synthetic fixture, malformed mixed row family",
+        "contacts": 100,
+        "families": families,
+    }
+
 # --- the CLASS, not just the one shape ---------------------------------
 # A dropped row taints EVERY ancestor that could hold a total covering it, at
 # any depth and through any kind of container. Each of these is the same
@@ -652,6 +679,19 @@ class BelowFloorRedactionTests(unittest.TestCase):
         )
         self.assertIn("below-floor", result["publishError"])
 
+    def test_publisher_refuses_mixed_row_families_without_writing(self) -> None:
+        """An aggregate row family mixed with null/a primitive is malformed,
+        not a non-row array. It must produce zero public writes rather than
+        retain category `small` and complement 94 beside total 100."""
+        for label, families in MIXED_ROW_FAMILIES:
+            with self.subTest(shape=label):
+                result = run("flood_response", mixed_row_document(families))
+                self.assertEqual(
+                    result["publishWrites"], [],
+                    f"{label}: a malformed mixed row family reached public_stats",
+                )
+                self.assertIn("mixed row family", result["publishError"].lower())
+
     def test_the_whole_ancestor_class_is_withheld_not_one_shape(self) -> None:
         """The defect class, not the reported shape: a dropped row must taint
         every ancestor that could carry a covering total, at any depth and
@@ -740,6 +780,18 @@ class BelowFloorRedactionTests(unittest.TestCase):
             "the reader retained a value below the document's declared floor",
         )
         self.assertIn("below-floor", result["readerError"])
+
+    def test_reader_refuses_mixed_row_families(self) -> None:
+        """The defence-in-depth reader must reject the same malformed arrays;
+        it may not return a partly redacted body for the renderer to crash on."""
+        for label, families in MIXED_ROW_FAMILIES:
+            with self.subTest(shape=label):
+                result = run("flood_response", mixed_row_document(families))
+                self.assertIsNone(
+                    result["readerRedacted"],
+                    f"{label}: reader accepted a malformed mixed row family",
+                )
+                self.assertIn("mixed row family", result["readerError"].lower())
 
     def test_reader_withholds_the_whole_ancestor_class_too(self) -> None:
         """The reader, not only the publisher, must withhold every ancestor of
