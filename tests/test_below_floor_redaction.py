@@ -395,6 +395,86 @@ DECLARED_FLOOR_UNREDACTABLE = {
     "matrix": [["Org", "RAS", "Palika", "P0001", "A1", "Activity", 15, 15]],
 }
 
+# --- the CLASS, not just the one shape ---------------------------------
+# A dropped row taints EVERY ancestor that could hold a total covering it, at
+# any depth and through any kind of container. Each of these is the same
+# arithmetic (100 - 94 = 6) moved one structure away, and each must fail closed.
+_DEEP = {
+    "schema": 1,
+    "mode": "production",
+    "suppressed_below": 10,
+    "basis": "synthetic fixture, three levels of nesting",
+    "districts": [
+        {
+            "code": "A", "contacts": 100,
+            "zones": [
+                {
+                    "zone": "z1", "contacts": 100,
+                    "hamlets": [
+                        {"hamlet": "h1", "contacts": 6},
+                        {"hamlet": "h2", "contacts": 94},
+                    ],
+                },
+            ],
+        },
+    ],
+}
+_NONROW_ANCESTOR = {
+    "schema": 1,
+    "mode": "production",
+    "suppressed_below": 10,
+    "basis": "synthetic fixture, non-row object holds the total",
+    "districts": [
+        {
+            "code": "A", "contacts": 100,
+            "grid": {
+                "total": 100,
+                "cells": [
+                    {"cell": "c1", "contacts": 6},
+                    {"cell": "c2", "contacts": 94},
+                ],
+            },
+        },
+    ],
+}
+_OBJECT_INSIDE_ROW = {
+    "schema": 1,
+    "mode": "production",
+    "suppressed_below": 10,
+    "basis": "synthetic fixture, total inside a nested object of a row",
+    "districts": [
+        {
+            "code": "A", "contacts": 100,
+            "meta": {
+                "total": 100,
+                "rows": [
+                    {"r": "r1", "contacts": 6},
+                    {"r": "r2", "contacts": 94},
+                ],
+            },
+        },
+    ],
+}
+
+# each fixture and the field paths that must have been withheld
+NESTED_CLASS = [
+    ("deep", _DEEP, ["districts[0].contacts", "districts[0].zones[0].contacts"]),
+    ("non-row ancestor", _NONROW_ANCESTOR, ["districts[0].contacts", "districts[0].grid.total"]),
+    ("object inside a row", _OBJECT_INSIDE_ROW, ["districts[0].contacts", "districts[0].meta.total"]),
+]
+
+
+def _at(obj, path):
+    """Walk `districts[0].grid.total`-style paths (test-only helper)."""
+    node = obj
+    for part in path.split("."):
+        name = part.split("[")[0]
+        if name:
+            node = node[name]
+        for idx in re.findall(r"\[(\d+)\]", part):
+            node = node[int(idx)]
+    return node
+
 
 # --------------------------------------------------------------------------
 # helpers
@@ -572,6 +652,23 @@ class BelowFloorRedactionTests(unittest.TestCase):
         )
         self.assertIn("below-floor", result["publishError"])
 
+    def test_the_whole_ancestor_class_is_withheld_not_one_shape(self) -> None:
+        """The defect class, not the reported shape: a dropped row must taint
+        every ancestor that could carry a covering total, at any depth and
+        through any container -- not only the row that directly enclosed it."""
+        for label, doc, paths in NESTED_CLASS:
+            with self.subTest(shape=label):
+                body = emitted(run("flood_response", doc))
+                assert body is not None, f"{label}: nothing was written"
+                for path in paths:
+                    with self.subTest(path=path):
+                        self.assertIsNone(
+                            _at(body, path),
+                            f"{label}: {path} still published a total that covered "
+                            "the dropped row, so the hidden cell is recoverable",
+                        )
+                self.assertEqual(below_floor_numbers(body), [])
+
     def test_redaction_of_an_already_redacted_document_is_a_no_op(self) -> None:
         result = run("flood_response", PUBLISHED_LEAK)
         self.assertTrue(result.get("redactIdempotent"),
@@ -643,6 +740,23 @@ class BelowFloorRedactionTests(unittest.TestCase):
             "the reader retained a value below the document's declared floor",
         )
         self.assertIn("below-floor", result["readerError"])
+
+    def test_reader_withholds_the_whole_ancestor_class_too(self) -> None:
+        """The reader, not only the publisher, must withhold every ancestor of
+        a dropped row -- otherwise a document written by an older or foreign
+        publisher still yields 100-94 on this page."""
+        for label, doc, paths in NESTED_CLASS:
+            with self.subTest(shape=label):
+                result = run("flood_response", doc)
+                body = result["readerRedacted"]
+                assert body is not None, result["readerError"] or f"{label}: no redacted doc"
+                for path in paths:
+                    with self.subTest(path=path):
+                        self.assertIsNone(
+                            _at(body, path),
+                            f"{label}: the reader kept {path}, a total covering the "
+                            "row it dropped",
+                        )
 
     def test_page_drawn_from_the_written_document_matches_the_raw_document(self) -> None:
         """Redaction is idempotent: redacting what was already redacted is a
