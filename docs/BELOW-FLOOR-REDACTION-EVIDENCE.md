@@ -209,13 +209,70 @@ Ran 141 tests in 234.824s
 FAILED (failures=1)
 ```
 
-The single failure is
+The single failing test that run is
 `tests/test_third_review.py::LocalQAServerSafetyTests::test_browser_helpers_serve_the_application_root_from_any_cwd`.
 It is **pre-existing and unrelated**: re-run in a throwaway worktree at the round-1 head `86a4054`
 with no local changes, it fails the same way (`Ran 1 test … FAILED (failures=1, errors=1)`),
 quoting a local `404` document on `forms.html` and `access.html`, and timing out one helper. It is
 a text-justification/QA-server check and has nothing to do with the publication shelf; it is left
-untouched. Every below-floor and publication-privacy test is green.
+untouched.
+
+### 5.1.1 A second, intermittent failure — diagnosed, pre-existing, NOT fixed here
+
+The failed run above also carries a flake that only appears roughly **5–8 % of the time**:
+
+```text
+FAIL: test_what_the_page_would_publish_is_refused_by_the_real_sink
+      (tests.test_hub_publish_ui_browser.HubPublishUiBrowserTests)
+AssertionError: [] is not true : the page sent nothing to publish
+```
+
+It is worth naming precisely, because a test that fails one run in twenty is exactly the thing
+that gets waved away as "a launch stall". It is not a launch stall.
+
+**Mechanism (verified, not inferred).** The test drives the *real* Hub page, then:
+
+1. `apps/hub/index.html:1730` has `pubAuthPaint()` set `$("pubGo").disabled = true;` — the publish
+   button starts disabled;
+2. the test replaces `window.FB.publish`, then sets `document.getElementById('pubGo').disabled = false`
+   (`tests/test_hub_publish_ui_browser.py:100`) and clicks;
+3. but `pubAuthPaint()` is *also* invoked asynchronously by
+   `window.FB.onStatus(function () { … pubAuthPaint(); })` (`index.html:1757`) — **and by the first
+   click of the Publish tab** (`index.html:1759`). When a late repaint wins the race, line 1754
+   runs `$("pubGo").disabled = !ok;` with no signed-in user, so `ok` is false and the button is
+   **re-disabled between the test's write and its click**; the click is then swallowed by a
+   disabled button, and nothing is captured.
+
+Measured directly with a probe that enables the button and samples `.disabled` every 50 ms:
+`[False, True, True, True, …]` — enabled, then re-disabled within ~50 ms.
+
+**Verified as pre-existing, and not introduced by this ticket:**
+
+```text
+$ git log --oneline 86a4054..HEAD -- tests/test_hub_publish_ui_browser.py
+(no output — round 2 never touched it)
+
+$ git show <ref>:tests/test_hub_publish_ui_browser.py   # blob ids identical at all three refs
+775e142  4e67980a1c0d8f2fc10a87cbc9ba55a7641555e8
+86a4054  4e67980a1c0d8f2fc10a87cbc9ba55a7641555e8
+HEAD     4e67980a1c0d8f2fc10a87cbc9ba55a7641555e8
+
+$ # app source checked out at the pre-round-2 base 775e142, 25 runs:
+failures at 775e142 source: 2 / 25          # ≈ 8 %
+$ # round-2 head, 40 runs:
+failures: 2 / 40                            # ≈ 5 %
+```
+
+**Why it is not fixed here.** It is a **test-harness race, not a product defect**: the page's
+behaviour (a signed-out user cannot publish) is correct and is what the sibling guard relies on.
+Fixing it means changing `tests/test_hub_publish_ui_browser.py` — a sibling ticket's test — and
+this ticket's constraint is that a channel is not closed without its own failing-first test, which
+the same rule applies to. Recorded here so the next reader does not rediscover it as a mystery.
+
+**What it means for this ticket's evidence.** The focused 35-test surface was run **seven
+consecutive times** and passed all seven; one earlier run of it failed on exactly this pre-existing
+flake. The below-floor suites (§2–§4) do not touch `test_hub_publish_ui_browser.py` and ran clean
+throughout.
 
 ### 5.2 Two pieces of this ticket's own work that are stated, not smoothed over
 
@@ -289,12 +346,13 @@ untouched. Every below-floor and publication-privacy test is green.
 - **The reader refuses by drawing nothing.** A schema-1 document the reader cannot fully redact
   renders the "cannot be read" state with no figures. That is fail-closed, but it is also a new
   blank-page behaviour for a malformed document — noted here rather than left to be discovered.
-- **One transient test run.** During round-1 verification the focused surface failed **once** with
-  no source change; it then passed on three consecutive re-runs (and again at the final head). The
-  browser tests drive real Chromium over a local HTTP server, so a launch/timing stall is the
-  likely cause. This is stated rather than smoothed over; the failing test names were not captured
-  before the re-run. The property is verified by the red→green evidence in §2–§3, which is
-  reproducible, not by the single green run.
+- **One transient test run — now diagnosed.** During round-1 verification the focused surface failed
+  **once** with no source change, and it passed on re-runs; round 1 recorded it as "likely a
+  launch/timing stall" and could not name it. Round 2 found and diagnosed it: it is a real race in
+  a **sibling ticket's** test harness (`test_hub_publish_ui_browser.py` re-enables a button that the
+  page re-disables), reproduces at ~5–8 % at three different refs including the pre-round-2 base,
+  and is **not** a product defect. Full mechanism and measurements in §5.1.1. Round 1's guess was
+  wrong, and the honest version is now written down.
 - **One process consequence, stated for the record.** A stale `python3 -m http.server` (started
   ~4h48m earlier, serving `apps/public`) was still bound to port 9071 from a *previous* run of
   this task, and `tests/test_hub_publish_ui_browser.py` `_serve()` binds a fresh free port each
@@ -391,7 +449,9 @@ and each runs on **both** the publisher and the reader.
 |---|---|
 | §4 row 10, "nested schema-2 breakdowns — every row family is dropped on the same rule" | dropping the family was true; leaving the *enclosing* total was not covered. The claim was broader than the test behind it. |
 | "A channel that is not covered by a failing-first test is not closed." | correct as a rule — and round 1 violated it for the ancestor channel while claiming it closed. |
-| The full suite had one pre-existing failure | still true (141 tests, same one failure), and unrelated to this work. |
+| The full suite had one pre-existing failure | true, but the run *also* carried a second, intermittent failure round 1 never mentioned because it saw a green re-run. It is real, diagnosed in §5.1.1, and pre-existing. |
+| The transient focused-run failure was "a launch/timing stall" | wrong. It is a reproducible button re-enable race in a sibling ticket's harness. |
+| One reviewed repair fixed everything | false for the class; true only for the reviewer's exact fixture, and only after round 2. |
 
 Round 1 also had a **passing test that proved nothing** — see §5.2.
 
