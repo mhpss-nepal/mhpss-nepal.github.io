@@ -9,7 +9,7 @@ Tenant: `mhpss-nepal` · Branch: `architecture/v2-immutable-authority` (review a
 | Test-only commit (red) | `98ddacfe7025025f3330679d11ce979353675ffe` |
 | Head (fix, green) | `ca67fc75b2eb3ea83b2487103ebcc37ab5dc34c0` |
 | Actionable-route test-only commit (red) | `7ca1cf5` |
-| Actionable-route fix commit (green) | pending at the time this note was edited |
+| Actionable-route fix commit (green) | `cdf7edb` |
 | Production ref `origin/main` | `68bf197abe56dd0265dca245e61809100b4c3901` — unchanged; no push/PR/merge/deploy |
 | Worktree | clean after commit |
 
@@ -73,7 +73,7 @@ python3 -m unittest tests.test_referral_safeguarding_gate -v
 #   Ran 10 tests ... FAILED (failures=5)
 #   Missing 1145 / 1098 / 100 / 102 / 16600102005 from the refusal paths.
 
-# GREEN 2 — actionable routes added to the shared, fallback, and visible refusals:
+# GREEN 2 — at fix commit cdf7edb, actionable routes are in every refusal:
 python3 -m unittest tests.test_referral_safeguarding_gate -v
 #   Ran 10 tests ... OK   (10 passed, 0 failed)
 ```
