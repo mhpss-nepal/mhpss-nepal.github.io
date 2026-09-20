@@ -50,7 +50,10 @@
     };
   }
 
-  var INK = "#1d1d1b", DEEP = "#006996", DEEPER = "#004969", GREY = "#939391";
+  /* INK follows --hc-ink in assets/design.css: deep ocean #153f4c replaced
+     Neutral Black C on 19 September 2026 (DEVIATION 1 there). Leaflet needs
+     a literal, so it is repeated here and must be kept in step by hand. */
+  var INK = "#153f4c", DEEP = "#006996", DEEPER = "#004969", GREY = "#939391";
 
   function create(el, opts) {
     var L = window.L, G = window.REFERRAL_GEO;

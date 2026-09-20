@@ -19,6 +19,32 @@
    too, because it bit twice on the hub before it was fixed there. */
 [hidden]{display:none!important}
 
+/* ---------- one dark, not two ---------------------------------------
+   app.css paints body text with its own --ink (#20313b), a blue-black
+   close enough to --hc-ink (#153f4c) that the two read as a mistake
+   rather than as two colours: on the Referral Directory 159 text nodes
+   rendered in the old value beside 291 in the new one. Both are dark
+   slate blues, so the page simply looked slightly dirty.
+
+   design.css's --hc-ink is the site's body ink, so it is the one that
+   wins here. Set in THIS sheet, which loads after app.css and after
+   design.css on the eight public pages and on no other page, so the
+   shared sheet is not mutated for the hub and the reference pages that
+   also read it. Colour is not invented: it is design.css's token, which
+   is what this sheet's header promises.
+
+   The same one-dark rule covers the figures drawn inside flood-response:
+   svg fill and stroke literals cannot read a custom property, so those
+   were changed by hand to #153f4c and are recorded here so a future
+   rebuild of a figure does not quietly put the old value back.
+
+   NOT covered, and left alone on purpose: the translation bar's chip in
+   assets/i18n.js sets its own literal on its own pale surface, and the
+   reference pages (architecture, layer3, method, access-explained) read
+   page.css and brand.css, which are not part of the public band. Both are
+   out of this sheet's reach and neither carries body text. */
+:root{ --ink:#153f4c; }
+
 /* ---------- page head --------------------------------------------- */
 /* A tinted band across the whole window, with the title on the frame. The
    band is painted by a spread shadow and clipped to the window's width, so
@@ -503,6 +529,7 @@ html[lang="ne"] .hlc .np{display:none}
   font-weight:700}
 .sheet.hero h1.title{color:#fff;font-size:clamp(34px,3.8vw,58px);max-width:none;
   letter-spacing:-.9px;line-height:1.1;margin-top:10px}
+.sheet.hero h1.title{text-wrap:balance}
 .sheet.hero .subtitle{color:#e8f3f9;font-size:19px;line-height:1.62;margin-top:18px}
 /* the links under the title, in white -- scoped to the title column, so the
    link inside the white helpline card keeps the page's blue */
