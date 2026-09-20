@@ -694,7 +694,7 @@ window.I18N_STRINGS = {
   },
 
   en: {
-    "res.p033": "Covers on this page are the first page of each document, taken from the document itself. Items that are web pages, not documents, have no cover and show their title instead.",
+    "res.p033": "Covers on this page are the documents' own covers, taken from the document itself. Items that are web pages rather than documents have no cover and show their title instead.",
     "res.p032": "Inter-Agency Standing Committee — MHPSS Reference Group",
     "res.p027": "Audit, evaluation and assessment",
     "res.p029": "Inter-Agency Standing Committee, 2022",
@@ -1609,7 +1609,7 @@ window.I18N_STRINGS = {
      general translation engine cannot do that, and would invent its own
      vocabulary that then fails to match the national one. */
   ne: {
-    "res.p033": "यस पृष्ठका आवरण सम्बन्धित कागजातकै पहिलो पृष्ठबाट लिइएका हुन्। कागजात नभई वेब पृष्ठ भएका सामग्रीको आवरण हुँदैन, तिनमा शीर्षक मात्र देखाइन्छ।",
+    "res.p033": "यस पृष्ठका आवरण सम्बन्धित कागजातकै आफ्नै हुन्। कागजात नभई वेब पृष्ठ भएका सामग्रीको आवरण हुँदैन, तिनमा शीर्षक मात्र देखाइन्छ।",
     "res.p032": "Inter-Agency Standing Committee — MHPSS सन्दर्भ समूह",
     "res.p027": "लेखापरीक्षण, मूल्यांकन तथा मूल्याङ्कन",
     "res.p029": "Inter-Agency Standing Committee, २०२२",
