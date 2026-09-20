@@ -8,10 +8,11 @@ Tenant `mhpss-nepal` · branch `architecture/v2-immutable-authority` (review art
 | Worktree | `/root/mhpss-nepal-work/v2-authority-redesign` — sole task on it (checked before starting) |
 | Base (parent of the test commit) | `775e142c2a37324bb74af9d58cf880f626174367` |
 | Test-only commits (red) | `04af6d7` (core channels), `b96303c` (browser + fail-closed + clean + idempotency + nested) |
-| Head (fix, green) | `a3b3a218171886f4fef17d4e1a6c0f6e46dc98bb` |
+| Fix commit (green) | `a3b3a218171886f4fef17d4e1a6c0f6e46dc98bb` |
+| Head | the commit carrying this file; its SHA-1 and SHA-256 are recorded in the kanban completion metadata, so this document does not embed its own id |
 | Production refs | public `68bf197`, form `9032bb7`, hub `ff2d4e2` — **unchanged**; no push / PR / merge / deploy |
 | Worktree after the fix | clean |
-| Status | **DONE - REVIEW ARTIFACT** with open questions for Adib (§6) |
+| Status | **DONE - REVIEW ARTIFACT** with open questions for Adib (§8) |
 
 Synthetic fixtures only. No Publish was pressed, nothing was written to `public_stats` or
 any other collection, and the live check was read-only and aggregate-only.
