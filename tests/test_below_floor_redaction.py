@@ -42,6 +42,8 @@ I18N_STRINGS_PATH = ROOT / "apps" / "public" / "assets" / "i18n-strings.js"
 #   htmlEmitted   - the page drawn from the emitted body (or the raw body)
 #   htmlRaw       - the page drawn from the RAW body, never trusted
 #   htmlVariant   - the page drawn from a variant whose WITHHELD values differ
+#   readerRedacted- the reader's defence-in-depth redacted document, or null
+#   readerError   - the reader's refusal for a shape it cannot safely redact
 NODE_HARNESS = r"""
 const fs = require("fs");
 const vm = require("vm");
@@ -220,7 +222,15 @@ context.__api = api;
   out.htmlEmitted = draw(prepared ? prepared.body : raw);
   out.htmlOfWritten = out.publicBodies.length ? draw(out.publicBodies[0]) : null;
 
-  // 4. idempotency: redacting an already-redacted body is a no-op, so a
+  // 4. the reader's redaction result itself. Rendering can hide fields it does
+  //    not understand; this checks that the whole document is safe before any
+  //    renderer is allowed to select fields from it.
+  out.readerRedacted = null;
+  out.readerError = "";
+  try { out.readerRedacted = window.PUBLIC_STATS.redact(raw); }
+  catch (e) { out.readerError = String((e && e.message) || e); }
+
+  // 5. idempotency: redacting an already-redacted body is a no-op, so a
   //    re-publish of what was published cannot change what the page shows.
   if (typeof window.FB.redactPublicBody === "function" && out.publicBodies.length) {
     try {
@@ -353,6 +363,38 @@ UNREDACTABLE = {
     "matrix": [["Org", "RAS", "Palika", "P0001", "A1", "Activity", 6, 6]],
 }
 
+# A nested complementary cell. The enclosing district row carries its own
+# total; dropping the nested small row must also withhold that ancestor total,
+# or the surviving nested complement reconstructs the hidden value (100-94=6).
+NESTED_ROW_LEAK = {
+    "schema": 1,
+    "mode": "production",
+    "suppressed_below": 10,
+    "basis": "synthetic fixture, nested complementary cell",
+    "contacts": 100,
+    "districts": [
+        {
+            "code": "A",
+            "contacts": 100,
+            "breakdown": [
+                {"family": "small", "contacts": 6},
+                {"family": "large", "contacts": 94},
+            ],
+        },
+    ],
+}
+
+# The document declares floor 20, above the page default of 10, so a matrix
+# value of 15 is below the EFFECTIVE floor even though it clears the default.
+# The unrecognised numeric-array shape must be refused by publisher and reader.
+DECLARED_FLOOR_UNREDACTABLE = {
+    "schema": 1,
+    "mode": "production",
+    "suppressed_below": 20,
+    "basis": "synthetic fixture, declared floor above default",
+    "matrix": [["Org", "RAS", "Palika", "P0001", "A1", "Activity", 15, 15]],
+}
+
 
 # --------------------------------------------------------------------------
 # helpers
@@ -475,6 +517,21 @@ class BelowFloorRedactionTests(unittest.TestCase):
             "a below-floor count survived inside a nested schema-2 breakdown",
         )
 
+    def test_nested_drop_also_withholds_the_enclosing_published_row_total(self) -> None:
+        """A dropped nested row taints the totals on every enclosing row, or
+        the surviving nested complement reconstructs the hidden value."""
+        body = emitted(run("flood_response", NESTED_ROW_LEAK))
+        assert body is not None, "nothing was written to the public collection"
+        district = body["districts"][0]
+        self.assertIsNone(
+            district.get("contacts"),
+            "the enclosing row total survived its dropped nested component: 100-94=6",
+        )
+        self.assertEqual(
+            [row.get("family") for row in district.get("breakdown", [])],
+            ["large"],
+        )
+
     # --- the redaction must not be a blanket refusal -----------------------
 
     def test_a_clean_document_is_still_published_unchanged(self) -> None:
@@ -501,6 +558,18 @@ class BelowFloorRedactionTests(unittest.TestCase):
         result = run("coordination_full", UNREDACTABLE)
         self.assertEqual(result["publishWrites"], [],
                          "a document with an unredactable below-floor count was written")
+        self.assertIn("below-floor", result["publishError"])
+
+    def test_publisher_verifies_against_the_effective_declared_floor(self) -> None:
+        """A document declaring floor 20 makes 15 below-floor. Verification
+        must use the effective floor, not the 10 default, or the value is
+        written and the reader is the only thing left holding the line."""
+        result = run("flood_response", DECLARED_FLOOR_UNREDACTABLE)
+        self.assertEqual(
+            result["publishWrites"], [],
+            "a value below the document's effective floor was written because "
+            "verification used the default floor",
+        )
         self.assertIn("below-floor", result["publishError"])
 
     def test_redaction_of_an_already_redacted_document_is_a_no_op(self) -> None:
@@ -552,6 +621,28 @@ class BelowFloorRedactionTests(unittest.TestCase):
         self.assertNotIn("Alpha", html)
         self.assertNotIn(6, visible_integers(html), "a declared floor of 1 unmasked the value")
         self.assertNotIn("fewer than", html.lower())
+
+    def test_reader_withholds_the_enclosing_total_after_a_nested_drop(self) -> None:
+        """The reader must apply the SAME whole-document rule: a dropped nested
+        row withholds the ancestor total, so 100-94 does not yield the cell."""
+        result = run("flood_response", NESTED_ROW_LEAK)
+        body = result["readerRedacted"]
+        assert body is not None, result["readerError"] or "reader returned no redacted document"
+        district = body["districts"][0]
+        self.assertIsNone(
+            district.get("contacts"),
+            "the reader kept an enclosing total whose nested component it dropped",
+        )
+        blob = json.dumps(body)
+        self.assertNotIn("small", blob)
+
+    def test_reader_refuses_against_the_effective_declared_floor(self) -> None:
+        result = run("flood_response", DECLARED_FLOOR_UNREDACTABLE)
+        self.assertIsNone(
+            result["readerRedacted"],
+            "the reader retained a value below the document's declared floor",
+        )
+        self.assertIn("below-floor", result["readerError"])
 
     def test_page_drawn_from_the_written_document_matches_the_raw_document(self) -> None:
         """Redaction is idempotent: redacting what was already redacted is a
