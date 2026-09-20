@@ -102,6 +102,17 @@ class IngestStore:
                     acknowledgement = self._acknowledgement(existing)
                     connection.rollback()
                     return {"outcome": "replayed", "acknowledgement": acknowledgement}
+                if self._conflict_recorded(records, event_id, digest):
+                    connection.rollback()
+                    return {
+                        "outcome": "conflict",
+                        "error": {
+                            "code": "EVENT_ID_BODY_CONFLICT",
+                            "event_id": event_id,
+                            "accepted_body_sha256": existing["event"]["body_sha256"],
+                            "incoming_body_sha256": digest,
+                        },
+                    }
                 self._append_record(
                     connection,
                     "canonical_conflict",
@@ -539,6 +550,17 @@ class IngestStore:
                 if record["kind"] == "canonical_event" and record["subject_id"] == event_id
             ),
             None,
+        )
+
+    @staticmethod
+    def _conflict_recorded(
+        records: list[dict[str, Any]], event_id: str, incoming_body_sha256: str
+    ) -> bool:
+        return any(
+            record["kind"] == "canonical_conflict"
+            and record["subject_id"] == event_id
+            and record["value"].get("incoming_body_sha256") == incoming_body_sha256
+            for record in records
         )
 
     @staticmethod
