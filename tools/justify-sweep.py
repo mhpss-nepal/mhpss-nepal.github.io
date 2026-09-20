@@ -32,7 +32,7 @@ PORT = 9071
 # loading them measures their destination and reports it under the stub's
 # name -- which is how this sweep first appeared to be checking twenty pages
 # when four of them were the same four pages twice.
-PAGES = ["index.html","flood-response.html","bps.html","iec.html","referral-directory.html",
+PAGES = ["index.html","flood-response.html","iec.html","referral-directory.html",
          "resources.html","videos.html","contact-us.html",
          "method.html","architecture.html","access-explained.html","layer3.html"]
 # The hub and the field forms moved to their own repositories on 17 Sep 2026

@@ -42,7 +42,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NAV = [
     ("home",      "Home",               "गृहपृष्ठ",          "./"),
     ("flood",     "Flood Response",     "बाढी प्रतिकार्य",    "flood-response.html"),
-    ("bps",       "BPS+",               "BPS+ तालिम",        "bps.html"),
     ("iec",       "IEC",                "IEC सामग्री",        "iec.html"),
     ("referral",  "Referral Directory", "रेफरल निर्देशिका",   "referral-directory.html"),
     ("resources", "Resources",          "स्रोत सामग्री",       "resources.html"),
