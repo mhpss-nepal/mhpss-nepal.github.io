@@ -14,11 +14,16 @@ Tenant `mhpss-nepal` · branch `architecture/v2-immutable-authority` (review art
 | Fix commit (round 2, green) | `1627307` — withhold enclosing row totals after a nested drop; verify against the effective floor |
 | Test-only commit (round 3, red) | `f036605` — leading `null` and leading primitive mixed-row fixtures on publisher, reader, and real Chromium |
 | Fix commit (round 3, green) | `829dc36` — reject malformed mixed aggregate row families before publisher redaction or reader rendering |
+| Test-only commit (round 4, red) | `52526de` — plain-object nested-scalar complementary fixture |
+| Fix commit (round 4, green) | `34036f9` — propagate nested scalar suppression to covering totals and complements |
+| Review round 4 | **changes requested** — the structural-key classifier (§14) |
+| Test-only commit (round 5, red) | `74e9b566` — below-floor scalar **and** subtree under **each** of the six reserved names below the root, publisher + reader, driven by an oracle independent of `NOT_A_COUNT` |
+| Fix commit (round 5, green) | `ecc15af` — scope the structural-key exemption to the document **root** (§15) |
 | Head | the commit carrying this file; its SHA-1 and SHA-256 are recorded in the kanban completion metadata, so this document does not embed its own id |
 | Production refs | public `68bf197`, form `9032bb7`, hub `ff2d4e2` — **no push / PR / merge / deploy by this task** |
 | ⚠ Public `main` moved during the work | to `c32b6e8`, **by another actor, not this task** — see §12 |
 | Worktree after the fix | clean |
-| Status | **DONE - REVIEW ARTIFACT** with open questions for Adib (§8) |
+| Status | **DONE - REVIEW ARTIFACT** with open questions for Adib (§8) and one named residual boundary (§15.4) |
 
 Synthetic fixtures only. No Publish was pressed, nothing was written to `public_stats` or
 any other collection, and the live check was read-only and aggregate-only.
@@ -31,6 +36,14 @@ any other collection, and the live check was read-only and aggregate-only.
 > **Round-3 note.** A second adversarial review found that `isRowFamily` looked only at array
 > member 0. A leading `null` or primitive made later aggregate rows bypass row-family handling.
 > §13 records the failing-first reproduction and the fail-closed correction.
+
+> **Rounds 4–5 note.** A third review moved the same arithmetic into a plain-object scalar (§14).
+> A fourth review then found the **classifier** itself: the six structural key names were exempted
+> by *name at every depth*, so a below-floor count or subtree under one of them below the root was
+> invisible to both the suppression pass and the verifier. §15 records the root-scoping fix, which
+> is the class-level correction the parent directed (the same criterion had returned unchanged
+> through four shapes). The exemption is now a fact about the document **root**, where it is
+> genuinely bookkeeping, not a property of the name everywhere.
 
 ---
 
@@ -659,3 +672,178 @@ residual boundary in §11 still applies to overlapping values that are all above
 never suppressed by this pass, string-encoded counts, derived ratios, and unverified server-side
 rules.
 
+## 15. Round 5: the structural-key exemption is scoped to the document root (supersedes §14's classifier entry)
+
+### 15.1 The defect: a fact about the root generalised to a property of the name
+
+`NOT_A_COUNT` (`apps/hub/assets/fb.js`) and the identical `NOT_A_COUNT`
+(`apps/public/assets/public-read.js`) list six names — `schema`, `schema_version`,
+`suppressed_below`, `period_from`, `period_to`, `codes_version` — that are bookkeeping, not counts
+about people. The code consulted that list **by name at every depth**:
+
+```js
+if (NOT_A_COUNT[k]) continue;   // firstBelowFloorCount / firstBelowFloor
+```
+
+That is correct at `$`, where those names really are metadata. It is wrong anywhere below `$`:
+the same name is then an ordinary field, but the suppression pass *skips it entirely* and the
+fail-closed verifier *does not look at it*, so a below-floor count (or a whole below-floor subtree)
+beneath one of those names survives redaction beside a covering total and its complement. This is
+the same complementary-cell criterion the audit opened, reached through the classifier
+(release-safety §2b: when rounds keep exposing one class in a new shape, attack the classifier).
+
+### 15.2 Reproduction (failing first)
+
+Two synthetic fixtures per name, both retaining the audit's `100 − 94 = 6` arithmetic:
+
+```text
+contacts: 100
+districts[0].contacts: 100
+districts[0].detail: { <reserved name>: 6,   large: 94 }     # scalar under a reserved name
+districts[0].detail: { <reserved name>: { small: 6, large: 94 } }   # subtree under a reserved name
+```
+
+The oracle that reads the result back is **independent of the code under test**: it walks the
+document itself and exempts the six names **only at the root**
+(`below_floor_numbers_root_scoped` in `tests/test_below_floor_redaction.py`). Crucially it does not
+call `below_floor_numbers` / `_STRUCTURAL_KEYS`, which shared the same at-every-depth blind spot —
+that shared blind spot is exactly why earlier suite runs passed while the leak was present.
+
+Failing-first, at test-only commit `74e9b566` with the runtime fix absent (throwaway worktree
+`/tmp/bfr-red`, so the shared worktree was never left in a red state):
+
+```text
+$ python3 -m unittest tests.test_below_floor_redaction tests.test_below_floor_redaction_browser
+Ran 38 tests in 17.115s
+FAILED (failures=25)
+```
+
+The focused classifier-only command at the same commit (5 tests, 24 subtest failures):
+
+```text
+$ python3 -m unittest \
+  tests.test_below_floor_redaction.BelowFloorRedactionTests.test_publisher_closes_root_only_key_classifier_for_nested_scalars \
+  tests.test_below_floor_redaction.BelowFloorRedactionTests.test_publisher_closes_root_only_key_classifier_for_nested_subtrees \
+  tests.test_below_floor_redaction.BelowFloorRedactionTests.test_reader_closes_root_only_key_classifier_for_nested_scalars \
+  tests.test_below_floor_redaction.BelowFloorRedactionTests.test_reader_closes_root_only_key_classifier_for_nested_subtrees \
+  tests.test_below_floor_redaction.BelowFloorRedactionTests.test_legitimate_root_bookkeeping_remains_exempt
+Ran 5 tests in 2.337s
+FAILED (failures=24)
+```
+
+Sample failure, showing the raw value reaching the shelf:
+
+```text
+AssertionError: Lists differ: [('$.districts[0].detail.suppressed_below.small', 6)] != []
+```
+
+Real Chromium, the page's own `redact()` at the same commit, failed the same way
+(`test_the_real_page_does_not_honour_a_nested_structural_name`):
+
+```text
+AssertionError: 6 is not None : the page kept a below-floor value under a nested reserved name
+```
+
+### 15.3 Correction
+
+Commit `ecc15af` (green) replaces the name-only check with a path-aware one in **both** files:
+
+```js
+/* a structural name is exempt only where it actually means structure: the root */
+function isBookkeepingKey(key, depth) {
+  return (depth || 0) === 0 && !!NOT_A_COUNT[key];
+}
+```
+
+`depth` is threaded through every walker that consults the exemption — `rowHasBelowFloor`,
+`markScalarTaints`, `nullAggregates`, `firstBelowFloorCount` in `fb.js`; `rowHasBelowFloor`,
+`dropRows`, `markScalarTaints`, `nullAggregates`, `firstBelowFloor` in `public-read.js` — started
+at `0` from `redactPublicBody` / `redact`. Below `$` a reserved name is now an ordinary count: it
+is suppressed, it can taint an ancestor, and the verifier will see and refuse a survivor. This is
+the class-level fix the parent directed (root-scoping in both files), applied once, not another
+shape patch.
+
+Focused classifier command at `ecc15af`:
+
+```text
+Ran 5 tests in 1.729s
+OK
+```
+
+### 15.4 What closed, what is a named boundary, and what stays open
+
+**Closed in this round (failing-first, publisher + reader, plus real Chromium on the page):**
+
+| Channel | Test |
+|---|---|
+| below-floor **scalar** under each of the six reserved names below the root | `test_publisher_closes_root_only_key_classifier_for_nested_scalars`, `test_reader_closes_root_only_key_classifier_for_nested_scalars` |
+| below-floor **subtree** under each of the six reserved names below the root | `test_publisher_closes_root_only_key_classifier_for_nested_subtrees`, `test_reader_closes_root_only_key_classifier_for_nested_subtrees` |
+| real page's own `redact()` on a nested reserved-name subtree | `test_below_floor_redaction_browser...test_the_real_page_does_not_honour_a_nested_structural_name` |
+| root-level bookkeeping (`schema`, `schema_version`, `suppressed_below`, `period_from`, `period_to`, `codes_version`) still publishes | `test_legitimate_root_bookkeeping_remains_exempt` |
+
+**Named residual boundary — this is a latent classifier hole, not a live self-inflicted leak.**
+This repository's own publisher (`apps/hub/index.html:1629-1635,1697`) emits those six names only
+at the document **root**, so the Hub does not produce a document that reaches this hole today. The
+hole is reachable by a **foreign, older, or hand-written document** — precisely the case the
+reader's defence-in-depth exists for, and precisely the case the fail-closed verifier claimed to
+cover but did not. Stated plainly so this is not read as a currently-live leak: **no document this
+publisher builds exploits it; the fix removes a latent tunnel a differently-written document could
+use.** No such document was observed anywhere; this was found by the reviewer against synthetic
+input, and the fixture is synthetic.
+
+**Still open, unchanged from §11:** overlapping above-floor survivors this pass was never asked to
+suppress; string-encoded counts and derived ratios; and unverified server-side Firestore Rules.
+No new class is opened here, and no shape-by-shape hardening beyond the six reserved names was
+added.
+
+### 15.5 Round-5 verification commands (exact)
+
+```text
+$ python3 -m unittest \
+  tests.test_below_floor_redaction \
+  tests.test_below_floor_redaction_browser \
+  tests.test_publication_privacy_gate \
+  tests.test_public_reader_floor_browser \
+  tests.test_hub_publish_ui_browser
+Ran 46 tests in 26.320s
+OK
+```
+
+(publisher + reader + real Chromium focus alone: `Ran 38 tests in 17.113s` — `OK`; re-run three
+times, `OK` each time. The wider focused surface above was `OK` on three consecutive runs.)
+
+Full suite:
+
+```text
+$ python3 -m unittest discover -s tests
+Ran 152 tests in 227.922s
+FAILED (failures=1)
+```
+
+The single failure is **pre-existing and unrelated**: `test_third_review`
+`test_browser_helpers_serve_the_application_root_from_any_cwd` (`forms.html`/`access.html` render
+a `404 - Nothing matches` block that is not justified). Re-confirmed at the true base
+`775e142` in a clean throwaway worktree (`/tmp/bfr-base`):
+
+```text
+$ python3 -m unittest discover -s tests -p "test_third_review.py"
+Ran 6 tests in 182.251s
+FAILED (failures=1)
+FAIL: test_browser_helpers_serve_the_application_root_from_any_cwd
+      (test_third_review.LocalQAServerSafetyTests...) (relative='apps/hub/tools/justify-sweep.py')
+```
+
+It is not fixed here (out of scope) and was not touched by this change.
+
+### 15.6 Round 5 does not weaken any earlier gate
+
+Every shape found in rounds 1–4 was re-run at `ecc15af` and still fails closed: nested row
+complement, the declared-floor-vs-verifier case, mixed row families (leading `null` and leading
+primitive), and the plain-object nested scalar. All are in the `Ran 46 … OK` run above. Live
+aggregate-only check, read-only, no body printed:
+
+```text
+public_stats → HTTP 200, documents_returned 0
+```
+
+`git diff --check ce22e18..HEAD` exits `0` (no whitespace errors); the worktree is clean.
