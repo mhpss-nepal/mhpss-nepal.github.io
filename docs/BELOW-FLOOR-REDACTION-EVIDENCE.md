@@ -583,3 +583,79 @@ This closes the round-2 review's category-presence, complementary-arithmetic, an
 reproductions for leading `null` and leading primitive members. It does not change the broader
 residual boundaries in §11.
 
+## 14. Round 4: nested scalar suppression propagates to covering totals and complements
+
+### 14.1 Reproduction (failing first)
+
+The third review moved the same complementary-cell arithmetic out of a nested row family and into
+a plain object:
+
+```text
+contacts: 100
+districts[0].contacts: 100
+districts[0].detail: { small: 6, large: 94 }
+```
+
+At `53a6555`, the publisher and reader withheld `detail.small` but retained the district total and
+`detail.large`, so the raw document still yielded the withheld value by subtraction. Tests were
+committed before the runtime change in `52526de`.
+
+Exact red command:
+
+```text
+$ python3 -m unittest \
+  tests.test_below_floor_redaction.BelowFloorRedactionTests.test_nested_scalar_suppression_taints_every_covering_published_total \
+  tests.test_below_floor_redaction.BelowFloorRedactionTests.test_reader_propagates_nested_scalar_suppression_to_covering_totals -v
+Ran 2 tests in 0.196s
+FAILED (failures=2)
+```
+
+Both failures were the intended signal: the district total was still `100` in the publisher output
+and in the reader's redacted document.
+
+### 14.2 Correction
+
+Commit `34036f9` adds a separate scalar-suppression propagation pass to publisher and reader. A
+below-floor scalar now marks:
+
+- its direct object, whose numeric siblings are withheld so no complement remains;
+- every enclosing object, whose own numeric totals are withheld because they may cover that scalar;
+- the document root, whose covering totals are likewise withheld.
+
+This is intentionally conservative because the schema does not encode lineage proving that a
+particular sibling or ancestor is independent. It does not alter the scalar-only top-level case:
+that one below-floor field is still withheld while clean row families survive.
+
+The exact two-test command after the fix:
+
+```text
+Ran 2 tests in 0.148s
+OK
+```
+
+The full focused publisher + reader + real-Chromium surface after the fix:
+
+```text
+$ python3 -m unittest \
+  tests.test_below_floor_redaction \
+  tests.test_below_floor_redaction_browser \
+  tests.test_publication_privacy_gate \
+  tests.test_public_reader_floor_browser \
+  tests.test_hub_publish_ui_browser -v
+Ran 40 tests in 23.722s
+OK
+```
+
+No extra browser test was added for this fixture because `detail` is not a field the schema-1 flood
+renderer displays. The reader's real redaction function is exercised through the existing Node VM
+harness; the real Chromium suite was rerun to ensure the page surface and existing rendered
+channels remained green.
+
+### 14.3 What this round closes and does not claim
+
+Verified closed in this round: a scalar actively withheld by this redaction pass cannot retain its
+same-object complement or any enclosing numeric total at the publisher or reader. The broader
+residual boundary in §11 still applies to overlapping values that are all above the floor and were
+never suppressed by this pass, string-encoded counts, derived ratios, and unverified server-side
+rules.
+
