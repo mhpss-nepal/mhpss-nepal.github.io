@@ -487,11 +487,156 @@
      Client intent: public_stats contains previewed aggregates rather than
      register records. This client stamps computed_at, requires `basis`, and
      limits the document shape. Server read/write enforcement is unverified
-     until the authoritative Rules are reviewed and versioned. */
+     until the authoritative Rules are reviewed and versioned.
+
+     SAFETY, ON THIS SIDE, BECAUSE A RAW VALUE IN THE COLLECTION IS ALREADY
+     EXPOSED. Redaction is computed for the WHOLE document, once, before any
+     value is emitted -- not per number. That is the finding: a floor applied
+     to each number in turn still lets a hidden cell be recovered by
+     subtracting the published parts from the published total, and still leaves
+     the row, its category label, a zero-width bar and the bar scale pointing
+     at it. So:
+
+       - a below-floor row is DROPPED (never rendered as "fewer than N" with
+         its category intact);
+       - any total a dropped row contributed to is WITHHELD, so the hidden cell
+         cannot be recovered by subtraction;
+       - organisation and palika counts go through the SAME floor (no bypass);
+       - a document may not DECLARE its own floor below the policy floor;
+       - a document this code cannot fully redact is REFUSED, not written.
+
+     The reader (the public site's public-read.js) applies the same decision
+     again, as defence in depth, but the fix is here first: the publisher is
+     the only place that can stop a raw value being written. */
+  var PUBLIC_SUPPRESSION_FLOOR = 10;
+  /* keys that are bookkeeping, not counts about people: never suppressed, and
+     never treated as a leak by the verification sweep below */
+  var NOT_A_COUNT = {
+    schema: 1, schema_version: 1, suppressed_below: 1,
+    period_from: 1, period_to: 1, codes_version: 1
+  };
+
+  function policyFloor(declared) {
+    var n = (typeof declared === "number" && isFinite(declared)) ? Math.floor(declared) : 0;
+    return n > PUBLIC_SUPPRESSION_FLOOR ? n : PUBLIC_SUPPRESSION_FLOOR;
+  }
+  function belowFloorValue(n, floor) {
+    return typeof n === "number" && isFinite(n) && n > 0 && n < floor;
+  }
+  function isPlainObject(v) {
+    return !!v && typeof v === "object" && !Array.isArray(v);
+  }
+  function isRowFamily(v) {
+    return Array.isArray(v) && v.length > 0 && isPlainObject(v[0]);
+  }
+  /* Does this ROW carry a count below the floor? Every numeric field of a row
+     in an aggregate document is a count, so any one of them puts the row
+     below the floor and the whole row goes. */
+  function rowHasBelowFloor(row, floor) {
+    var keys = Object.keys(row);
+    for (var i = 0; i < keys.length; i++) {
+      if (NOT_A_COUNT[keys[i]]) continue;
+      if (belowFloorValue(row[keys[i]], floor)) return true;
+    }
+    return false;
+  }
+  /* The whole-document decision: ONE suppression pass, before anything is
+     sent. A "row" is an object inside a list of objects -- a district, a
+     family, a site, an organisation:
+
+       1. a row carrying a below-floor count is DROPPED whole (never published
+          as "fewer than N" with its category label intact);
+       2. when any row anywhere is dropped, every scalar count OUTSIDE a row is
+          WITHHELD, so the hidden cell cannot be recovered by subtracting the
+          published parts from a published total. The survivor rows keep their
+          own figures, which are all at or above the floor;
+       3. a style="..." geometry the reader draws is computed by the reader over
+          the rows it is given, so it is a function of redacted values only;
+       4. every scalar count anywhere passes the same floor.
+
+     Rule 2 is deliberately blunt -- it withholds more than the minimum -- and
+     the narrower rule is an open question for Adib. The trade is stated in the
+     evidence document; this is the most protective option that keeps the
+     document publishable. */
+  function redactPublicBody(body) {
+    var out = JSON.parse(JSON.stringify(body));
+    var floor = policyFloor(out.suppressed_below);
+    out.suppressed_below = floor;
+    var state = { dropped: false };
+    return nullAggregates(dropRows(out, floor, state), floor, state, false);
+  }
+  /* pass 1: drop every row that carries a below-floor count */
+  function dropRows(node, floor, state) {
+    if (Array.isArray(node)) {
+      var rowFamily = isRowFamily(node);
+      var kept = [];
+      node.forEach(function (item) {
+        if (rowFamily && isPlainObject(item)) {
+          if (rowHasBelowFloor(item, floor)) { state.dropped = true; return; }
+          kept.push(dropRows(item, floor, state));
+        } else {
+          kept.push(dropRows(item, floor, state));
+        }
+      });
+      return kept;
+    }
+    if (isPlainObject(node)) {
+      Object.keys(node).forEach(function (k) { node[k] = dropRows(node[k], floor, state); });
+      return node;
+    }
+    return node;
+  }
+  /* pass 2: withhold every scalar count outside a row once anything was
+     dropped, and withhold any scalar count below the floor anywhere. */
+  function nullAggregates(node, floor, state, inRow) {
+    if (Array.isArray(node)) {
+      var rowFamily = isRowFamily(node);
+      node.forEach(function (item) { nullAggregates(item, floor, state, rowFamily); });
+      return node;
+    }
+    if (isPlainObject(node)) {
+      Object.keys(node).forEach(function (k) {
+        var v = node[k];
+        if (NOT_A_COUNT[k]) return;
+        if (typeof v === "number") {
+          if (belowFloorValue(v, floor) || (state.dropped && !inRow)) node[k] = null;
+        } else {
+          nullAggregates(v, floor, state, false);
+        }
+      });
+    }
+    return node;
+  }
+  /* Fail closed. A below-floor count that survived the pass above is a shape
+     this code does not know how to redact (a row held as an array, say), so
+     the document is refused rather than written. Returns the field path; never
+     the value. */
+  function firstBelowFloorCount(node, floor, path) {
+    if (node === null || typeof node === "boolean" || node === undefined) return "";
+    if (typeof node === "number") {
+      return (isFinite(node) && node > 0 && node < floor) ? (path || "$") : "";
+    }
+    if (Array.isArray(node)) {
+      for (var i = 0; i < node.length; i++) {
+        var hit = firstBelowFloorCount(node[i], floor, (path || "$") + "[" + i + "]");
+        if (hit) return hit;
+      }
+      return "";
+    }
+    if (typeof node === "object") {
+      var keys = Object.keys(node);
+      for (var j = 0; j < keys.length; j++) {
+        if (NOT_A_COUNT[keys[j]]) continue;
+        var found = firstBelowFloorCount(node[keys[j]], floor, (path || "$") + "." + keys[j]);
+        if (found) return found;
+      }
+    }
+    return "";
+  }
+
   function publish(docId, body) {
     /* Fail closed before connection/auth checks so restricted data is refused
        by this real public_stats sink under every runtime state. */
-    var PUBLIC_SUPPRESSION_FLOOR = 10;
     var restrictedKinds = { referral: true, phq9: true };
     var restrictedPrivacy = {
       "restricted-referral-person-list": true,
@@ -529,7 +674,15 @@
     if (!body || typeof body.basis !== "string" || !body.basis.trim()) {
       return Promise.reject(new Error("a published document must say in `basis` what it counts"));
     }
-    var out = JSON.parse(JSON.stringify(body));
+    /* ONE redaction for the whole document, before a single value is written. */
+    var out = redactPublicBody(body);
+    /* Fail closed: whatever the redaction pass could not make safe, this sink
+       refuses rather than writing. The path is named; the value never is. */
+    var leak = firstBelowFloorCount(out, PUBLIC_SUPPRESSION_FLOOR, "$");
+    if (leak) {
+      return Promise.reject(new Error(
+        "a below-floor count survived redaction at " + leak + "; refusing to publish"));
+    }
     for (var i = 0; i < NEVER_SENT.length; i++) delete out[NEVER_SENT[i]];
     if (Object.keys(out).length + 1 >= 40) return Promise.reject(new Error("too many top-level fields for the client publication limit (< 40)"));
     out.computed_at = api.serverTimestamp();
@@ -546,6 +699,10 @@
     status: status,
     myRole: myRole, listRoles: listRoles, grantRole: grantRole, revokeRole: revokeRole,
     publish: publish, readPublic: readPublic,
+    /* the whole-document redaction, exposed so the hub preview and the tests can
+       show exactly what would be written, and assert on it, without publishing */
+    redactPublicBody: redactPublicBody, belowFloorCount: firstBelowFloorCount,
+    REDACTION_FLOOR: PUBLIC_SUPPRESSION_FLOOR,
     sendLink: sendLink, ROLES: ROLE_LIST,
     onStatus: function (f) { stateCbs.push(f); f(status()); },
     onUser: function (f) { userCbs.push(f); f(state.user); },

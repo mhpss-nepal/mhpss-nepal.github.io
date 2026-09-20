@@ -1019,7 +1019,7 @@ window.I18N_STRINGS = {
     "live.schema": "A summary was published in a form this page cannot read yet.",
     "live.preview": "Preview — not published",
     "live.published": "Published {when} — it changes only when a coordinator publishes again",
-    "live.publishedDemo": "Published {when} for demonstration and review — small numbers are not suppressed",
+    "live.publishedDemo": "Published {when} for demonstration and review — counts below the floor are still withheld",
     "live.fewer": "fewer than {n}",
     "live.basis": "What is counted",
     "live.period": "Reports dated {from} to {to}.",

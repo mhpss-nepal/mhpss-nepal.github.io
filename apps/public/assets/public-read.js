@@ -51,11 +51,108 @@
   function num(n) {
     return (typeof n === "number" && isFinite(n)) ? n.toLocaleString("en-GB") : "—";
   }
-  /* A count below the floor is shown as "fewer than N", never as itself. */
+  /* A count below the floor, drawn on its own, is shown as "fewer than N" and
+     never as itself. This is now only a last-ditch guard for a lone value:
+     redaction is applied to the WHOLE document before anything is drawn (see
+     `redact` below), so a suppressed ROW is dropped rather than labelled. */
   function safe(n, floor) {
     if (typeof n !== "number" || !isFinite(n)) return "—";
     if (n > 0 && n < floor) return t("live.fewer", { n: floor });
     return num(n);
+  }
+  /* ---------- analysis-wide redaction (defence in depth) ----------------
+     The publisher drops a below-floor row and withholds the totals it fed.
+     This page must never trust a document to have done that: a raw value
+     already written to the collection is exposed to anyone who reads the
+     document directly, so this renderer must not be the place that reveals it.
+
+     The same decision is therefore computed here -- the SAME algorithm as the
+     publisher's `redactPublicBody`, so that redacting an already-redacted
+     document is a no-op and the page cannot depend on a withheld value:
+       - a document may not declare a floor below this page's own floor;
+       - a row carrying a below-floor count is dropped whole, never drawn as
+         "fewer than N" with its category label intact;
+       - when any row is dropped, every scalar count outside a row is withheld,
+         so the hidden cell cannot be recovered by subtracting the published
+         parts from a published total;
+       - every count goes through the same floor (organisation and palika
+         counts used to bypass it entirely). */
+  var NOT_A_COUNT = {
+    schema: 1, schema_version: 1, suppressed_below: 1,
+    period_from: 1, period_to: 1, codes_version: 1
+  };
+  function isPlainObject(v) { return !!v && typeof v === "object" && !Array.isArray(v); }
+  function isRowFamily(v) { return Array.isArray(v) && v.length > 0 && isPlainObject(v[0]); }
+  /* a deep copy of the plain structure; a non-plain value (a Firestore
+     Timestamp on computed_at, say) is kept by reference so its methods survive */
+  function clone(node) {
+    if (Array.isArray(node)) return node.map(clone);
+    if (isPlainObject(node)) {
+      var c = {};
+      Object.keys(node).forEach(function (k) { c[k] = clone(node[k]); });
+      return c;
+    }
+    return node;
+  }
+  function rowHasBelowFloor(row, floor) {
+    var keys = Object.keys(row);
+    for (var i = 0; i < keys.length; i++) {
+      if (NOT_A_COUNT[keys[i]]) continue;
+      var v = row[keys[i]];
+      if (typeof v === "number" && isFinite(v) && v > 0 && v < floor) return true;
+    }
+    return false;
+  }
+  function redact(d) {
+    var declared = (typeof d.suppressed_below === "number" && isFinite(d.suppressed_below))
+      ? Math.floor(d.suppressed_below) : FLOOR;
+    var floor = Math.max(FLOOR, declared);
+    function small(n) { return typeof n === "number" && isFinite(n) && n > 0 && n < floor; }
+    var state = { dropped: false };
+
+    function dropRows(node) {
+      if (Array.isArray(node)) {
+        var rowFamily = isRowFamily(node);
+        var kept = [];
+        node.forEach(function (item) {
+          if (rowFamily && isPlainObject(item)) {
+            if (rowHasBelowFloor(item, floor)) { state.dropped = true; return; }
+            kept.push(dropRows(item));
+          } else {
+            kept.push(dropRows(item));
+          }
+        });
+        return kept;
+      }
+      if (isPlainObject(node)) {
+        Object.keys(node).forEach(function (k) { node[k] = dropRows(node[k]); });
+      }
+      return node;
+    }
+    function nullAggregates(node, inRow) {
+      if (Array.isArray(node)) {
+        var rowFamily = isRowFamily(node);
+        node.forEach(function (item) { nullAggregates(item, rowFamily); });
+        return node;
+      }
+      if (isPlainObject(node)) {
+        Object.keys(node).forEach(function (k) {
+          if (NOT_A_COUNT[k]) return;
+          var v = node[k];
+          if (typeof v === "number") {
+            if (small(v) || (state.dropped && !inRow)) node[k] = null;
+          } else {
+            nullAggregates(v, false);
+          }
+        });
+      }
+      return node;
+    }
+
+    var out = clone(d);
+    out = dropRows(out);
+    out.suppressed_below = floor;
+    return nullAggregates(out, false);
   }
   /* the published basis is a coordinator's sentence; end it before the next one */
   function sentence(v) {
@@ -117,24 +214,30 @@
   function floodBody(d) {
     /* Defence in depth: the publisher refuses a declared floor below the
        policy minimum, but a document already in the collection must not be
-       able to LOWER this page's floor either. The reader never honours a
-       declared floor below its own FLOOR. */
+       able to LOWER this page's floor either. `redact()` has already replaced
+       a below-floor declaration, and this repeats the floor rule for the case
+       where floodBody is reached directly. */
     var floor = (typeof d.suppressed_below === "number" && d.suppressed_below >= FLOOR)
       ? d.suppressed_below : FLOOR;
     var C = window.CODES;
     var h = [];
+    /* Every published count goes through the same floor. The organisation and
+       palika figures used to be drawn with a plain number formatter, so a
+       below-floor count there was never suppressed at all. */
     h.push('<div class="kpis">' +
       '<div class="kpi lead"><span class="n">' + safe(d.contacts, floor) + '</span><span class="l">' +
         esc(t("live.flood.contacts")) + '</span></div>' +
       '<div class="kpi"><span class="n">' + safe(d.reports, floor) + '</span><span class="l">' +
         esc(t("live.flood.reports")) + '</span></div>' +
-      '<div class="kpi"><span class="n">' + num(d.organisations) + '</span><span class="l">' +
+      '<div class="kpi"><span class="n">' + safe(d.organisations, floor) + '</span><span class="l">' +
         esc(t("live.flood.orgs")) + '</span></div>' +
-      '<div class="kpi"><span class="n">' + num(d.palikas) + '</span><span class="l">' +
+      '<div class="kpi"><span class="n">' + safe(d.palikas, floor) + '</span><span class="l">' +
         esc(t("live.flood.palikas")) + '</span></div>' +
       '</div>');
     var fam = Array.isArray(d.families) ? d.families.slice() : [];
     if (fam.length) {
+      /* the scale is computed over the rows that are actually drawn: a bar
+         width must never be a function of a value this page withholds */
       var max = 0;
       fam.forEach(function (f) { if (typeof f.contacts === "number" && f.contacts > max) max = f.contacts; });
       h.push('<p>' + esc(t("live.flood.byFamily")) + '</p><ul class="hbars">');
@@ -157,7 +260,7 @@
         var name = r.code;
         try { var o = C && C.districtByCode[r.code]; if (o) name = C.label(o); } catch (e) { /* ignore */ }
         h.push('<tr><td class="k">' + esc(name) + '</td><td class="n">' + safe(r.contacts, floor) +
-          '</td><td class="n">' + safe(r.reports, floor) + '</td><td class="n">' + num(r.organisations) +
+          '</td><td class="n">' + safe(r.reports, floor) + '</td><td class="n">' + safe(r.organisations, floor) +
           '</td></tr>');
       });
       h.push('</tbody></table></div>');
@@ -233,6 +336,8 @@
         setState(o.state, o.panel, "live.schema");
         return;
       }
+      /* ONE redaction for the whole document, before a single value is drawn. */
+      d = redact(d);
       /* The hub can publish in demonstration mode (small numbers not
          suppressed, for review). Whatever the page shows then says so. */
       setState(o.state, o.panel, d.mode === "demonstration" ? "live.publishedDemo" : "live.published",
@@ -260,8 +365,9 @@
   function preview(o, d) {
     if (!d || d.schema !== 1) { setState(o.state, o.panel, "live.schema"); return; }
     setState(o.state, o.panel, "live.preview", null, true);
+    d = redact(d);
     if (o.body) o.body.innerHTML = o.kind === "referral" ? referralBody(d) : floodBody(d);
   }
 
-  window.PUBLIC_STATS = { watch: watch, render: render, preview: preview, configured: configured };
+  window.PUBLIC_STATS = { watch: watch, render: render, preview: preview, redact: redact, configured: configured };
 })();

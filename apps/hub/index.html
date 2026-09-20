@@ -443,11 +443,12 @@
         reach the public aggregate shelf.</p>
       <div class="banner warn"><b>Publication is held until the review by WHO and the Ministry.</b> The public
         shelf refuses a document whose mode is not production, and refuses any declared suppression floor below
-        10 — so a demonstration or staged document cannot reach the public collection, and no document can
-        disable small-cell suppression. What a suppressed cell looks like on the public page is still an open
-        decision. Never published: the free-text description of a report, and any focal-point contact, which
-        never reaches the register at all. A reviewed server policy is not versioned in this branch, so this
-        client-side refusal is defence in depth, not the authoritative control.</div>
+        10 — so a demonstration or staged document cannot reach the public collection. Small-cell suppression is
+        always on: counts below 10 are withheld, and a row below the floor is dropped rather than labelled, so the
+        hidden value cannot be recovered by subtracting the published parts from a published total. Organisation
+        and palika counts go through the same floor. Never published: the free-text description of a report, and
+        any focal-point contact, which never reaches the register at all. A reviewed server policy is not
+        versioned in this branch, so this client-side refusal is defence in depth, not the authoritative control.</div>
 
       <div class="docs" id="pubDocs"></div>
 
@@ -1584,7 +1585,7 @@
     return "Activity reports in the register (kind = activity), read from " + SRC +
       (dates.length ? ", dated " + dates[0] + " to " + dates[dates.length - 1] : "") +
       ": " + DATA.length + " reports, " + pubFilters() +
-      ". Counts are attendances (service contacts: one report per session, its attendance) unless a report filed before 17 September 2026 says it counted people. Activity codes follow the list of 17 September 2026; records filed under the previous list are read through its crosswalk where the match is one-to-one and are otherwise marked not yet placed. Demonstration mode: no small-cell suppression.";
+      ". Counts are attendances (service contacts: one report per session, its attendance) unless a report filed before 17 September 2026 says it counted people. Activity codes follow the list of 17 September 2026; records filed under the previous list are read through its crosswalk where the match is one-to-one and are otherwise marked not yet placed. Counts below 10 are not shown.";
   }
   function buildPublicDocs() {
     if (!PUBSRC) render();
@@ -1609,10 +1610,27 @@
     var byF = {};
     rows.forEach(function (r) { var f = actLayer(r.activity); byF[f] = (byF[f] || 0) + n(r.reachedTotal); });
     var families = Object.keys(byF).sort().map(function (f) { return { family: f, contacts: byF[f] }; });
-    var common = { basis: basis, mode: "demonstration", period_from: dates[0] || "", period_to: dates[dates.length - 1] || "",
+    /* DEMONSTRATION_MODE is the single switch, decided 17 Sep 2026, and it
+       matters in two places:
+
+         mode: "demonstration" / "production"  -- what the document says it is.
+             Until the WHO / Ministry review clears the public surface, every
+             document is tagged demonstration so the public page says so.
+
+         suppressed_below  -- the small-cell floor. It is NEVER 1. A floor of 1
+             switches suppression off, and one such document in the collection
+             is enough for every later publish to inherit it. The floor here is
+             the policy floor the publisher enforces (FB.REDACTION_FLOOR), and
+             the publisher redacts the whole document against it before it is
+             written, so a lower declaration cannot survive. */
+    var DEMONSTRATION_MODE = true;
+    var PUB_MODE = DEMONSTRATION_MODE ? "demonstration" : "production";
+    var PUB_FLOOR = (window.FB && window.FB.REDACTION_FLOOR) || 10;
+    var common = { basis: basis, mode: PUB_MODE, suppressed_below: PUB_FLOOR,
+                   period_from: dates[0] || "", period_to: dates[dates.length - 1] || "",
                    source: SRC, filters: pubFilters() };
 
-    var flood = Object.assign({ schema: 1, suppressed_below: 1, reports: rows.length, contacts: contacts,
+    var flood = Object.assign({ schema: 1, reports: rows.length, contacts: contacts,
       people_reported: people, distinct_people_reported: distinct, organisations: orgSet.size, palikas: palSet.size,
       districts: districts, families: families }, common);
 
@@ -1742,24 +1760,35 @@
   });
 
   /* the preview: our own tables, and the public website's own renderer for
-     the two schema-1 documents when its file can be loaded (root assets) */
+     the two schema-1 documents when its file can be loaded (root assets).
+     The tables show the REDACTED document -- exactly what FB.publish() would
+     write -- so a coordinator is never shown a below-floor figure labelled as
+     "what the website will read". */
+  function pubNum(v) { return (typeof v === "number" && isFinite(v)) ? v.toLocaleString("en-GB") : "—"; }
+  function pubPrepared(id, raw) {
+    try {
+      return (window.FB && typeof window.FB.redactPublicBody === "function")
+        ? window.FB.redactPublicBody(raw) : raw;
+    } catch (e) { return raw; }
+  }
   function pubRenderPreview(docs) {
     var out = [];
-    var f = docs.flood_response, full = docs.coordination_full;
+    var f = pubPrepared("flood_response", docs.flood_response);
+    var full = pubPrepared("coordination_full", docs.coordination_full);
     out.push('<div class="pubprev"><h3>Flood response summary <span class="xs">public_stats/flood_response</span></h3>' +
-      '<div class="kpis"><div class="kpi"><span class="n">' + f.reports + '</span><span class="l">reports</span></div>' +
-      '<div class="kpi"><span class="n">' + f.contacts.toLocaleString() + '</span><span class="l">service contacts</span></div>' +
-      '<div class="kpi"><span class="n">' + f.organisations + '</span><span class="l">organisations</span></div>' +
-      '<div class="kpi"><span class="n">' + f.palikas + '</span><span class="l">palikas</span></div></div>' +
+      '<div class="kpis"><div class="kpi"><span class="n">' + pubNum(f.reports) + '</span><span class="l">reports</span></div>' +
+      '<div class="kpi"><span class="n">' + pubNum(f.contacts) + '</span><span class="l">service contacts</span></div>' +
+      '<div class="kpi"><span class="n">' + pubNum(f.organisations) + '</span><span class="l">organisations</span></div>' +
+      '<div class="kpi"><span class="n">' + pubNum(f.palikas) + '</span><span class="l">palikas</span></div></div>' +
       '<table><thead><tr><th>District</th><th class="n">Reports</th><th class="n">Contacts</th><th class="n">Organisations</th></tr></thead><tbody>' +
-      f.districts.map(function (x) { return "<tr><td>" + esc(x.name) + '</td><td class="n">' + x.reports + '</td><td class="n">' + x.contacts.toLocaleString() + '</td><td class="n">' + x.organisations + "</td></tr>"; }).join("") +
+      (f.districts || []).map(function (x) { return "<tr><td>" + esc(x.name) + '</td><td class="n">' + pubNum(x.reports) + '</td><td class="n">' + pubNum(x.contacts) + '</td><td class="n">' + pubNum(x.organisations) + "</td></tr>"; }).join("") +
       '</tbody></table><div id="pubL3flood" style="margin-top:10px"></div>' +
       '<details><summary>the document as the website will read it</summary><pre>' + esc(JSON.stringify(f, null, 1)) + "</pre></details></div>");
 
     out.push('<div class="pubprev"><h3>Full coordination picture <span class="xs">public_stats/coordination_full · schema 2</span></h3>' +
       '<p class="xs" style="margin:0 0 8px">' + full.sites.length + " sites (" + full.roster_reached + " of " + full.roster_total + " roster sites reached, " + full.gaps.length + " gaps) · " +
       full.organisations.length + " organisations · " + full.activities.length + " activities · " + full.matrix.length + " matrix rows · " + full.duplication.length + " site-days flagged · " +
-      "disaggregated " + full.sadd.disaggregated_total.toLocaleString() + " of " + full.sadd.total.toLocaleString() + ". Not included: " + esc(full.excluded.join("; ")) + ".</p>" +
+      "disaggregated " + pubNum(full.sadd.disaggregated_total) + " of " + pubNum(full.sadd.total) + ". Not included: " + esc(full.excluded.join("; ")) + ".</p>" +
       '<details><summary>the document in full (' + Math.round(JSON.stringify(full).length / 1024) + ' KB)</summary><pre>' + esc(JSON.stringify(full, null, 1)) + "</pre></details></div>");
     $("pubPrev").innerHTML = out.join("");
     /* the website's own renderer, if its file loads -- exactly what the public page will draw */
