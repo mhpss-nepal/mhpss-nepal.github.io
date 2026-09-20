@@ -108,6 +108,9 @@
     return !(rec.safeguarding_confirmed === true && rec.excludes_gbv_uasc_lifethreat === true);
   }
   function queueRefusal(rec) {
+    if (!rec || typeof rec.kind !== "string" && !(typeof rec.schema === "string" && rec.schema)) {
+      return "STOP. Refused: record kind is missing; do not record or send an unclassified record.";
+    }
     if (!isUnsafeReferral(rec)) return "";
     if (window.L1 && typeof window.L1.safeguardingRefusal === "function") {
       /* one wording, owned by l1.js, when it is present */
@@ -302,7 +305,7 @@
   function purgeUnsafeQueue() {
     var q = queue(), kept = [], removed = 0, i;
     for (i = 0; i < q.length; i++) {
-      if (isUnsafeReferral(q[i])) { removed++; continue; }
+      if (queueRefusal(q[i])) { removed++; continue; }
       kept.push(q[i]);
     }
     if (removed) {

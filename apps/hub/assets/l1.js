@@ -117,6 +117,9 @@
     /* Fail closed BEFORE the device copy and before the queue. */
     var refusal = safeguardingRefusal(obj, kind);
     if (refusal) throw SafeguardingRefusal(refusal);
+    /* The explicit save boundary owns the form identity. Preserve it on the
+       stored and queued record so the next boundary never has to guess. */
+    obj.kind = kind;
     var list = all(kind);
     obj._saved = new Date().toISOString();
     list.push(obj);

@@ -12,6 +12,8 @@ Tenant: `mhpss-nepal` · Branch: `architecture/v2-immutable-authority` (review a
 | Actionable-route fix commit (green) | `cdf7edb` |
 | Kind-argument bypass test-only commit (red) | working-tree test at `c899439` |
 | Kind-argument bypass fix commit (green) | `c14b27a` |
+| Untyped queue/retry bypass test (red) | working-tree tests at `5578091` after independent review 2 |
+| Untyped queue/retry fix (green) | pending at the time this note was edited |
 | Production ref `origin/main` | `68bf197abe56dd0265dca245e61809100b4c3901` — unchanged; no push/PR/merge/deploy |
 | Worktree | clean after commit |
 
@@ -43,6 +45,16 @@ register. A warning label is not a control.
   loaded (the hub loads this file without it). `submit()` refuses and rejects;
   `flush()` prunes any unsafe entry already queued (`purgeUnsafeQueue()`) before any
   transmission. Nothing unsafe is written, queued or sent.
+- `apps/hub/assets/l1.js` (later rounds, after two independent reviews) — the
+  explicit `kind` argument is now authoritative rather than the record's own
+  metadata, and `L1.save` preserves that `kind` onto the stored/queued record so no
+  later boundary has to infer the form. A referral passed as `referral` with no
+  `kind`/`schema` on the object is refused, not treated as unclassified-safe.
+- `apps/hub/assets/fb.js` (later rounds) — an **unclassified** record (no string
+  `kind` and no `schema`) is now refused at `submit()` and pruned by
+  `purgeUnsafeQueue()`, instead of defaulting to "not a referral, therefore safe".
+  This closes the queue/retry bypass that let an untyped unsafe referral be queued
+  and transmitted.
 - `apps/form/referral.html` — a blocking, bilingual refusal surface
   (`#safeguardingBlock`, `role="alertdialog"`, `aria-modal="true"`), shown in place
   of the ordinary error list. It states the required action in English and Nepali
@@ -88,6 +100,18 @@ test_referral_kind_argument_cannot_bypass_gate_with_untyped_record -v
 # GREEN 3 — L1.save now treats its explicit kind argument as authoritative:
 python3 -m unittest tests.test_referral_safeguarding_gate -v
 #   Ran 12 tests ... OK   (12 passed, 0 failed)
+
+# RED 4 — independent review 2 queued/transmitted untyped unsafe records:
+python3 -m unittest \
+  tests.test_referral_safeguarding_gate.ReferralSafeguardingGateTests.\
+test_queue_rejects_untyped_record_instead_of_guessing_it_is_safe \
+  tests.test_referral_safeguarding_gate.ReferralSafeguardingGateTests.\
+test_retry_drops_untyped_legacy_queue_entry_without_transmitting -v
+#   Ran 2 tests ... FAILED (failures=2); untyped entry queued / survived flush.
+
+# GREEN 4 — queue now refuses an unclassified record and prunes it on flush:
+python3 -m unittest tests.test_referral_safeguarding_gate -v
+#   Ran 14 tests ... OK   (14 passed, 0 failed)
 ```
 
 An independent mutation check (temporarily disabling the three guards, then

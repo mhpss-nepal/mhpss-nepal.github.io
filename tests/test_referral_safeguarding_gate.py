@@ -140,6 +140,12 @@ async function main(action) {
       () => ({ error: "" }), (e) => ({ error: String(e && e.message || e) }));
     return { error: out.error, queued: window.FB.queue().length };
   }
+  if (action === "queue-unsafe-untyped") {
+    const untyped = { district: "RAS", safeguarding_confirmed: false, excludes_gbv_uasc_lifethreat: false };
+    const out = await window.FB.submit(untyped).then(
+      () => ({ error: "" }), (e) => ({ error: String(e && e.message || e) }));
+    return { error: out.error, queued: window.FB.queue().length };
+  }
   if (action === "queue-safe") {
     const out = await window.FB.submit(SAFE).then(
       () => ({ error: "" }), (e) => ({ error: String(e && e.message || e) }));
@@ -147,6 +153,12 @@ async function main(action) {
   }
   if (action === "retry-unsafe") {
     localStorage.setItem(QUEUE_KEY, JSON.stringify([UNSAFE]));
+    await window.FB.flush();
+    return { queued: window.FB.queue().length, pending: window.FB.status().pending };
+  }
+  if (action === "retry-unsafe-untyped") {
+    const untyped = { district: "RAS", safeguarding_confirmed: false, excludes_gbv_uasc_lifethreat: false };
+    localStorage.setItem(QUEUE_KEY, JSON.stringify([untyped]));
     await window.FB.flush();
     return { queued: window.FB.queue().length, pending: window.FB.status().pending };
   }
@@ -229,6 +241,11 @@ class ReferralSafeguardingGateTests(unittest.TestCase):
         self.assert_blocked(str(result["error"]))
         self.assertEqual(result["queued"], 0)
 
+    def test_queue_rejects_untyped_record_instead_of_guessing_it_is_safe(self) -> None:
+        result = self.run_node("queue-unsafe-untyped")
+        self.assertIn("record kind is missing", str(result["error"]))
+        self.assertEqual(result["queued"], 0)
+
     def test_queue_api_still_accepts_a_ticked_referral(self) -> None:
         result = self.run_node("queue-safe")
         self.assertEqual(result["error"], "")
@@ -237,6 +254,11 @@ class ReferralSafeguardingGateTests(unittest.TestCase):
     # 3b. a legacy queue entry is dropped on retry, never transmitted
     def test_retry_drops_legacy_unsafe_queue_entry_without_transmitting(self) -> None:
         result = self.run_node("retry-unsafe")
+        self.assertEqual(result["queued"], 0)
+        self.assertEqual(result["pending"], 0)
+
+    def test_retry_drops_untyped_legacy_queue_entry_without_transmitting(self) -> None:
+        result = self.run_node("retry-unsafe-untyped")
         self.assertEqual(result["queued"], 0)
         self.assertEqual(result["pending"], 0)
 
