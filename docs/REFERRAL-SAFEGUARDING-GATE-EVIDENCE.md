@@ -11,7 +11,7 @@ Tenant: `mhpss-nepal` · Branch: `architecture/v2-immutable-authority` (review a
 | Actionable-route test-only commit (red) | `7ca1cf5` |
 | Actionable-route fix commit (green) | `cdf7edb` |
 | Kind-argument bypass test-only commit (red) | working-tree test at `c899439` |
-| Kind-argument bypass fix commit (green) | pending at the time this note was edited |
+| Kind-argument bypass fix commit (green) | `c14b27a` |
 | Production ref `origin/main` | `68bf197abe56dd0265dca245e61809100b4c3901` — unchanged; no push/PR/merge/deploy |
 | Worktree | clean after commit |
 
