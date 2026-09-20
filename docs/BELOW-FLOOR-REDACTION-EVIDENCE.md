@@ -9,9 +9,11 @@ Tenant `mhpss-nepal` · branch `architecture/v2-immutable-authority` (review art
 | Base (parent of round-2 work) | round-1 head `86a4054ebfb7c3bae9c9ff0f1f3911b7f51f7d31`; the work began at `775e142c2a37324bb74af9d58cf880f626174367` |
 | Test-only commits (round 1, red) | `04af6d7` (core channels), `b96303c` (browser + fail-closed + clean + idempotency + nested) |
 | Fix commit (round 1, green) | `a3b3a218171886f4fef17d4e1a6c0f6e46dc98bb` |
-| Review | round 1 **changes requested** — see §10. Two reproductions proved the round-1 candidate did not close the class. |
+| Review | rounds 1 and 2 **changes requested** — see §§10 and 13. The candidate was corrected after each adversarial reproduction. |
 | Test-only commits (round 2, red) | `904b4fd`, `a1b76ca`, `b1eed00` |
 | Fix commit (round 2, green) | `1627307` — withhold enclosing row totals after a nested drop; verify against the effective floor |
+| Test-only commit (round 3, red) | `f036605` — leading `null` and leading primitive mixed-row fixtures on publisher, reader, and real Chromium |
+| Fix commit (round 3, green) | `829dc36` — reject malformed mixed aggregate row families before publisher redaction or reader rendering |
 | Head | the commit carrying this file; its SHA-1 and SHA-256 are recorded in the kanban completion metadata, so this document does not embed its own id |
 | Production refs | public `68bf197`, form `9032bb7`, hub `ff2d4e2` — **no push / PR / merge / deploy by this task** |
 | ⚠ Public `main` moved during the work | to `c32b6e8`, **by another actor, not this task** — see §12 |
@@ -25,6 +27,10 @@ any other collection, and the live check was read-only and aggregate-only.
 > reproduced two survivors at round-1 head `86a4054` and was right. §10 records both
 > reproductions, the fix, and — plainly — what round 1 got wrong. The claim in this document
 > is now scoped to what its tests actually exercise, and §11 states the residual limit.
+
+> **Round-3 note.** A second adversarial review found that `isRowFamily` looked only at array
+> member 0. A leading `null` or primitive made later aggregate rows bypass row-family handling.
+> §13 records the failing-first reproduction and the fail-closed correction.
 
 ---
 
@@ -522,4 +528,58 @@ a real publisher on every card", authored 2026-09-20 12:57Z), where this session
 `main`** — `c32b6e8` does not contain it — so the below-floor reconstruction channel remains live
 on the public site, exactly as the audit found. Nothing here changes that; it is also the reminder
 that releasing this fix is a separate, deliberate step, as the standing rule requires.
+
+## 13. Round 3: malformed mixed row families fail closed
+
+### 13.1 Reproduction (failing first)
+
+The second review supplied two malformed-but-valid-JSON variants:
+
+- `families: [null, {small: 6}, {large: 94}]`
+- `families: ["unexpected", {small: 6}, {large: 94}]`
+
+At head `4c23123`, `isRowFamily` classified an array only from member 0. Both variants therefore
+published a document retaining total 100, complement 94, and the `small` category; the reader
+accepted the same shape. Real Chromium threw on the leading `null` instead of failing closed.
+
+The regression tests were committed before the runtime fix in `f036605`. Exact focused command:
+
+```text
+$ python3 -m unittest \
+  tests.test_below_floor_redaction.BelowFloorRedactionTests.test_publisher_refuses_mixed_row_families_without_writing \
+  tests.test_below_floor_redaction.BelowFloorRedactionTests.test_reader_refuses_mixed_row_families \
+  tests.test_below_floor_redaction_browser.BelowFloorRenderBrowserTests.test_the_real_page_refuses_mixed_row_families_without_throwing -v
+Ran 3 tests in 2.678s
+FAILED (failures=5, errors=1)
+```
+
+The failures were the required signals: two publisher writes, two reader acceptances, one browser
+throw, and one browser acceptance.
+
+### 13.2 Correction and verified policy
+
+Commit `829dc36` validates every member before redaction. If an array contains both plain-object
+aggregate rows and any non-row member, the publisher refuses it with **zero writes**, and the
+reader refuses it and renders **nothing**. The code does not silently filter the foreign member:
+that would invent a data-repair policy and could alter the meaning of a published aggregate.
+Homogeneous object-row arrays and homogeneous non-object arrays retain their existing handling.
+
+The same focused command at `829dc36`:
+
+```text
+Ran 3 tests in 2.657s
+OK
+```
+
+Publisher + reader + real-browser focused suites:
+
+```text
+$ python3 -m unittest tests.test_below_floor_redaction tests.test_below_floor_redaction_browser -v
+Ran 30 tests in 13.732s
+OK
+```
+
+This closes the round-2 review's category-presence, complementary-arithmetic, and availability
+reproductions for leading `null` and leading primitive members. It does not change the broader
+residual boundaries in §11.
 
