@@ -489,6 +489,26 @@
      limits the document shape. Server read/write enforcement is unverified
      until the authoritative Rules are reviewed and versioned. */
   function publish(docId, body) {
+    /* Fail closed before connection/auth checks so restricted data is refused
+       by this real public_stats sink under every runtime state. */
+    var restrictedKinds = { referral: true, phq9: true };
+    var restrictedPrivacy = {
+      "restricted-referral-person-list": true,
+      "clinical": true,
+      "safeguarding": true
+    };
+    function containsRestricted(value) {
+      if (!value || typeof value !== "object") return false;
+      if (restrictedKinds[value.kind] || restrictedPrivacy[value.privacy_class]) return true;
+      var keys = Object.keys(value);
+      for (var i = 0; i < keys.length; i++) {
+        if (containsRestricted(value[keys[i]])) return true;
+      }
+      return false;
+    }
+    if (containsRestricted(body)) {
+      return Promise.reject(new Error("restricted or clinical records cannot be published to public_stats"));
+    }
     if (!state.ready) return Promise.reject(new Error("not connected"));
     if (!state.user) return Promise.reject(new Error("not signed in"));
     if (!body || typeof body.basis !== "string" || !body.basis.trim()) {
