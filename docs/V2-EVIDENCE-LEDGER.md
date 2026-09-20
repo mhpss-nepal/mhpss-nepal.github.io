@@ -106,3 +106,51 @@ Status: **DONE — REVIEW ARTIFACT** (HELD). Not production-ready. Independent r
 ## BLOCKED — DECISION
 
 Institutional ownership/data-controller roles; production cloud ownership/Rules/indexes/billing; storage and ingestion runtimes; retention/compaction/backup/restore/incident policy; identity and canonical-byte policy; migration/cutover; DQ and reconciliation authority; production limits; trusted manifest root/cache activation/rollback; Nepal HMIS/DHIS2/OCHA/FHIR mappings and acceptance owners; roles/classification/publication/indicator approval.
+
+## Follow-up fix — canonical duplicate-conflict brick (2026-09-20)
+
+Kanban task `t_aefe1e29`, follow-up to independent review `t_4ca6b4fb`.
+
+Defect (reproduced by review probe CASE B): `services/ingest/ingest.py` appended a
+`canonical_conflict` record on every conflicting submission with no idempotency
+check. Ingesting byte-identical conflicting bytes twice appended a duplicate
+`(subject_id, incoming_body_sha256)` row, which `_validated_records`
+(`ingest.py:460-463`) then rejected — permanently failing every subsequent read
+(`integrity_check`/`counts`/`event_body`/`ingest`) with
+`IngestIntegrityError: canonical conflict evidence is duplicated`, unrecoverable
+via any public API, while the 2nd ingest misleadingly returned a normal conflict
+outcome.
+
+Fix: conflict recording is now idempotent — `ingest()` detects an existing
+`canonical_conflict` with the same `(event_id, incoming_body_sha256)` before
+appending and returns the identical `EVENT_ID_BODY_CONFLICT` outcome without a
+second record. Mirrors device-authority tolerance for identical conflicting
+retries (`packages/sync-client/outbox.py:552-558`).
+
+Strict TDD: regression
+`test_identical_conflicting_retry_is_idempotent_and_keeps_the_authority_readable`
+was added first (`6e5ae81`) and observed failing (`IngestIntegrityError` on the
+3rd ingest) before the fix commit (`847f65b`).
+
+| Check | Command | Result |
+|---|---|---|
+| Regression at test-only commit | `python3 -m unittest tests/v2_contract/test_canonical_authority.py` | FAILED (errors=1), as intended |
+| Focused V2 suite at head | `python3 -m unittest discover -s tests/v2_contract -p 'test_*.py'` | 59 passed, 0 failed |
+| Full suite at head | `python3 -m unittest discover -s tests` | 86 passed, 1 skipped, 0 failed |
+| Compile | `python3 -m py_compile services/ingest/ingest.py tests/v2_contract/test_canonical_authority.py` | Clean |
+| Whitespace | `git diff --check` | Clean |
+| Base | `git rev-parse HEAD` at start | `024108fea802fd1ac6d7bffb9ded9ddf526f5c12` |
+| Head | `git rev-parse HEAD` after commit | `847f65bd9e0a2711e1cf4843010898c45b8e8e19` |
+| Branch | `git rev-parse --abbrev-ref HEAD` | `architecture/v2-immutable-authority` |
+| Changed files | `git diff --stat 024108f..HEAD` | `services/ingest/ingest.py`, `tests/v2_contract/test_canonical_authority.py` (2 files, +64) |
+| `apps/` changes | `git diff --name-only 024108f..HEAD` | 0 |
+| Worktree | `git status --porcelain` | Clean |
+| Held worktrees | `v2-contracts` @ `9347d82` clean, `monorepo` @ `b1f32cb` clean | Unchanged |
+| Production ref | `git rev-parse origin/main` | `68bf197abe56dd0265dca245e61809100b4c3901` — unchanged, production frozen |
+
+Non-blocking observations from review remain open and untouched (not required for
+this fix): F8 closure-seal introspection residual (documented threat-model note);
+`record_recovery` accepts whitespace-only actor/reason.
+
+Status: **DONE — REVIEW ARTIFACT** (HELD). Not production-ready. Institutional
+dependencies below remain BLOCKED — DECISION.
