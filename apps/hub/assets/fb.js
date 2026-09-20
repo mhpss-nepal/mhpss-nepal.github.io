@@ -510,7 +510,12 @@
      the only place that can stop a raw value being written. */
   var PUBLIC_SUPPRESSION_FLOOR = 10;
   /* keys that are bookkeeping, not counts about people: never suppressed, and
-     never treated as a leak by the verification sweep below */
+     never treated as a leak by the verification sweep below. These names are
+     bookkeeping only where they actually mean it -- at the document ROOT. A
+     nested field that happens to reuse one of these names is an ordinary count
+     and must pass the floor like any other: exempting the NAME at every depth
+     is an unscanned tunnel (a below-floor 6 under `detail.period_from` beside a
+     complement 94 under a covering total 100 reconstructs exactly). */
   var NOT_A_COUNT = {
     schema: 1, schema_version: 1, suppressed_below: 1,
     period_from: 1, period_to: 1, codes_version: 1
@@ -555,13 +560,18 @@
   function isRowFamily(v) {
     return Array.isArray(v) && v.length > 0 && v.every(isPlainObject);
   }
+  /* A structural name is exempt only where it actually means structure: at the
+     document root. Below `$` the same name is an ordinary count. */
+  function isBookkeepingKey(key, depth) {
+    return (depth || 0) === 0 && !!NOT_A_COUNT[key];
+  }
   /* Does this ROW carry a count below the floor? Every numeric field of a row
      in an aggregate document is a count, so any one of them puts the row
      below the floor and the whole row goes. */
-  function rowHasBelowFloor(row, floor) {
+  function rowHasBelowFloor(row, floor, depth) {
     var keys = Object.keys(row);
     for (var i = 0; i < keys.length; i++) {
-      if (NOT_A_COUNT[keys[i]]) continue;
+      if (isBookkeepingKey(keys[i], depth)) continue;
       if (belowFloorValue(row[keys[i]], floor)) return true;
     }
     return false;
@@ -594,9 +604,9 @@
     var floor = policyFloor(out.suppressed_below);
     out.suppressed_below = floor;
     var state = { dropped: false, tainted: [], scalarTainted: [], scalarDirect: [] };
-    dropRows(out, floor, state);
-    markScalarTaints(out, floor, state);
-    return nullAggregates(out, floor, state, false, false);
+    dropRows(out, floor, state, 0);
+    markScalarTaints(out, floor, state, 0);
+    return nullAggregates(out, floor, state, false, false, 0);
   }
   /* an object whose subtree lost a row: its own counts are withheld */
   function isTainted(state, node) {
@@ -612,21 +622,22 @@
      a row was dropped anywhere in this subtree, so every ENCLOSING object can
      be marked tainted: a total that covered the dropped row can no longer be
      published beside the surviving parts. */
-  function dropRows(node, floor, state) {
+  function dropRows(node, floor, state, depth) {
+    depth = depth || 0;
     if (Array.isArray(node)) {
       var rowFamily = isRowFamily(node);
       var lost = false;
       var kept = [];
       node.forEach(function (item) {
         if (rowFamily && isPlainObject(item)) {
-          if (rowHasBelowFloor(item, floor)) { state.dropped = true; lost = true; return; }
-          if (dropRows(item, floor, state)) {
+          if (rowHasBelowFloor(item, floor, depth + 1)) { state.dropped = true; lost = true; return; }
+          if (dropRows(item, floor, state, depth + 1)) {
             lost = true;
             state.tainted.push(item);
           }
           kept.push(item);
         } else {
-          if (dropRows(item, floor, state)) lost = true;
+          if (dropRows(item, floor, state, depth + 1)) lost = true;
           kept.push(item);
         }
       });
@@ -637,7 +648,7 @@
     if (isPlainObject(node)) {
       var lostHere = false;
       Object.keys(node).forEach(function (k) {
-        if (dropRows(node[k], floor, state)) lostHere = true;
+        if (dropRows(node[k], floor, state, depth + 1)) lostHere = true;
       });
       return lostHere;
     }
@@ -649,11 +660,12 @@
      container of the scalar, so an unrelated surviving sibling/complement is
      not blanked once all covering totals are withheld. Returns true when this
      subtree contains a scalar that this pass will suppress. */
-  function markScalarTaints(node, floor, state) {
+  function markScalarTaints(node, floor, state, depth) {
+    depth = depth || 0;
     if (Array.isArray(node)) {
       var inArray = false;
       node.forEach(function (item) {
-        if (markScalarTaints(item, floor, state)) inArray = true;
+        if (markScalarTaints(item, floor, state, depth + 1)) inArray = true;
       });
       return inArray;
     }
@@ -661,11 +673,11 @@
       var direct = false;
       var nested = false;
       Object.keys(node).forEach(function (k) {
-        if (NOT_A_COUNT[k]) return;
+        if (isBookkeepingKey(k, depth)) return;
         var v = node[k];
         if (typeof v === "number") {
           if (belowFloorValue(v, floor)) direct = true;
-        } else if (markScalarTaints(v, floor, state)) {
+        } else if (markScalarTaints(v, floor, state, depth + 1)) {
           nested = true;
         }
       });
@@ -680,14 +692,15 @@
      once anything was dropped anywhere -- when it sits outside a row. A
      surviving nested row is a fresh region: it keeps its own figures, which are
      all at or above the floor. */
-  function nullAggregates(node, floor, state, inRow, withheld) {
+  function nullAggregates(node, floor, state, inRow, withheld, depth) {
+    depth = depth || 0;
     if (Array.isArray(node)) {
       var rowFamily = isRowFamily(node);
       node.forEach(function (item) {
         if (rowFamily && isPlainObject(item)) {
-          nullAggregates(item, floor, state, true, isTainted(state, item));
+          nullAggregates(item, floor, state, true, isTainted(state, item), depth + 1);
         } else {
-          nullAggregates(item, floor, state, false, withheld);
+          nullAggregates(item, floor, state, false, withheld, depth + 1);
         }
       });
       return node;
@@ -697,13 +710,13 @@
       var scalarRegion = isScalarTainted(state, node);
       var scalarDirect = isScalarDirect(state, node);
       Object.keys(node).forEach(function (k) {
-        if (NOT_A_COUNT[k]) return;
+        if (isBookkeepingKey(k, depth)) return;
         var v = node[k];
         if (typeof v === "number") {
           if (belowFloorValue(v, floor) || region || scalarRegion || scalarDirect ||
               (state.dropped && !inRow)) node[k] = null;
         } else {
-          nullAggregates(v, floor, state, false, region || scalarDirect);
+          nullAggregates(v, floor, state, false, region || scalarDirect, depth + 1);
         }
       });
     }
@@ -713,14 +726,15 @@
      this code does not know how to redact (a row held as an array, say), so
      the document is refused rather than written. Returns the field path; never
      the value. */
-  function firstBelowFloorCount(node, floor, path) {
+  function firstBelowFloorCount(node, floor, path, depth) {
+    depth = depth || 0;
     if (node === null || typeof node === "boolean" || node === undefined) return "";
     if (typeof node === "number") {
       return (isFinite(node) && node > 0 && node < floor) ? (path || "$") : "";
     }
     if (Array.isArray(node)) {
       for (var i = 0; i < node.length; i++) {
-        var hit = firstBelowFloorCount(node[i], floor, (path || "$") + "[" + i + "]");
+        var hit = firstBelowFloorCount(node[i], floor, (path || "$") + "[" + i + "]", depth + 1);
         if (hit) return hit;
       }
       return "";
@@ -728,8 +742,8 @@
     if (typeof node === "object") {
       var keys = Object.keys(node);
       for (var j = 0; j < keys.length; j++) {
-        if (NOT_A_COUNT[keys[j]]) continue;
-        var found = firstBelowFloorCount(node[keys[j]], floor, (path || "$") + "." + keys[j]);
+        if (isBookkeepingKey(keys[j], depth)) continue;
+        var found = firstBelowFloorCount(node[keys[j]], floor, (path || "$") + "." + keys[j], depth + 1);
         if (found) return found;
       }
     }

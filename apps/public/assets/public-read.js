@@ -87,6 +87,12 @@
     schema: 1, schema_version: 1, suppressed_below: 1,
     period_from: 1, period_to: 1, codes_version: 1
   };
+  /* These names are bookkeeping only at the document ROOT. Below `$` the same
+     name is an ordinary count and must pass the floor; exempting the name at
+     every depth is an unscanned tunnel a foreign/older document can use. */
+  function isBookkeepingKey(key, depth) {
+    return (depth || 0) === 0 && !!NOT_A_COUNT[key];
+  }
   function isPlainObject(v) { return !!v && typeof v === "object" && !Array.isArray(v); }
   function assertNoMixedRowFamilies(node, path) {
     if (Array.isArray(node)) {
@@ -122,10 +128,10 @@
     }
     return node;
   }
-  function rowHasBelowFloor(row, floor) {
+  function rowHasBelowFloor(row, floor, depth) {
     var keys = Object.keys(row);
     for (var i = 0; i < keys.length; i++) {
-      if (NOT_A_COUNT[keys[i]]) continue;
+      if (isBookkeepingKey(keys[i], depth)) continue;
       var v = row[keys[i]];
       if (typeof v === "number" && isFinite(v) && v > 0 && v < floor) return true;
     }
@@ -142,18 +148,19 @@
     function isScalarTainted(node) { return state.scalarTainted.indexOf(node) !== -1; }
     function isScalarDirect(node) { return state.scalarDirect.indexOf(node) !== -1; }
 
-    function dropRows(node) {
+    function dropRows(node, depth) {
+      depth = depth || 0;
       if (Array.isArray(node)) {
         var rowFamily = isRowFamily(node);
         var lost = false;
         var kept = [];
         node.forEach(function (item) {
           if (rowFamily && isPlainObject(item)) {
-            if (rowHasBelowFloor(item, floor)) { state.dropped = true; lost = true; return; }
-            if (dropRows(item)) { lost = true; state.tainted.push(item); }
+            if (rowHasBelowFloor(item, floor, depth + 1)) { state.dropped = true; lost = true; return; }
+            if (dropRows(item, depth + 1)) { lost = true; state.tainted.push(item); }
             kept.push(item);
           } else {
-            if (dropRows(item)) lost = true;
+            if (dropRows(item, depth + 1)) lost = true;
             kept.push(item);
           }
         });
@@ -163,26 +170,27 @@
       }
       if (isPlainObject(node)) {
         var lostHere = false;
-        Object.keys(node).forEach(function (k) { if (dropRows(node[k])) lostHere = true; });
+        Object.keys(node).forEach(function (k) { if (dropRows(node[k], depth + 1)) lostHere = true; });
         return lostHere;
       }
       return false;
     }
-    function markScalarTaints(node) {
+    function markScalarTaints(node, depth) {
+      depth = depth || 0;
       if (Array.isArray(node)) {
         var inArray = false;
-        node.forEach(function (item) { if (markScalarTaints(item)) inArray = true; });
+        node.forEach(function (item) { if (markScalarTaints(item, depth + 1)) inArray = true; });
         return inArray;
       }
       if (isPlainObject(node)) {
         var direct = false;
         var nested = false;
         Object.keys(node).forEach(function (k) {
-          if (NOT_A_COUNT[k]) return;
+          if (isBookkeepingKey(k, depth)) return;
           var v = node[k];
           if (typeof v === "number") {
             if (small(v)) direct = true;
-          } else if (markScalarTaints(v)) {
+          } else if (markScalarTaints(v, depth + 1)) {
             nested = true;
           }
         });
@@ -192,12 +200,13 @@
       }
       return small(node);
     }
-    function nullAggregates(node, inRow, withheld) {
+    function nullAggregates(node, inRow, withheld, depth) {
+      depth = depth || 0;
       if (Array.isArray(node)) {
         var rowFamily = isRowFamily(node);
         node.forEach(function (item) {
-          if (rowFamily && isPlainObject(item)) nullAggregates(item, true, isTainted(item));
-          else nullAggregates(item, false, withheld);
+          if (rowFamily && isPlainObject(item)) nullAggregates(item, true, isTainted(item), depth + 1);
+          else nullAggregates(item, false, withheld, depth + 1);
         });
         return node;
       }
@@ -206,13 +215,13 @@
         var scalarRegion = isScalarTainted(node);
         var scalarDirect = isScalarDirect(node);
         Object.keys(node).forEach(function (k) {
-          if (NOT_A_COUNT[k]) return;
+          if (isBookkeepingKey(k, depth)) return;
           var v = node[k];
           if (typeof v === "number") {
             if (small(v) || region || scalarRegion || scalarDirect ||
                 (state.dropped && !inRow)) node[k] = null;
           } else {
-            nullAggregates(v, false, region || scalarDirect);
+            nullAggregates(v, false, region || scalarDirect, depth + 1);
           }
         });
       }
@@ -220,12 +229,13 @@
     }
     /* the value is never returned; only the path, and only so the page can say
        it refused */
-    function firstBelowFloor(node, path) {
+    function firstBelowFloor(node, path, depth) {
+      depth = depth || 0;
       if (node === null || typeof node === "boolean" || node === undefined) return "";
       if (typeof node === "number") return small(node) ? (path || "$") : "";
       if (Array.isArray(node)) {
         for (var i = 0; i < node.length; i++) {
-          var hit = firstBelowFloor(node[i], (path || "$") + "[" + i + "]");
+          var hit = firstBelowFloor(node[i], (path || "$") + "[" + i + "]", depth + 1);
           if (hit) return hit;
         }
         return "";
@@ -233,8 +243,8 @@
       if (typeof node === "object") {
         var keys = Object.keys(node);
         for (var j = 0; j < keys.length; j++) {
-          if (NOT_A_COUNT[keys[j]]) continue;
-          var found = firstBelowFloor(node[keys[j]], (path || "$") + "." + keys[j]);
+          if (isBookkeepingKey(keys[j], depth)) continue;
+          var found = firstBelowFloor(node[keys[j]], (path || "$") + "." + keys[j], depth + 1);
           if (found) return found;
         }
       }
@@ -242,11 +252,11 @@
     }
 
     var out = clone(d);
-    dropRows(out);
-    markScalarTaints(out);
+    dropRows(out, 0);
+    markScalarTaints(out, 0);
     out.suppressed_below = floor;
-    nullAggregates(out, false, false);
-    var leak = firstBelowFloor(out, "$");
+    nullAggregates(out, false, false, 0);
+    var leak = firstBelowFloor(out, "$", 0);
     if (leak) throw new Error("a below-floor count survived redaction at " + leak);
     return out;
   }
