@@ -41,10 +41,12 @@ organisation.
 4. **Real freshness/provenance.** Every published record carries `capture_date`, `data_date`,
    `last_successful_refresh` and `success`. The site can therefore say "checked on X, source
    still carries data as of Y" instead of implying a trend.
-   *Honest limit:* on this local path `success` is always `true`, because a failed fetch or
-   parse writes **no record at all** and exits 2 (the failure is visible as a failed Actions
-   run). The field exists so the Layer 3 contract has a place to render a stale or failed
-   refresh; a captured-but-failed run does not yet write one.
+   *Honest limit:* `success` is **always** `true` in every published record, on every path —
+   there is no code branch that writes `success: false`. A failed fetch or parse writes **no
+   record at all** and exits 2, which surfaces as a failed Actions run. The field is kept
+   because the Layer 3 contract should not have to change if a later host wants to record a
+   captured-but-failed refresh; today it is a constant, and Layer 3 must treat a *missing*
+   refresh (red run) as the failure signal, not a `success: false` record.
 5. **Pinned WIB timezone.** `WIB = UTC+07:00` is pinned in the script; `TZ` is never inherited.
    A UTC-labelled runner instant is still written and displayed as WIB.
 6. **Explicit asset path.** The path comes from `--asset-dir` (default `data/ndrrma`), never
@@ -106,13 +108,15 @@ rule-gated publishing design:
 - **Only what was already public on the source dashboard is written.** The three aggregate
   figures above are the dashboard's own published numbers. No unpublished operational
   figures, no per-actor rows, no geography rows, no person-level data.
-  *Enforcement:* `--verify` accepts the `aggregates` map only if its keys are exactly those
-  three (`mhpss_activities`, `mhpss_reached`, `response_headline`) — an allowlist, not a
-  substring check, so a differently-named extra key fails rather than silently committing.
+  *Enforcement:* `--verify` allowlists the exact key set at **every level** — the record, the
+  `source` block, the `publication` block and the `aggregates` map. An extra field, wherever
+  nested and however named, fails rather than being committed unremarked.
   Note the *control plane* (the query config) does name sectors, because the query filters on
   them; the *published* artifact does not.
-- **The `success` flag is part of the contract.** Layer 3 must be able to render a failed or
-  stale capture as "not refreshed" rather than showing the last good figure as current.
+- **The `success` flag is in the contract, but is currently constant.** Layer 3 should be built
+  to render a stale or failed refresh as "not refreshed". Today no record ever carries
+  `success: false`; a failed run writes no record and shows as a red Actions run, so the
+  authoritative failure signal is a *missing* refresh, not a `false` field.
 - **Both dates are always shown.** `data_date` is the source's own refresh date and often does
   not advance because the report's refresh is disabled; `capture_date` is when we looked.
 - **No additive claims.** MHPSS sector reach is a max-per-location measure, so the artifact

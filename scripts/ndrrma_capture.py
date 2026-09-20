@@ -49,6 +49,21 @@ MHPSS_ACTIVITIES = 233
 # The only figures the committed public artifact may carry: each is already
 # published on the source dashboard, so nothing unpublished can reach the repo.
 PUBLIC_AGGREGATE_KEYS = ("mhpss_activities", "mhpss_reached", "response_headline")
+# The exact top-level key set of a published record. Data minimisation is an
+# allowlist at every level, so an added field (however named, wherever nested)
+# fails verification instead of being committed unremarked.
+PUBLIC_RECORD_KEYS = (
+    "aggregates",
+    "capture_date",
+    "data_date",
+    "last_successful_refresh",
+    "publication",
+    "schema_version",
+    "source",
+    "success",
+)
+PUBLIC_SOURCE_KEYS = ("access", "name", "report")
+PUBLIC_PUBLICATION_KEYS = ("classification", "note", "scope")
 # The full public sector set, used only to reject a partial response. The
 # per-sector breakdown is deliberately not written into the repository.
 EXPECTED_SECTORS = (
@@ -412,20 +427,30 @@ def verify_artifacts(asset_dir: Path) -> dict[str, Any]:
     artifact = _strict_json_loads(public_path.read_text(encoding="utf-8"))
     if not isinstance(artifact, dict):
         raise ValueError("public artifact is not a JSON object")
-    required = ("schema_version", "capture_date", "data_date", "last_successful_refresh", "success", "source", "aggregates", "publication")
-    for key in required:
-        if key not in artifact:
-            raise ValueError(f"public artifact is missing {key!r}")
-    # Data minimisation is an allowlist, not a naming convention: only the three
-    # already-public headline figures may appear. Any extra key — however named —
+    # Data minimisation is an allowlist at every level: the record, the source
+    # block, the publication block, and the aggregates must each carry exactly
+    # their expected keys. Any added field, wherever nested and however named,
     # means something unpublished is about to be committed.
-    aggregates = artifact.get("aggregates")
-    if not isinstance(aggregates, dict) or set(aggregates) != set(PUBLIC_AGGREGATE_KEYS):
-        raise ValueError(
-            f"public artifact aggregates must be exactly {sorted(PUBLIC_AGGREGATE_KEYS)}, got {sorted(aggregates) if isinstance(aggregates, dict) else aggregates!r}"
-        )
+    for label, actual, expected in (
+        ("record", artifact, PUBLIC_RECORD_KEYS),
+        ("source", artifact.get("source"), PUBLIC_SOURCE_KEYS),
+        ("publication", artifact.get("publication"), PUBLIC_PUBLICATION_KEYS),
+        ("aggregates", artifact.get("aggregates"), PUBLIC_AGGREGATE_KEYS),
+    ):
+        if not isinstance(actual, dict) or set(actual) != set(expected):
+            raise ValueError(
+                f"public artifact {label} keys must be exactly {sorted(expected)}, "
+                f"got {sorted(actual) if isinstance(actual, dict) else actual!r}"
+            )
     if artifact.get("publication", {}).get("classification") != "public":
         raise ValueError("public artifact is not classified public")
+    if artifact.get("success") is not True:
+        raise ValueError("public artifact does not record success")
+    if artifact.get("schema_version") != 1:
+        raise ValueError("public artifact has an unsupported schema version")
+    for key in ("capture_date", "data_date", "last_successful_refresh"):
+        if not isinstance(artifact.get(key), str) or not artifact[key]:
+            raise ValueError(f"public artifact has an invalid {key}")
     return {
         "rows": len(rows),
         "newest_capture_day": newest["capture_day"],

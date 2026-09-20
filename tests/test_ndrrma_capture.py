@@ -309,6 +309,38 @@ class NdrrmaCaptureTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "read-back"):
                 self.capture.verify_artifacts(asset)
 
+    def test_verify_artifacts_rejects_any_extra_key_at_any_level(self) -> None:
+        for level in ("record", "source", "publication"):
+            with self.subTest(level=level):
+                with tempfile.TemporaryDirectory() as temporary_directory:
+                    asset = Path(temporary_directory)
+                    self.capture.capture_payloads(
+                        asset,
+                        synthetic_sector_payload(),
+                        synthetic_date_payload(),
+                        now=dt.datetime(2026, 9, 21, 9, 0, tzinfo=WIB),
+                    )
+                    public_path = asset / "public" / "latest.json"
+                    version_path = next((asset / "versions").glob("*.json"))
+                    artifact = json.loads(public_path.read_text(encoding="utf-8"))
+                    if level == "record":
+                        artifact["unpublished_extra"] = 1
+                    else:
+                        artifact[level]["unpublished_extra"] = 1
+                    tampered = (json.dumps(artifact, separators=(",", ":"), sort_keys=True) + "\n").encode("utf-8")
+                    # Keep the pointer and ledger consistent so the *content*
+                    # allowlist, not the pointer or hash rule, is what fails.
+                    version_path.write_bytes(tampered)
+                    public_path.write_bytes(tampered)
+                    ledger_path = asset / "ledger.jsonl"
+                    row = json.loads(ledger_path.read_text(encoding="utf-8").splitlines()[0])
+                    row["version_sha256"] = self.capture.sha256_bytes(tampered)
+                    ledger_path.write_text(
+                        json.dumps(row, separators=(",", ":"), sort_keys=True) + "\n", encoding="utf-8"
+                    )
+                    with self.assertRaisesRegex(ValueError, "keys must be exactly"):
+                        self.capture.verify_artifacts(asset)
+
     def test_verify_artifacts_rejects_any_extra_aggregate_key(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             asset = Path(temporary_directory)
@@ -331,7 +363,7 @@ class NdrrmaCaptureTests(unittest.TestCase):
             row = json.loads(ledger_path.read_text(encoding="utf-8").splitlines()[0])
             row["version_sha256"] = self.capture.sha256_bytes(tampered)
             ledger_path.write_text(json.dumps(row, separators=(",", ":"), sort_keys=True) + "\n", encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "aggregates must be exactly"):
+            with self.assertRaisesRegex(ValueError, "aggregates keys must be exactly"):
                 self.capture.verify_artifacts(asset)
 
     def test_archive_root_guard_rejects_a_mismatched_root(self) -> None:
