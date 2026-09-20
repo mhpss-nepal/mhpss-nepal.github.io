@@ -74,6 +74,39 @@
     catch (e) { window.__fbq = q; return false; }
   }
 
+  /* ---------- safeguarding gate (independent of l1.js) ----------------
+     A referral whose safeguarding check is not ticked may be a GBV case,
+     an unaccompanied or separated child, or an immediate risk to life: it
+     must never enter the coordination register. l1.js refuses it at the
+     device write boundary; this is the same rule enforced again at the
+     queue, so any caller that reaches the queue directly -- a retry after
+     reconnect, a re-import, another script -- is refused too, and nothing
+     is written or transmitted.
+
+     Deliberately self-contained: if l1.js is absent (the hub loads this
+     file without it) or its check is ever weakened, this still fails
+     closed. Safe means the safeguard is explicitly ticked in the record
+     itself, never inferred from its absence. */
+  var SAFEGUARDING_FALLBACK =
+    "STOP. Do not record this case here. The referral's safeguarding check is not ticked; " +
+    "it may be a GBV case, an unaccompanied or separated child, or an immediate risk to life. " +
+    "Close the form and use the specialised pathway.";
+  function isUnsafeReferral(rec) {
+    if (!rec) return false;
+    var referral = rec.kind === "referral" ||
+      (typeof rec.schema === "string" && /referral/.test(rec.schema));
+    if (!referral) return false;
+    return !(rec.safeguarding_confirmed === true && rec.excludes_gbv_uasc_lifethreat === true);
+  }
+  function queueRefusal(rec) {
+    if (!isUnsafeReferral(rec)) return "";
+    if (window.L1 && typeof window.L1.safeguardingRefusal === "function") {
+      /* one wording, owned by l1.js, when it is present */
+      return window.L1.safeguardingRefusal(rec) || SAFEGUARDING_FALLBACK;
+    }
+    return SAFEGUARDING_FALLBACK;
+  }
+
   /* ---------- deterministic id ----------------------------------------
      FNV-1a over the fields that make a record what it is. Two exports of
      the same record produce the same id; two genuinely different records
@@ -181,8 +214,19 @@
   /* ---------- submit --------------------------------------------------
      Returns immediately once the record is safe on this device. The
      network attempt continues in the background; the caller is told the
-     truth either way, never "sent" when it was not. */
+     truth either way, never "sent" when it was not.
+
+     A referral that fails the safeguarding gate is refused here, before
+     the queue: nothing is written and nothing is transmitted. The refusal
+     surfaces to the caller's promise rejection, so a retry or a direct
+     caller cannot slip an unsafe record past the form. The queue is also
+     pruned of any such entry that reached it before the gate existed. */
   function submit(rec) {
+    var refusal = queueRefusal(rec);
+    if (refusal) {
+      purgeUnsafeQueue();
+      return Promise.reject(new Error(refusal));
+    }
     var r = JSON.parse(JSON.stringify(rec || {}));
     r._rid = rid(r);
     r._device_ts = new Date().toISOString();
@@ -240,10 +284,31 @@
     setQueue(queue().filter(function (x) { return x._rid !== id; }));
   }
 
+  /* Nothing unsafe may leave the device, and nothing unsafe may sit in the
+     queue waiting to. This is called before every flush and before a
+     refused submit. An entry queued before the gate existed -- for
+     example on an offline handset whose form was precached earlier -- is
+     removed rather than transmitted. Returns the number removed, so a
+     caller can report it. */
+  function purgeUnsafeQueue() {
+    var q = queue(), kept = [], removed = 0, i;
+    for (i = 0; i < q.length; i++) {
+      if (isUnsafeReferral(q[i])) { removed++; continue; }
+      kept.push(q[i]);
+    }
+    if (removed) {
+      setQueue(kept);
+      announce();
+    }
+    return removed;
+  }
+
   /* ---------- flush ---------------------------------------------------
      Sequential, not parallel: a phone on one bar of signal handles one
      write at a time far better than twenty at once. */
   function flush() {
+    /* Fail closed first: drop anything unsafe before any attempt to send. */
+    purgeUnsafeQueue();
     if (!state.ready || !navigator.onLine) return Promise.resolve({ sent: 0, left: queue().length });
     var q = queue().slice(), sent = 0;
     return q.reduce(function (chain, r) {
@@ -450,6 +515,8 @@
     onStatus: function (f) { stateCbs.push(f); f(status()); },
     onUser: function (f) { userCbs.push(f); f(state.user); },
     submit: submit, flush: flush, queue: queue, rid: rid,
+    safeguardingRefusal: function (rec) { return queueRefusal(rec); },
+    purgeUnsafeQueue: purgeUnsafeQueue,
     watch: watch, watchKind: watchKind, signIn: signIn, signOut: signOutNow,
     clearQueue: function () { setQueue([]); announce(); }
   };

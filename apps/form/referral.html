@@ -19,6 +19,21 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MHPSS Field">
+<!-- Only the safeguarding refusal panel. Scoped here rather than added to
+     the shared design.css, so this correctness fix touches one page. -->
+<style>
+  .sgb{margin:0 0 14px;border:2px solid #a0210e;border-left-width:6px;border-radius:6px;
+       background:#fdecea;color:#5c160b}
+  .sgb-in{padding:14px 16px}
+  .sgb h3{margin:0 0 6px;font-size:15.5px;line-height:1.3}
+  .sgb h3 + p{margin-top:0}
+  .sgb p{margin:0 0 10px;font-size:14px;line-height:1.45}
+  .sgb-lang{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;
+       padding:1px 6px;margin-right:7px;border-radius:3px;background:#a0210e;color:#fff;
+       vertical-align:1px}
+  .sgb-needs{margin:0 0 12px;font-size:12.5px;color:#7a4a3f;font-style:italic}
+  .sgb .btn{background:#a0210e;border-color:#a0210e;color:#fff}
+</style>
 </head>
 <body class="fx">
 <div class="ribbon">Revised draft for field piloting <span>· saved on this phone, sent to the coordination register when there is signal</span></div>
@@ -209,6 +224,37 @@
     <div class="card">
       <div class="step"><span class="n">5</span><h2>Save</h2></div>
       <div id="errs"></div>
+      <!-- The safeguarding refusal. Shown in place of the ordinary error
+           list when the gate is not ticked, and it blocks: the form cannot
+           be saved, queued or sent while it stands. Both languages are on
+           the surface itself, because the worker may be reading this on a
+           Nepali phone and the sentence is a stop instruction, not a hint.
+           The wording of the checkbox and its help text is unchanged; this
+           panel is new prose and needs professional translation review. -->
+      <div id="safeguardingBlock" class="sgb" role="alertdialog" aria-modal="true"
+           aria-labelledby="sgbTitle" aria-describedby="sgbBody" hidden>
+        <div class="sgb-in">
+          <h3 id="sgbTitle"><span class="sgb-lang">ENG</span> Stop — do not save this here</h3>
+          <p id="sgbBody" class="sgb-eng">
+            <b>STOP. Do not record this case here.</b> The safeguarding check is not ticked, so
+            this may be a GBV case, an unaccompanied or separated child, or an immediate risk to
+            life. Close the form and use the specialised pathway — the protection cluster's
+            survivor-centred pathway for a GBV case, child-protection case management for a child,
+            and act first for an immediate risk to life.
+          </p>
+          <h3><span class="sgb-lang">NEP</span> रोक्नुहोस् — यो यहाँ नराख्नुहोस्</h3>
+          <p class="sgb-nep" lang="ne">
+            <b>रोक्नुहोस्। यो केस यहाँ अभिलेख नगर्नुहोस्।</b> सुरक्षा जाँच गरिएको छैन, त्यसैले यो
+            GBV (लैङ्गिक हिंसा) केस, वा छोडिएको वा अलग भएको बालबालिका, वा जीवनमा तत्काल जोखिम हुन
+            सक्छ। फारम बन्द गर्नुहोस् र विशेष मार्ग प्रयोग गर्नुहोस् — GBV केसका लागि संरक्षण
+            क्लस्टरको उत्तरजीवी-केन्द्रित मार्ग, बालबालिकाका लागि बाल-संरक्षण केस व्यवस्थापन, र
+            जीवनमा तत्काल जोखिम भए पहिले कारबाही गर्नुहोस्।
+          </p>
+          <p class="sgb-needs">Translation note: this Nepali wording is a draft and needs
+            professional review before field use; the checkpoint itself must not be softened.</p>
+          <button type="button" class="btn" id="sgbDismiss">I have read this — go back to the form</button>
+        </div>
+      </div>
       <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center">
         <button type="submit" class="btn">Save this referral</button>
         <button type="button" class="btn ghost" id="csvBtn">Export CSV</button>
@@ -293,6 +339,33 @@
   var COLS = Object.keys(record()).concat(["_saved"]);
   function payload() { $("payload").textContent = JSON.stringify(record(), null, 2); }
 
+  /* ---- the blocking refusal surface ---------------------------------
+     A real stop, not a line in a list the eye skips: the panel is shown,
+     focused, announced, and the page is held there. It cannot be dismissed
+     into a save — dismissing only returns to the form, where the check is
+     still unticked and the next save is refused again. A recital of why the
+     case does not belong here is the point; the way forward is the
+     specialised pathway named on the panel and in the banner at the top. */
+  function showSafeguardingBlock() {
+    $("errs").innerHTML = "";
+    var block = $("safeguardingBlock");
+    if (!block) { alert(L.SAFEGUARDING_REFUSAL || "Stop: the safeguarding check is not ticked."); return; }
+    block.hidden = false;
+    try { block.scrollIntoView({ block: "center" }); } catch (e) { /* older browsers */ }
+    var d = $("sgbDismiss");
+    if (d && d.focus) d.focus();
+  }
+  $("sgbDismiss").addEventListener("click", function () {
+    $("safeguardingBlock").hidden = true;
+    $("notgbv").focus();
+  });
+  /* If the worker ticks the check, the refusal has served its purpose and
+     goes; if they untick it again, the next save brings it back. */
+  $("notgbv").addEventListener("change", function () {
+    if ($("notgbv").checked) $("safeguardingBlock").hidden = true;
+    payload();
+  });
+
   function problems(r) {
     var e = [];
     if (!r.org) e.push("Choose the referring organisation.");
@@ -334,13 +407,31 @@
 
   $("f").addEventListener("submit", function (ev) {
     ev.preventDefault();
-    var r = record(), e = problems(r);
+    var r = record();
+    /* ---- the safeguarding gate --------------------------------------
+       The checkbox is a control, not a sentence. If it is not ticked the
+       form does not save, does not queue and does not send; the refusal is
+       shown in both languages and stays until the worker ticks the check
+       or leaves the page. L1.save enforces the same rule at the write
+       boundary and fb.js enforces it again at the queue, so this handler
+       is not the only thing between an unsafe case and the register. */
+    var refusal = (L.safeguardingRefusal ? L.safeguardingRefusal(r) : "");
+    if (refusal) { showSafeguardingBlock(); return; }
+    var e = problems(r);
     if (e.length) {
       $("errs").innerHTML = '<div class="banner stop"><b>Not saved.</b><ul><li>' + e.join("</li><li>") + "</li></ul></div>";
       $("errs").scrollIntoView({ block: "center" });
       return;
     }
-    var res = L.save(KIND, r);
+    var res;
+    try {
+      res = L.save(KIND, r);
+    } catch (err) {
+      /* L1 refused at the write boundary. Show the same blocking surface
+         rather than claiming a save that did not happen. */
+      if (err && err.name === "SafeguardingRefusal") { showSafeguardingBlock(); return; }
+      throw err;
+    }
     $("errs").innerHTML = '<div class="banner ok"><b>Saved on this device.</b> ' +
       (res.persisted ? "" : "Storage is blocked — export before closing. ") +
       "The record goes to the coordination register when there is signal. Come back to update whether the person arrived.</div>";

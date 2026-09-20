@@ -66,7 +66,51 @@
       return false;
     }
   }
+  /* ---------- safeguarding gate -------------------------------------
+     The referral form tells a worker that a GBV case, an unaccompanied or
+     separated child, or an immediate risk to life must not be recorded in
+     the coordination register -- "close the form and use the specialised
+     pathway". That sentence only means something if the code refuses when
+     the worker cannot honestly tick the safeguard. A warning label is not
+     a control; this is the control.
+
+     It is enforced at the write boundary, not only in the form's button
+     handler, so no caller can reach the register around it. The same rule
+     is enforced independently at the queue (fb.js submit/flush), because
+     a path that can bypass one guard must not be able to bypass all of
+     them. Fail closed: a referral counts as safe ONLY when the safeguard
+     is explicitly ticked in the saved record itself. */
+  var SAFEGUARDING_REFUSAL =
+    "STOP. Do not record this case here. The safeguarding check is not ticked, so this may be " +
+    "a GBV case, an unaccompanied or separated child, or an immediate risk to life. Close the " +
+    "form and use the specialised pathway.\u000a" +
+    "रोक्नुहोस्। यो केस यहाँ अभिलेख नगर्नुहोस्। सुरक्षा जाँच गरिएको छैन, त्यसैले यो GBV केस, " +
+    "वा छोडिएको वा अलग भएको बालबालिका, वा जीवनमा तत्काल जोखिम हुन सक्छ। फारम बन्द गर्नुहोस् र " +
+    "विशेष मार्ग प्रयोग गर्नुहोस्।";
+
+  function isReferralRecord(rec) {
+    if (!rec) return false;
+    if (rec.kind === "referral") return true;
+    return typeof rec.schema === "string" && /referral/.test(rec.schema);
+  }
+  /* Returns the refusal message when the record must not be written, and
+     "" when it may. Exported so the form page, the queue and the tests all
+     ask the same question of the same record. */
+  function safeguardingRefusal(rec) {
+    if (!isReferralRecord(rec)) return "";
+    if (rec.safeguarding_confirmed === true && rec.excludes_gbv_uasc_lifethreat === true) return "";
+    return SAFEGUARDING_REFUSAL;
+  }
+  function SafeguardingRefusal(message) {
+    var e = new Error(message);
+    e.name = "SafeguardingRefusal";
+    return e;
+  }
+
   function save(kind, obj) {
+    /* Fail closed BEFORE the device copy and before the queue. */
+    var refusal = safeguardingRefusal(obj);
+    if (refusal) throw SafeguardingRefusal(refusal);
     var list = all(kind);
     obj._saved = new Date().toISOString();
     list.push(obj);
@@ -75,7 +119,10 @@
     /* The device copy is written FIRST and unconditionally — that is the
        record. Only then is a push attempted, and a failed push leaves the
        record queued rather than losing it. One call site so no form can
-       forget to sync, and so adding a form cannot accidentally skip it. */
+       forget to sync, and so adding a form cannot accidentally skip it.
+
+       The safeguarding gate above runs before this point, so an unsafe
+       referral is neither written here nor handed to the queue. */
     var synced = null;
     if (window.FB && typeof window.FB.submit === "function") {
       synced = window.FB.submit(obj);
@@ -210,6 +257,7 @@
   window.L1 = {
     contactCode: contactCode,
     all: all, save: save, clear: clear, storageWorks: storageWorks,
+    safeguardingRefusal: safeguardingRefusal, SAFEGUARDING_REFUSAL: SAFEGUARDING_REFUSAL,
     toCSV: toCSV, download: download, stamp: stamp,
     geo: geo, GEO_DP: GEO_DP,
     fillSelect: fillSelect, today: today, remember: remember, recall: recall
