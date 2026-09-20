@@ -5,10 +5,13 @@ Tenant `mhpss-nepal` · branch `architecture/v2-immutable-authority` (review art
 
 | Field | Value |
 |---|---|
-| Worktree | `/root/mhpss-nepal-work/v2-authority-redesign` — sole task on it (checked before starting) |
-| Base (parent of the test commit) | `775e142c2a37324bb74af9d58cf880f626174367` |
-| Test-only commits (red) | `04af6d7` (core channels), `b96303c` (browser + fail-closed + clean + idempotency + nested) |
-| Fix commit (green) | `a3b3a218171886f4fef17d4e1a6c0f6e46dc98bb` |
+| Worktree | `/root/mhpss-nepal-work/v2-authority-redesign` — sole task on it (checked before starting, and again before round 2) |
+| Base (parent of round-2 work) | round-1 head `86a4054ebfb7c3bae9c9ff0f1f3911b7f51f7d31`; the work began at `775e142c2a37324bb74af9d58cf880f626174367` |
+| Test-only commits (round 1, red) | `04af6d7` (core channels), `b96303c` (browser + fail-closed + clean + idempotency + nested) |
+| Fix commit (round 1, green) | `a3b3a218171886f4fef17d4e1a6c0f6e46dc98bb` |
+| Review | round 1 **changes requested** — see §10. Two reproductions proved the round-1 candidate did not close the class. |
+| Test-only commits (round 2, red) | `904b4fd`, `a1b76ca`, `b1eed00` |
+| Fix commit (round 2, green) | `1627307` — withhold enclosing row totals after a nested drop; verify against the effective floor |
 | Head | the commit carrying this file; its SHA-1 and SHA-256 are recorded in the kanban completion metadata, so this document does not embed its own id |
 | Production refs | public `68bf197`, form `9032bb7`, hub `ff2d4e2` — **unchanged**; no push / PR / merge / deploy |
 | Worktree after the fix | clean |
@@ -16,6 +19,11 @@ Tenant `mhpss-nepal` · branch `architecture/v2-immutable-authority` (review art
 
 Synthetic fixtures only. No Publish was pressed, nothing was written to `public_stats` or
 any other collection, and the live check was read-only and aggregate-only.
+
+> **Round-2 note, read this before §1.** Round 1 claimed the class was closed. A review
+> reproduced two survivors at round-1 head `86a4054` and was right. §10 records both
+> reproductions, the fix, and — plainly — what round 1 got wrong. The claim in this document
+> is now scoped to what its tests actually exercise, and §11 states the residual limit.
 
 ---
 
@@ -104,12 +112,12 @@ covers the separate question of whether such a document could reach the collecti
 
 ```text
 $ python3 -m unittest tests.test_below_floor_redaction -v
-Ran 17 tests in 1.581s
+Ran 23 tests in 2.529s
 
 OK
 
 $ python3 -m unittest tests.test_below_floor_redaction_browser -v
-Ran 2 tests in 3.439s
+Ran 4 tests in 8.747s
 
 OK
 ```
@@ -128,6 +136,14 @@ B's own figures are above the floor and stay. On the real page a reader sees onl
 family `large`; the string `fewer than` never appears, there is no zero-width bar, and the drawn
 page is identical when the withheld total is changed.
 
+The *nested* case (§10) is written as — the enclosing row's own total is `null`, while the
+surviving nested sibling keeps its own above-floor figures:
+
+```json
+{ "districts": [ { "code": "A", "contacts": null,
+                   "breakdown": [ {"family": "large", "contacts": 94} ] } ] }
+```
+
 ## 4. Channels closed
 
 Every row is a **verified** result: the claim is checked by the Node test on the real files, and
@@ -145,6 +161,10 @@ the rendered-page claims re-checked in a real Chromium.
 | 8 | Declared floor defeats the default | `suppressed_below: 1` unmasked the value | publisher and reader both floor at the policy floor (10); the Hub no longer declares 1 |
 | 9 | A shape the pass cannot redact | written as-is | **refused** — nothing is written (fail closed) |
 | 10 | Nested schema-2 breakdowns | below-floor counts survived in `sites`/`organisations`/`activities` | every row family is dropped on the same rule |
+| 11 | **Nested drop leaves the enclosing total** *(round 2 — round 1 missed it)* | a surviving nested complement was subtracted from its enclosing row's own published total: `100 − 94 = 6` | every ancestor of a dropped row that could carry a covering total is **tainted** and its own scalar counts withheld, at any depth and through any container |
+| 12 | **Fail-closed check used the constant floor** *(round 2)* | a document declaring floor 20 had its value 15 written, because verification compared against 10 | publisher **and** reader verify against the document's **effective** floor; the reader also refuses (draws nothing for) a shape it cannot fully redact |
+
+Rows 11 and 12 are the review's reproductions and were **not** covered by round 1 — see §10.
 
 `tests/test_public_reader_floor_browser.py` (from the sibling ticket) asserted the old wording
 (`fewer than 10`). It is updated to assert the property this ticket establishes — the row and its
@@ -157,19 +177,21 @@ category are *absent* — which is strictly stronger.
 python3 coordination/evidence/layer3-below-floor-reconstruction/mhpss_public_aggregate_privacy_demo.py
 python3 coordination/evidence/layer3-below-floor-reconstruction/test_mhpss_public_aggregate_privacy_demo.py
 
-# failing-first, source at base, tests only  (git checkout 775e142 -- the four app files)
-python3 -m unittest tests.test_below_floor_redaction           # FAILED (failures=13)  [RED]
+# failing-first, round 2: app files checked out at the round-1 head, tests kept
+git checkout 86a4054 -- apps/hub/assets/fb.js apps/public/assets/public-read.js
+python3 -m unittest tests.test_below_floor_redaction           # FAILED (failures=12)  [RED]
 python3 -m unittest tests.test_below_floor_redaction_browser   # FAILED (failures=2)   [RED]
+git checkout HEAD -- apps/hub/assets/fb.js apps/public/assets/public-read.js
 
-# after the fix
-python3 -m unittest tests.test_below_floor_redaction           # OK, 17 tests
-python3 -m unittest tests.test_below_floor_redaction_browser   # OK, 2 tests (real Chromium)
+# after the round-2 fix
+python3 -m unittest tests.test_below_floor_redaction           # OK, 23 tests
+python3 -m unittest tests.test_below_floor_redaction_browser   # OK, 4 tests (real Chromium)
 
 # the whole focused surface, together
 python3 -m unittest tests.test_publication_privacy_gate tests.test_public_reader_floor_browser \
                    tests.test_hub_publish_ui_browser tests.test_below_floor_redaction \
                    tests.test_below_floor_redaction_browser
-Ran 27 tests in 14.486s
+Ran 35 tests in 29.0s
 OK
 
 # the bilingual gate (both languages, no half-translated string)
@@ -183,28 +205,42 @@ python3 -m unittest discover -s tests                          # see §5.1
 
 ```text
 $ python3 -m unittest discover -s tests
-Ran 133 tests in 217.060s
+Ran 141 tests in 234.824s
 FAILED (failures=1)
 ```
 
 The single failure is
 `tests/test_third_review.py::LocalQAServerSafetyTests::test_browser_helpers_serve_the_application_root_from_any_cwd`.
-It is **pre-existing and unrelated**: re-run in a throwaway worktree at base `775e142` with no
-local changes, the same test fails the same way (`Ran 6 tests … FAILED (failures=1)`), quoting a
-local `404` document on `forms.html` and `access.html`. It is a text-justification/QA-server check
-and has nothing to do with the publication shelf; it is left untouched. Every below-floor and
-publication-privacy test is green.
+It is **pre-existing and unrelated**: re-run in a throwaway worktree at the round-1 head `86a4054`
+with no local changes, it fails the same way (`Ran 1 test … FAILED (failures=1, errors=1)`),
+quoting a local `404` document on `forms.html` and `access.html`, and timing out one helper. It is
+a text-justification/QA-server check and has nothing to do with the publication shelf; it is left
+untouched. Every below-floor and publication-privacy test is green.
+
+### 5.2 Two pieces of this ticket's own work that are stated, not smoothed over
+
+`tests/test_third_review.py` is not the only awkwardness worth naming:
+
+- The round-2 browser reproduction was **rewritten** after a first attempt passed at base. The
+  first version asserted that a nested leaked value was not *drawn* by the public page — true at
+  base for the wrong reason (the schema-1 renderer never draws a `breakdown` field at all), so it
+  proved nothing. It now drives the page's own `window.PUBLIC_STATS.redact()` layer, which does
+  fail at base. A test that passes for a reason unrelated to the defect is not evidence.
+- Round 1's `test_nested_schema_two_counts_are_redacted_too` **passed while the defect was live**:
+  it asserted only that no below-floor *number* survived, and the surviving complement (94) is
+  above the floor. It is the reason §4 row 10 overstated what round 1 had closed. The assertion
+  was true and the conclusion drawn from it was wrong.
 
 ## 6. What changed
 
 | File | Change |
 |---|---|
-| `apps/hub/assets/fb.js` | `redactPublicBody()` — one whole-document pass: a row carrying a below-floor count is dropped; when any row is dropped, every **scalar** count outside a row is withheld; every scalar passes the same floor; the declared floor can never fall below the policy floor. `firstBelowFloorCount()` verifies the result and `publish()` **refuses** (writes nothing) if any below-floor count survived. `FB.REDACTION_FLOOR`, `FB.redactPublicBody` and `FB.belowFloorCount` exposed for the Hub preview and the tests. |
-| `apps/public/assets/public-read.js` | `redact()` — the **same algorithm** on the reader side, applied in both `render()` and `preview()` before a single value is drawn; organisation and palika counts now go through `safe()` instead of `num()`. |
+| `apps/hub/assets/fb.js` | `redactPublicBody()` — one whole-document pass: a row carrying a below-floor count is dropped; when any row is dropped, every **scalar** count outside a row is withheld; an **enclosing** object whose own subtree lost a row is tainted and its scalar counts withheld too (round 2); every scalar passes the same floor; the declared floor can never fall below the policy floor. `firstBelowFloorCount()` verifies the result **against the document's effective floor** (round 2) and `publish()` **refuses** (writes nothing) if any below-floor count survived. `FB.REDACTION_FLOOR`, `FB.redactPublicBody` and `FB.belowFloorCount` exposed for the Hub preview and the tests. |
+| `apps/public/assets/public-read.js` | `redact()` — the **same algorithm** on the reader side, applied in both `render()` and `preview()` before a single value is drawn; organisation and palika counts now go through `safe()` instead of `num()`; the ancestor-taint rule mirrored (round 2); and a document it cannot fully redact is **refused** — `redact()` throws, and both call sites draw none of the document (round 2). |
 | `apps/hub/index.html` | the builder declares the **policy floor**, not `1`, and tags mode through one `DEMONSTRATION_MODE` switch; the publish **preview** now renders the redacted document (what would actually be written), and the panel copy states the suppression rule. |
 | `apps/public/assets/i18n-strings.js` | the now-false "small numbers are not suppressed" line corrected in **both** languages. |
-| `tests/test_below_floor_redaction.py` | new: the failing-first Node reproduction of every channel (17 tests). |
-| `tests/test_below_floor_redaction_browser.py` | new: the real-Chromium check of what the page SHOWS. |
+| `tests/test_below_floor_redaction.py` | new: the failing-first Node reproduction of every channel (17 tests in round 1; **23** after the round-2 regressions for the ancestor class and the effective floor). |
+| `tests/test_below_floor_redaction_browser.py` | new: the real-Chromium check of what the page SHOWS (2 tests in round 1; **4** after round 2). |
 | `tests/test_public_reader_floor_browser.py` | updated to assert the stronger property (the row is dropped, not labelled). |
 
 ## 7. Verified vs inferred
@@ -234,6 +270,13 @@ publication-privacy test is green.
   row is dropped — more than the minimum. A narrower rule (withhold only the totals a dropped row
   fed) would keep more figures and, by the tests here, still be safe on the fixtures exercised.
   The blunter rule was chosen as the **most protective** option; the narrower one is Adib's call.
+- **The ancestor rule is structural, not analytic.** Round 2 withholds the scalar counts of
+  *every* enclosing object whose subtree lost a row. It is deliberately blunt in the same way: it
+  does not know which ancestor total actually sum-covered the dropped member, so it withholds them
+  all. That is the protective choice, and it can empty more of a nested document than the minimum.
+- **Sum relationships across sibling branches are still not analysed.** The fix removes a
+  *dropped* row's covering totals. It does not attempt the general complementary-cell problem
+  where two published cells in different branches happen to overlap the same population. See §11.
 - **The threshold where public utility is lost.** Dropping every row below the floor can, with
   sparse real data, empty a district table entirely and withhold the total. What the public page
   should then show is a product decision (see §8).
@@ -243,12 +286,21 @@ publication-privacy test is green.
 - **One fixture artifact.** The synthetic fixture's `basis` was made digit-free so that a figure
   counted off the page is a figure of the *data*, not of the prose. A real basis sentence
   containing digits is not a leak, but the renderer's source note does echo it.
-- **One transient test run.** During verification the focused 27-test surface failed **once** with
+- **The reader refuses by drawing nothing.** A schema-1 document the reader cannot fully redact
+  renders the "cannot be read" state with no figures. That is fail-closed, but it is also a new
+  blank-page behaviour for a malformed document — noted here rather than left to be discovered.
+- **One transient test run.** During round-1 verification the focused surface failed **once** with
   no source change; it then passed on three consecutive re-runs (and again at the final head). The
   browser tests drive real Chromium over a local HTTP server, so a launch/timing stall is the
   likely cause. This is stated rather than smoothed over; the failing test names were not captured
   before the re-run. The property is verified by the red→green evidence in §2–§3, which is
   reproducible, not by the single green run.
+- **One process consequence, stated for the record.** A stale `python3 -m http.server` (started
+  ~4h48m earlier, serving `apps/public`) was still bound to port 9071 from a *previous* run of
+  this task, and `tests/test_hub_publish_ui_browser.py` `_serve()` binds a fresh free port each
+  time, so concurrent browser suites can still collide with a leftover. It was left running
+  because it is this task's own residue and killing it would have changed state mid-verification;
+  it bound loopback and served read-only. A later attempt should check for it.
 
 ## 8. Open questions for Adib (no policy was invented)
 
@@ -264,6 +316,9 @@ publication-privacy test is green.
    both files together.
 4. **Does the same rule apply to `coordination_full`?** It is redacted on the same algorithm but
    is not approved for `public_stats`; whether it should ever be public is undecided.
+5. **Should a document the reader cannot fully redact show a "cannot be read" state, or nothing?**
+   Implemented now: the page draws no figures and says the summary cannot be read. An alternative
+   is to render a plain "withheld" line. Cosmetic, but it is the reader's failure mode.
 
 ## 9. Scope
 
@@ -271,3 +326,92 @@ This ticket closes the **redaction** half only. It did **not** touch referral re
 (`t_5a3012fa`) or the referral safeguarding gate (`t_ed5ad1cf`), did not press Publish, and did not
 push, merge, PR or deploy. The publish **guard** (refusing non-production mode, a floor below
 policy, and `referral_directory`) is the sibling ticket and is untouched here.
+
+---
+
+## 10. Round 2 — the two review reproductions, and what round 1 got wrong
+
+The round-1 review (`changes_requested` at `86a4054`) reproduced two survivors. Both were real;
+both are now closed failing-first.
+
+### 10.1 Reproduction 1 — a nested drop left the enclosing row total published
+
+Round-1 `dropRows` recursed into a nested array with the marker `inRow=false`, and returned
+nothing about whether a row had been dropped inside a subtree. So for
+
+```json
+{ "contacts": 100,
+  "districts": [ { "code": "A", "contacts": 100,
+                   "breakdown": [ {"family": "small", "contacts": 6},
+                                  {"family": "large", "contacts": 94} ] } ] }
+```
+
+the nested `small` row was dropped and the top-level `100` was withheld — but the district row's
+**own** `contacts: 100` survived alongside the surviving nested `94`. `100 − 94 = 6`. Published
+value reconstructed, exactly the class this ticket exists to close.
+
+**Why round 1 missed it.** Its narrowest remaining assumption was "a survivor row's own figures
+are all safe because they are at or above the floor." That is true of each figure *individually*
+and false of the *set*: a survivor's own total can sum-cover a dropped member one level down.
+Round 1 fixed the per-number rule and left a per-level version of the same mistake.
+
+**The fix (commit `1627307`).** Pass 1 now returns whether any row was dropped in the subtree it
+walked. When a row loses something inside it, that row is pushed onto `state.tainted`; pass 2
+withholds the scalar counts of any tainted object. A *surviving nested row* is a fresh region and
+keeps its own figures, because it cannot cover the dropped member — only its ancestors can.
+
+### 10.2 Reproduction 2 — fail-closed verification used the constant floor
+
+`publish()` verified the redacted document with `firstBelowFloorCount(out, PUBLIC_SUPPRESSION_FLOOR, "$")`
+— always `10`, even when the document declared `suppressed_below: 20`. A matrix value of `15` was
+therefore below the document's *effective* floor, survived the pass (the pass does not know how to
+redact a numeric array), and was written. The reviewer's exact output showed `declared_floor: 20`
+beside unredacted matrix values, with `belowFloorCount(…, REDACTION_FLOOR)` reporting no leak.
+
+**The fix.** `publish()` and the reader's `redact()` both verify against
+`policyFloor(out.suppressed_below)` — the document's **effective** floor — so a value between the
+policy default and the declared floor is caught, not waved through.
+
+### 10.3 The class, not the shape
+
+Closing the reviewer's exact fixture is necessary and not sufficient. The same arithmetic can be
+moved one structure away, so the round-2 tests also cover:
+
+| Fixture | Structure | Withheld after the fix |
+|---|---|---|
+| three levels of nesting | `districts[].zones[].hamlets[]` | `districts[0].contacts` **and** `districts[0].zones[0].contacts` |
+| a non-row container | a plain object (`grid`) holding a `total` beside a `cells` list | the row's `contacts` **and** `grid.total` |
+| an object inside a row | a `meta` object holding a `total` beside its own `rows` list | the row's `contacts` **and** `meta.total` |
+
+and each runs on **both** the publisher and the reader.
+
+### 10.4 Round 1's claims that did not hold
+
+| Round-1 claim | What actually happened |
+|---|---|
+| §4 row 10, "nested schema-2 breakdowns — every row family is dropped on the same rule" | dropping the family was true; leaving the *enclosing* total was not covered. The claim was broader than the test behind it. |
+| "A channel that is not covered by a failing-first test is not closed." | correct as a rule — and round 1 violated it for the ancestor channel while claiming it closed. |
+| The full suite had one pre-existing failure | still true (141 tests, same one failure), and unrelated to this work. |
+
+Round 1 also had a **passing test that proved nothing** — see §5.2.
+
+## 11. What is still not closed (the boundary of this fix)
+
+Stated plainly, so this is not read as "the class is closed for all aggregate documents":
+
+- **Overlapping breakdowns that were never dropped.** The pass removes a dropped row and the
+  totals of its ancestors. It does **not** analyse whether two *surviving* published cells in
+  different branches cover the same population and reveal a third. Detecting that needs a real
+  cross-field sum model of the document, which schema-1/schema-2 fixtures do not carry and which
+  this ticket does not invent.
+- **Its fail-closed refusal only catches what it can recognise.** An unrecognised shape carrying a
+  below-floor count is refused only when the count is *detectable as a number*. A count smuggled
+  in as a string, or a derived ratio, is outside what `firstBelowFloorCount` walks.
+- **Rounding, ratio inversion, and row-count/ordering channels** are addressed by the reader's
+  geometry changes (§4 rows 5–6) but not by a general coherent-rounding rule.
+- **Server-side enforcement is unverified** — the deployed Firestore Rules are not versioned in
+  this repository, so all of this is a **client-side, fail-closed** control.
+
+A future publisher change that adds a new item family adds a new surface; the checklist in
+`references/aggregate-privacy-and-small-cells.md` is the right instrument for it, not this doc.
+
