@@ -116,6 +116,23 @@ def mixed_row_document(families):
     }
 
 
+# A structural name is bookkeeping only at the root. Reused below `$`, it must
+# not hide an unscanned below-floor count or subtree beside a complement.
+RESERVED_NAME = {
+    "schema": 1,
+    "mode": "production",
+    "suppressed_below": 10,
+    "basis": "synthetic fixture, root-only bookkeeping name reused below root",
+    "contacts": 100,
+    "districts": [{
+        "code": "A",
+        "name": "Alpha",
+        "contacts": 100,
+        "detail": {"period_from": {"small": 6, "large": 94}},
+    }],
+}
+
+
 def _readable(html: str) -> list[int]:
     text = re.sub(r"<[^>]*>", " ", html)
     return [int(tok.replace(",", "")) for tok in re.findall(r"\d[\d,]*", text)]
@@ -330,6 +347,41 @@ class BelowFloorRenderBrowserTests(unittest.TestCase):
         finally:
             server.shutdown()
             server.server_close()
+
+    def test_the_real_page_does_not_honour_a_nested_structural_name(self) -> None:
+        """A reserved name below the root is an ordinary field: the page's own
+        redaction must not let a below-floor subtree hide there beside a
+        complement (100 - 94 = 6)."""
+        from playwright.sync_api import sync_playwright
+
+        server, origin = _serve()
+        try:
+            with sync_playwright() as pw:
+                browser = pw.chromium.launch()
+                errors: list[str] = []
+                page = browser.new_page()
+                page.on("pageerror", lambda e: errors.append(str(e)))
+                page.goto(f"{origin}/flood-response.html", wait_until="load")
+                page.wait_for_timeout(800)
+                redacted = self._redact_on_page(page, RESERVED_NAME)
+                browser.close()
+        finally:
+            server.shutdown()
+            server.server_close()
+
+        self.assertEqual(errors, [], "the real public page raised a script error")
+        self.assertTrue(redacted["ok"], redacted["error"] or "the page could not redact the document")
+        body = redacted["out"]
+        detail = body["districts"][0].get("detail") or {}
+        kept = detail.get("period_from")
+        # the withheld value must not survive beside its complement; either the
+        # whole subtree is gone/blank or the complement is, but never `small: 6`
+        # next to `large: 94`.
+        if isinstance(kept, dict):
+            self.assertIsNone(kept.get("small"),
+                              "the page kept a below-floor value under a nested reserved name")
+            self.assertIsNone(kept.get("large"),
+                              "the page kept the complement beside a nested reserved-name value")
 
 
 @unittest.skipIf(

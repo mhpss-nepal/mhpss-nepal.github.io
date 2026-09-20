@@ -402,6 +402,57 @@ PLAIN_OBJECT_SCALAR_LEAK = {
     ],
 }
 
+# These names are bookkeeping only at the document root. Reusing one below the
+# root must not create an unscanned privacy tunnel.
+ROOT_BOOKKEEPING_KEYS = (
+    "schema", "schema_version", "suppressed_below", "period_from", "period_to",
+    "codes_version",
+)
+
+
+def reserved_name_scalar_leak(key: str) -> dict:
+    return {
+        "schema": 1,
+        "mode": "production",
+        "suppressed_below": 10,
+        "basis": "synthetic fixture, root-only bookkeeping name reused below root",
+        "contacts": 100,
+        "districts": [{
+            "code": "A",
+            "contacts": 100,
+            "detail": {key: 6, "large": 94},
+        }],
+    }
+
+
+def reserved_name_subtree_leak(key: str) -> dict:
+    return {
+        "schema": 1,
+        "mode": "production",
+        "suppressed_below": 10,
+        "basis": "synthetic fixture, root-only bookkeeping subtree reused below root",
+        "contacts": 100,
+        "districts": [{
+            "code": "A",
+            "contacts": 100,
+            "detail": {key: {"small": 6, "large": 94}},
+        }],
+    }
+
+
+ROOT_BOOKKEEPING_DOC = {
+    "schema": 1,
+    "schema_version": 1,
+    "mode": "production",
+    "suppressed_below": 10,
+    "period_from": 6,
+    "period_to": 7,
+    "codes_version": 8,
+    "basis": "synthetic fixture, root bookkeeping remains exempt",
+    "contacts": 100,
+    "districts": [{"code": "A", "contacts": 100}],
+}
+
 # The document declares floor 20, above the page default of 10, so a matrix
 # value of 15 is below the EFFECTIVE floor even though it clears the default.
 # The unrecognised numeric-array shape must be refused by publisher and reader.
@@ -558,6 +609,28 @@ def below_floor_numbers(value, floor: int = 10):
     return found
 
 
+def below_floor_numbers_root_scoped(value, floor: int = 10):
+    """Independent oracle: structural names are exempt only at `$`."""
+    found = []
+
+    def walk(node, path, at_root=False):
+        if isinstance(node, dict):
+            for key, child in node.items():
+                if at_root and key in ROOT_BOOKKEEPING_KEYS:
+                    continue
+                walk(child, f"{path}.{key}", False)
+        elif isinstance(node, list):
+            for index, child in enumerate(node):
+                walk(child, f"{path}[{index}]", False)
+        elif isinstance(node, bool) or node is None:
+            return
+        elif isinstance(node, int) and 0 < node < floor:
+            found.append((path, node))
+
+    walk(value, "$", True)
+    return found
+
+
 def visible_integers(html: str):
     """Integers a reader can literally read as page text (markup stripped)."""
     text = re.sub(r"<[^>]*>", " ", html)
@@ -677,6 +750,34 @@ class BelowFloorRedactionTests(unittest.TestCase):
             "the sibling complement survived beside a suppressed scalar",
         )
 
+    def test_publisher_closes_root_only_key_classifier_for_nested_scalars(self) -> None:
+        """Every reserved name is metadata only at `$`, never below it."""
+        for key in ROOT_BOOKKEEPING_KEYS:
+            with self.subTest(key=key):
+                result = run("flood_response", reserved_name_scalar_leak(key))
+                body = emitted(result)
+                if body is None:
+                    self.assertIn("below-floor", result["publishError"])
+                else:
+                    self.assertEqual(
+                        below_floor_numbers_root_scoped(body), [],
+                        f"nested reserved key {key!r} retained a below-floor scalar",
+                    )
+
+    def test_publisher_closes_root_only_key_classifier_for_nested_subtrees(self) -> None:
+        """A reserved name below `$` cannot hide a whole unscanned subtree."""
+        for key in ROOT_BOOKKEEPING_KEYS:
+            with self.subTest(key=key):
+                result = run("flood_response", reserved_name_subtree_leak(key))
+                body = emitted(result)
+                if body is None:
+                    self.assertIn("below-floor", result["publishError"])
+                else:
+                    self.assertEqual(
+                        below_floor_numbers_root_scoped(body), [],
+                        f"nested reserved key {key!r} retained a below-floor subtree",
+                    )
+
     # --- the redaction must not be a blanket refusal -----------------------
 
     def test_a_clean_document_is_still_published_unchanged(self) -> None:
@@ -686,6 +787,12 @@ class BelowFloorRedactionTests(unittest.TestCase):
             self.assertEqual(body.get(key), CLEAN_DOC[key], f"{key} was withheld needlessly")
         self.assertEqual(len(body.get("districts", [])), 2)
         self.assertEqual(len(body.get("families", [])), 2)
+
+    def test_legitimate_root_bookkeeping_remains_exempt(self) -> None:
+        body = emitted(run("flood_response", ROOT_BOOKKEEPING_DOC))
+        assert body is not None, "root bookkeeping was mistaken for person counts"
+        for key in ROOT_BOOKKEEPING_KEYS:
+            self.assertEqual(body.get(key), ROOT_BOOKKEEPING_DOC[key], key)
 
     def test_a_below_floor_scalar_is_withheld_while_clean_rows_survive(self) -> None:
         """The narrower case: nothing is a row-level leak, so only the scalar
@@ -831,6 +938,32 @@ class BelowFloorRedactionTests(unittest.TestCase):
             district["detail"].get("large"),
             "the reader kept the sibling complement beside a suppressed scalar",
         )
+
+    def test_reader_closes_root_only_key_classifier_for_nested_scalars(self) -> None:
+        for key in ROOT_BOOKKEEPING_KEYS:
+            with self.subTest(key=key):
+                result = run("flood_response", reserved_name_scalar_leak(key))
+                body = result["readerRedacted"]
+                if body is None:
+                    self.assertIn("below-floor", result["readerError"])
+                else:
+                    self.assertEqual(
+                        below_floor_numbers_root_scoped(body), [],
+                        f"reader retained a scalar under nested reserved key {key!r}",
+                    )
+
+    def test_reader_closes_root_only_key_classifier_for_nested_subtrees(self) -> None:
+        for key in ROOT_BOOKKEEPING_KEYS:
+            with self.subTest(key=key):
+                result = run("flood_response", reserved_name_subtree_leak(key))
+                body = result["readerRedacted"]
+                if body is None:
+                    self.assertIn("below-floor", result["readerError"])
+                else:
+                    self.assertEqual(
+                        below_floor_numbers_root_scoped(body), [],
+                        f"reader retained a subtree under nested reserved key {key!r}",
+                    )
 
     def test_reader_refuses_against_the_effective_declared_floor(self) -> None:
         result = run("flood_response", DECLARED_FLOOR_UNREDACTABLE)
