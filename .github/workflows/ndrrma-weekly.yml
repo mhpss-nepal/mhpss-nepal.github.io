@@ -1,0 +1,59 @@
+name: NDRRMA weekly public aggregate capture
+
+# Institution-owned, AI-free capture of the public NDRRMA 5Ws dashboard.
+# No LLM, no third-party secrets, no account: the script posts the report's own
+# public-embed semantic query over plain HTTPS. It commits only when the public
+# source has actually moved, so an unchanged week produces no commit and no noise.
+
+on:
+  schedule:
+    # 02:15 UTC = 08:00 NPT / 09:15 WIB every Monday.
+    - cron: '15 2 * * 1'
+  workflow_dispatch:
+
+# Least privilege: the job may only write repository contents, which is the one
+# thing the commit-back step needs. Every other scope is left at `none`.
+permissions:
+  contents: write
+
+concurrency:
+  group: ndrrma-weekly-public-capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        # Pinned to the v5.0.0 commit SHA; never a floating tag.
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+
+      - name: Capture public NDRRMA aggregates
+        run: |
+          mkdir -p data/ndrrma
+          python3 scripts/ndrrma_capture.py --asset-dir data/ndrrma
+
+      - name: Validate generated JSON and the ledger
+        # Strict read-back of every generated file; a corrupted artifact fails the
+        # job before it can be committed. `--verify` never touches the network.
+        run: python3 scripts/ndrrma_capture.py --asset-dir data/ndrrma --verify
+
+      - name: Commit only when the public source moved
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Detect both new (first run) and modified artifact files; `git diff`
+          # alone misses untracked files on the first ever capture.
+          if [ -z "$(git status --porcelain -- data/ndrrma)" ]; then
+            echo "NDRRMA public source is unchanged; no commit required."
+            exit 0
+          fi
+          git config user.name "mhpss-nepal automation"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- data/ndrrma
+          git diff --cached --check
+          git commit -m "data: capture NDRRMA public aggregates"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${GITHUB_REF_NAME}"

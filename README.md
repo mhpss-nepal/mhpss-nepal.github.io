@@ -51,6 +51,17 @@ python3 scripts/build.py --manifest dist
 
 `dist/` is generated and intentionally untracked. Nothing in this foundation deploys, pushes, or merges.
 
+## NDRRMA capture handover (review artifact)
+
+`scripts/ndrrma_capture.py`, `.github/workflows/ndrrma-weekly.yml` and
+`tests/test_ndrrma_capture.py` move the weekly NDRRMA 5Ws capture onto
+institution-owned, AI-free GitHub Actions and publish a public-safe aggregate
+for Layer 3 to read statically. This is **not enabled and not pushed**: it is a
+review artifact plus a Phase 2 plan, and one network assumption (whether a
+GitHub-hosted runner can reach the public Power BI endpoint) remains unverified.
+See `docs/NDRRMA-GITHUB-ACTIONS.md` for the artifact contract and the probe that
+would settle reachability.
+
 ## Access ownership target
 
 The Firebase bridge has no personal-email exception or privileged client-side

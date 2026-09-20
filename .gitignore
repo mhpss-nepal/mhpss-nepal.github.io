@@ -21,7 +21,13 @@ __pycache__/
 !apps/hub/data/demo.json
 !package.json
 !config/application-paths.json
+!config/ndrrma-powerbi-query.json
 !provenance/frontend-sources.json
+# Public-safe NDRRMA capture artifacts are the exception: they are deliberately
+# committed so Layer 3 can consume them statically. They carry only figures
+# already published on the public source dashboard.
+!data/ndrrma/public/latest.json
+!data/ndrrma/versions/*.json
 **/snapshot/
 **/snapshots/
 **/backup/
