@@ -11,9 +11,11 @@ import json
 import subprocess
 import unittest
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 FB_PATH = ROOT / "apps" / "hub" / "assets" / "fb.js"
+HUB_PATH = ROOT / "apps" / "hub" / "index.html"
 
 NODE_HARNESS = r"""
 const fs = require("fs");
@@ -47,15 +49,23 @@ context.importModuleDynamically = async function(specifier) {
   await new Promise(resolve => setTimeout(resolve, 100));
   const body = JSON.parse(process.argv[2]);
   let error = "";
-  try { await window.FB.publish("synthetic", body); } catch (e) { error = e.message; }
+  try { await window.FB.publish(process.argv[3], body); } catch (e) { error = e.message; }
   process.stdout.write(JSON.stringify({error,writes}));
 })().catch(e => { console.error(e); process.exit(1); });
 """
 
 
-def publish(body: dict[str, object]) -> dict[str, object]:
+def publish(body: dict[str, Any], doc_id: str = "synthetic") -> dict[str, Any]:
     completed = subprocess.run(
-        ["node", "--experimental-vm-modules", "-e", NODE_HARNESS, str(FB_PATH), json.dumps(body)],
+        [
+            "node",
+            "--experimental-vm-modules",
+            "-e",
+            NODE_HARNESS,
+            str(FB_PATH),
+            json.dumps(body),
+            doc_id,
+        ],
         capture_output=True,
         text=True,
         check=True,
@@ -75,6 +85,54 @@ class PublicationPrivacyGateTests(unittest.TestCase):
                 result = publish(body)
                 self.assertEqual(result["writes"], [])
                 self.assertIn("restricted", result["error"])
+
+    def test_disabled_floor_and_nonpublic_modes_cannot_publish(self) -> None:
+        cases = (
+            {"basis": "synthetic", "mode": "demonstration", "suppressed_below": 1},
+            {"basis": "synthetic", "mode": "production", "suppressed_below": 1},
+            {"basis": "synthetic", "mode": "demonstration", "suppressed_below": 10},
+            {"basis": "synthetic", "mode": "staged", "suppressed_below": 10},
+        )
+        for body in cases:
+            with self.subTest(body=body):
+                result = publish(body, "flood_response")
+                self.assertEqual(result["writes"], [])
+                self.assertTrue(
+                    "suppression floor" in result["error"]
+                    or "non-public mode" in result["error"]
+                )
+
+    def test_referral_directory_cannot_publish(self) -> None:
+        result = publish(
+            {
+                "basis": "synthetic",
+                "mode": "production",
+                "suppressed_below": 10,
+                "rows": [
+                    {
+                        "palika": "Synthetic palika",
+                        "org_name": "Synthetic organisation",
+                    }
+                ],
+            },
+            "referral_directory",
+        )
+        self.assertEqual(result["writes"], [])
+        self.assertIn("referral_directory", result["error"])
+
+    def test_hub_does_not_offer_referral_directory_for_publication(self) -> None:
+        source = HUB_PATH.read_text(encoding="utf-8")
+        self.assertNotIn('id="pubDir"', source)
+        self.assertNotIn('want.push("referral_directory")', source)
+        self.assertNotIn("referral_directory: referral", source)
+
+    def test_compliant_production_aggregate_passes_privacy_checks(self) -> None:
+        result = publish(
+            {"basis": "synthetic", "mode": "production", "suppressed_below": 10},
+            "flood_response",
+        )
+        self.assertEqual(result["writes"], [])
+        self.assertEqual(result["error"], "not connected")
 
 if __name__ == "__main__":
     unittest.main()
