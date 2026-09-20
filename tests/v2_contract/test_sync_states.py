@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "packages" / "contracts"))
 
 from sync_states import (  # noqa: E402
     ACKNOWLEDGED,
+    ALL_STATES,
     CONFLICT,
     CREATED,
     DURABLE_QUEUED,
@@ -26,6 +27,12 @@ from sync_states import (  # noqa: E402
 
 
 class SyncStateTests(unittest.TestCase):
+    def test_state_vocabulary_is_complete_and_unique(self) -> None:
+        self.assertEqual(
+            ALL_STATES,
+            {CREATED, DURABLE_QUEUED, IN_FLIGHT, RETRYABLE, ACKNOWLEDGED, CONFLICT, PROJECTED, REVIEWED},
+        )
+
     def test_happy_path_keeps_persistence_delivery_projection_and_review_distinct(self) -> None:
         state = CREATED
         state = transition(state, "durable_transaction_committed")

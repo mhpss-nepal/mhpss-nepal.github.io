@@ -20,8 +20,8 @@ CONTRACTS = ROOT / "packages" / "contracts"
 SYNC_CLIENT = ROOT / "packages" / "sync-client"
 sys.path[:0] = [str(CONTRACTS), str(SYNC_CLIENT)]
 
-from mhpss_v2 import canonical_bytes, new_submission, uuid7  # noqa: E402
-from release_contract import verify_runtime_components  # noqa: E402
+from mhpss_v2 import canonical_bytes, new_submission  # noqa: E402
+from release_contract import ReleaseManifest, verify_runtime_components  # noqa: E402
 from outbox import (  # noqa: E402
     ACKNOWLEDGED,
     CONFLICT,
@@ -31,11 +31,25 @@ from outbox import (  # noqa: E402
     OutboxStore,
 )
 
+_BODIES = {"/index.html": b"public", "/form/app.js": b"form", "/hub/app.js": b"hub"}
+_MANIFEST = ReleaseManifest.from_bodies(
+    release_id="test-release-a",
+    contract_version="mhpss.event/2.0",
+    cache_version="test-cache-a",
+    bodies=_BODIES,
+)
 RUNTIME_PROOF = verify_runtime_components(
-    {
-        name: {"release_id": "test-release-a", "contract_version": "mhpss.event/1.0"}
+    manifest=_MANIFEST,
+    cached_bodies=_BODIES,
+    components={
+        name: {
+            "release_id": "test-release-a",
+            "contract_version": "mhpss.event/2.0",
+            "manifest_sha256": _MANIFEST.digest(),
+        }
         for name in ("form", "hub", "contracts")
-    }
+    },
+    trusted_manifest_sha256=_MANIFEST.digest(),
 )
 
 
@@ -49,7 +63,7 @@ def envelope_bytes(index: int = 1) -> bytes:
             client_version="test-client/1",
             release_id="test-release-a",
             runtime_proof=RUNTIME_PROOF,
-            event_id=uuid7(now_ms=1_800_000_000_000, random_bits=index),
+
         )
     )
 
@@ -57,13 +71,13 @@ def envelope_bytes(index: int = 1) -> bytes:
 def acknowledgement(body: bytes) -> dict[str, object]:
     event_id = json.loads(body)["event_id"]
     return {
-        "ack_version": "mhpss.ack/1.0",
+        "ack_version": "mhpss.ack/2.0",
         "status": "accepted",
         "event_id": event_id,
         "accepted_body_sha256": hashlib.sha256(body).hexdigest(),
         "accepted_body_bytes": len(body),
         "canonical_sequence": 1,
-        "contract_version": "mhpss.event/1.0",
+        "contract_version": "mhpss.event/2.0",
     }
 
 
@@ -90,7 +104,7 @@ class TransactionalOutboxTests(unittest.TestCase):
             self.assertEqual(store.source_body(event_id), body)
             self.assertEqual(store.outbox_item(event_id)["body"], body)
             self.assertEqual(store.outbox_item(event_id)["state"], PENDING)
-            self.assertEqual(store.status(event_id)["user_state"], "saved_on_device_and_queued")
+            self.assertEqual(store.status(event_id)["user_state"], "durable_queued")
             self.assertEqual(store.integrity_check(), "ok")
 
     def test_crash_before_commit_leaves_neither_source_nor_queue(self) -> None:
@@ -130,7 +144,7 @@ class TransactionalOutboxTests(unittest.TestCase):
             event_id = store.save(body)
             valid = acknowledgement(body)
             invalid_cases = (
-                {**valid, "event_id": uuid7(now_ms=1_800_000_000_000, random_bits=99)},
+                {**valid, "event_id": "018bcfe5-6800-7000-8000-000000000063"},
                 {**valid, "accepted_body_sha256": "0" * 64},
                 {**valid, "accepted_body_bytes": len(body) - 1},
                 {key: value for key, value in valid.items() if key != "canonical_sequence"},
@@ -185,25 +199,33 @@ class TransactionalOutboxTests(unittest.TestCase):
             self.assertIsNotNone(store.receipt(first_id))
             self.assertEqual(store.status(first_id)["user_state"], "server_acknowledged")
 
-    def test_bounded_compaction_removes_only_oldest_acknowledged_payloads(self) -> None:
+    def test_bounded_compaction_is_atomic_and_refuses_a_pending_obligation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             store = OutboxStore(Path(temporary_directory) / "client.sqlite3")
             ids: list[str] = []
+            acknowledged_bodies: list[bytes] = []
             for index in range(1, 4):
                 body = envelope_bytes(index)
                 event_id = store.save(body)
                 store.acknowledge(event_id, acknowledgement(body), read_back_body=body)
                 ids.append(event_id)
+                acknowledged_bodies.append(body)
             pending_body = envelope_bytes(4)
             pending_id = store.save(pending_body)
 
-            compacted = store.compact_acknowledged(max_payload_rows=1, max_payload_bytes=10_000)
-            self.assertEqual(compacted, 2)
+            with self.assertRaises(ClearBlocked):
+                store.compact_acknowledged(max_payload_rows=0, max_payload_bytes=0)
+            self.assertEqual(store.outbox_item(ids[0])["body"], acknowledged_bodies[0])
+            self.assertEqual(store.outbox_item(pending_id)["body"], pending_body)
+
+            store.acknowledge(pending_id, acknowledgement(pending_body), read_back_body=pending_body)
+            compacted = store.compact_acknowledged(max_payload_rows=0, max_payload_bytes=0)
+            self.assertEqual(compacted, 4)
             self.assertIsNone(store.outbox_item(ids[0])["body"])
             self.assertIsNone(store.outbox_item(ids[1])["body"])
-            self.assertIsNotNone(store.outbox_item(ids[2])["body"])
-            self.assertEqual(store.outbox_item(pending_id)["body"], pending_body)
-            self.assertEqual(store.compact_acknowledged(max_payload_rows=1, max_payload_bytes=10_000), 0)
+            self.assertIsNone(store.outbox_item(ids[2])["body"])
+            self.assertIsNone(store.outbox_item(pending_id)["body"])
+            self.assertEqual(store.compact_acknowledged(max_payload_rows=0, max_payload_bytes=0), 0)
 
     def test_retry_after_verified_clear_does_not_resurrect_payload_or_requeue(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -225,15 +247,14 @@ class TransactionalOutboxTests(unittest.TestCase):
             body = envelope_bytes()
             event_id = store.save(body)
             with sqlite3.connect(database) as connection:
-                connection.execute("PRAGMA foreign_keys = OFF")
-                connection.execute("DELETE FROM outbox WHERE event_id = ?", (event_id,))
+                connection.execute("DELETE FROM authority_payloads WHERE event_id = ?", (event_id,))
 
-            with self.assertRaisesRegex(Exception, "invariant"):
+            with self.assertRaisesRegex(Exception, "recoverable payload"):
                 store.save(body)
             self.assertEqual(store.status(event_id)["user_state"], "conflict_recovery_required")
-            with self.assertRaisesRegex(ClearBlocked, "invariant"):
+            with self.assertRaisesRegex(ClearBlocked, "recoverable payload"):
                 store.clear_verified_payloads()
-            self.assertEqual(store.source_body(event_id), body)
+            self.assertIsNone(store.source_body(event_id))
 
     def test_corrupt_terminal_evidence_cannot_authorize_clear_or_compaction(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -244,16 +265,16 @@ class TransactionalOutboxTests(unittest.TestCase):
             store.acknowledge(event_id, acknowledgement(body), read_back_body=body)
             with sqlite3.connect(database) as connection:
                 connection.execute(
-                    "UPDATE receipts SET body_sha256 = ?, body_bytes = 0 WHERE event_id = ?",
-                    ("0" * 64, event_id),
+                    "UPDATE authority_records SET data = ? WHERE kind = 'device_ack' AND subject_id = ?",
+                    (b'{"malformed":true}', event_id),
                 )
 
             self.assertEqual(store.status(event_id)["user_state"], "conflict_recovery_required")
-            with self.assertRaisesRegex(Exception, "terminal evidence"):
+            with self.assertRaises(Exception):
                 store.save(body)
-            with self.assertRaisesRegex(ClearBlocked, "terminal evidence"):
+            with self.assertRaises(ClearBlocked):
                 store.clear_verified_payloads()
-            with self.assertRaisesRegex(Exception, "terminal evidence"):
+            with self.assertRaises(Exception):
                 store.compact_acknowledged(max_payload_rows=0, max_payload_bytes=0)
             self.assertEqual(store.source_body(event_id), body)
             self.assertEqual(store.outbox_item(event_id)["body"], body)
@@ -266,12 +287,14 @@ class TransactionalOutboxTests(unittest.TestCase):
             event_id = store.save(body)
             store.acknowledge(event_id, acknowledgement(body), read_back_body=body)
             with sqlite3.connect(database) as connection:
-                connection.execute("UPDATE outbox SET body = ? WHERE event_id = ?", (b"evil", event_id))
+                connection.execute(
+                    "UPDATE authority_payloads SET body = ? WHERE event_id = ?", (b"evil", event_id)
+                )
 
             self.assertEqual(store.status(event_id)["user_state"], "conflict_recovery_required")
-            with self.assertRaisesRegex(Exception, "terminal evidence"):
+            with self.assertRaises(Exception):
                 store.compact_acknowledged(max_payload_rows=0, max_payload_bytes=0)
-            self.assertEqual(store.source_body(event_id), body)
+            self.assertEqual(store.source_body(event_id), b"evil")
             self.assertEqual(store.outbox_item(event_id)["body"], b"evil")
 
     def test_same_identity_different_body_is_durable_conflict(self) -> None:

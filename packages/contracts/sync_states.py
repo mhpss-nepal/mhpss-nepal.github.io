@@ -34,6 +34,8 @@ _MESSAGES = {
     REVIEWED: "Reviewed and accepted under the recorded review decision.",
 }
 
+ALL_STATES = frozenset(_MESSAGES)
+
 
 class InvalidTransition(ValueError):
     """A sync event attempted to skip an evidence boundary."""

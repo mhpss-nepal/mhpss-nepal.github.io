@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""SQLite reference for a transactional device source/outbox boundary."""
+"""Immutable, byte-rehashed device commit-log authority."""
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import os
@@ -12,27 +13,33 @@ from pathlib import Path
 from typing import Any
 
 from mhpss_v2 import CONTRACT_VERSION, parse_envelope
+from sync_states import ACKNOWLEDGED as USER_ACKNOWLEDGED
+from sync_states import CONFLICT as USER_CONFLICT
+from sync_states import CREATED
+from sync_states import DURABLE_QUEUED
 
 PENDING = "pending"
 ACKNOWLEDGED = "acknowledged"
 CONFLICT = "conflict"
-ACK_VERSION = "mhpss.ack/1.0"
+ACK_VERSION = "mhpss.ack/2.0"
+MAX_AUTHORITY_RECORD_BYTES = 524_288
+MAX_COMPACTION_RECORD_BYTES = 1_024
 
 
 class OutboxError(RuntimeError):
-    """Base error for local sync-contract failures."""
+    """Base error for local immutable-authority failures."""
 
 
 class AcknowledgementError(OutboxError):
-    """The server receipt does not prove acceptance of the exact body."""
+    """The server acknowledgement does not prove acceptance of exact bytes."""
 
 
 class ClearBlocked(OutboxError):
-    """Local payload removal would strand an unresolved obligation."""
+    """Payload removal would strand an unresolved or unverifiable obligation."""
 
 
 class OutboxStore:
-    """One durable local transaction for source and exact outbox bytes."""
+    """A hash-chained commit log plus recoverable payload storage."""
 
     def __init__(self, database: str | Path):
         self.database = str(database)
@@ -60,39 +67,17 @@ class OutboxStore:
         try:
             connection.executescript(
                 """
-                CREATE TABLE IF NOT EXISTS source_events (
+                CREATE TABLE IF NOT EXISTS authority_records (
+                    sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+                    kind TEXT NOT NULL,
+                    subject_id TEXT NOT NULL,
+                    previous_hash TEXT,
+                    data BLOB NOT NULL,
+                    record_hash TEXT NOT NULL UNIQUE
+                );
+                CREATE TABLE IF NOT EXISTS authority_payloads (
                     event_id TEXT PRIMARY KEY,
-                    body BLOB,
-                    body_sha256 TEXT NOT NULL,
-                    body_bytes INTEGER NOT NULL,
-                    created_order INTEGER NOT NULL UNIQUE
-                );
-                CREATE TABLE IF NOT EXISTS outbox (
-                    event_id TEXT PRIMARY KEY REFERENCES source_events(event_id),
-                    body BLOB,
-                    body_sha256 TEXT NOT NULL,
-                    body_bytes INTEGER NOT NULL,
-                    state TEXT NOT NULL CHECK (state IN ('pending', 'acknowledged', 'conflict')),
-                    created_order INTEGER NOT NULL UNIQUE,
-                    acknowledgement_json BLOB
-                );
-                CREATE TABLE IF NOT EXISTS receipts (
-                    event_id TEXT PRIMARY KEY,
-                    body_sha256 TEXT NOT NULL,
-                    body_bytes INTEGER NOT NULL,
-                    canonical_sequence INTEGER NOT NULL,
-                    contract_version TEXT NOT NULL,
-                    acknowledgement_json BLOB NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS conflict_evidence (
-                    conflict_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    event_id TEXT NOT NULL,
-                    reason_code TEXT NOT NULL,
-                    accepted_body_sha256 TEXT NOT NULL,
-                    incoming_sha256 TEXT NOT NULL,
-                    incoming_body BLOB NOT NULL,
-                    details_json BLOB NOT NULL,
-                    UNIQUE(event_id, reason_code, incoming_sha256)
+                    body BLOB NOT NULL
                 );
                 """
             )
@@ -106,68 +91,40 @@ class OutboxStore:
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            prior = connection.execute(
-                """
-                SELECT s.body_sha256 AS source_sha256, s.body_bytes AS source_bytes,
-                       s.created_order AS source_order, s.body AS source_body,
-                       o.body_sha256 AS outbox_sha256, o.body_bytes AS outbox_bytes,
-                       o.created_order AS outbox_order, o.body AS outbox_body,
-                       o.state AS outbox_state, o.acknowledgement_json
-                FROM source_events s LEFT JOIN outbox o ON o.event_id = s.event_id
-                WHERE s.event_id = ?
-                """,
-                (event_id,),
-            ).fetchone()
-            if prior is not None:
-                prior_body = None if prior["source_body"] is None else bytes(prior["source_body"])
-                if prior["source_sha256"] != digest or (
-                    prior_body is not None and prior_body != body
-                ):
-                    self._record_conflict(
+            records = self._validated_records(connection)
+            commit = self._record_for(records, "device_commit", event_id)
+            if commit is not None:
+                accepted_digest = commit["value"]["body_sha256"]
+                if accepted_digest != digest:
+                    self._append_conflict(
                         connection,
                         event_id=event_id,
                         reason="EVENT_ID_BODY_CONFLICT",
-                        accepted_digest=prior["source_sha256"],
-                        incoming_digest=digest,
+                        accepted_digest=accepted_digest,
                         incoming_body=body,
                     )
                     connection.commit()
                     raise OutboxError("event_id is already bound to different immutable bytes")
-                if (
-                    prior["outbox_state"] is None
-                    or prior["outbox_sha256"] != prior["source_sha256"]
-                    or prior["outbox_bytes"] != prior["source_bytes"]
-                    or prior["outbox_order"] != prior["source_order"]
-                ):
-                    raise OutboxError("source/outbox invariant is broken")
-                outbox_body = None if prior["outbox_body"] is None else bytes(prior["outbox_body"])
-                if (prior_body is None) != (outbox_body is None) or (
-                    prior_body is not None and outbox_body != prior_body
-                ):
-                    raise OutboxError("source/outbox invariant is broken")
-                if prior["outbox_state"] == CONFLICT:
-                    raise OutboxError("durable conflict requires explicit recovery")
-                if prior["outbox_state"] == ACKNOWLEDGED and not self._terminal_evidence_valid(
-                    connection, event_id
-                ):
-                    raise OutboxError("terminal evidence is invalid")
-                if prior_body is None:
-                    if prior["outbox_state"] != ACKNOWLEDGED or not self._terminal_evidence_valid(
-                        connection, event_id
-                    ):
-                        raise OutboxError("compacted event lacks verified terminal evidence")
+                self._assert_event_recoverable(records, connection, event_id)
+                if self._event_state(records, event_id) == CONFLICT:
+                    raise OutboxError("durable conflict requires explicit audited recovery")
                 connection.rollback()
                 return event_id
-            next_order = connection.execute(
-                "SELECT COALESCE(MAX(created_order), 0) + 1 FROM source_events"
-            ).fetchone()[0]
+
             connection.execute(
-                "INSERT INTO source_events VALUES (?, ?, ?, ?, ?)",
-                (event_id, body, digest, len(body), next_order),
+                "INSERT INTO authority_payloads (event_id, body) VALUES (?, ?)",
+                (event_id, body),
             )
-            connection.execute(
-                "INSERT INTO outbox VALUES (?, ?, ?, ?, ?, ?, NULL)",
-                (event_id, body, digest, len(body), PENDING, next_order),
+            self._append_record(
+                connection,
+                "device_commit",
+                event_id,
+                {
+                    "event_id": event_id,
+                    "body_sha256": digest,
+                    "body_bytes": len(body),
+                    "contract_version": CONTRACT_VERSION,
+                },
             )
             if crash_at == "before_commit":
                 os._exit(91)
@@ -188,80 +145,65 @@ class OutboxStore:
         acknowledgement: dict[str, Any],
         *,
         read_back_body: bytes | None,
+        crash_at: str | None = None,
     ) -> None:
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            row = connection.execute(
-                "SELECT body, body_sha256, body_bytes, state FROM outbox WHERE event_id = ?",
-                (event_id,),
-            ).fetchone()
-            if row is None:
-                raise AcknowledgementError("no local outbox obligation exists for event_id")
-            body = None if row["body"] is None else bytes(row["body"])
+            records = self._validated_records(connection)
+            commit = self._record_for(records, "device_commit", event_id)
+            if commit is None:
+                raise AcknowledgementError("no local durable obligation exists for event_id")
+            self._assert_event_recoverable(records, connection, event_id)
+            if self._event_state(records, event_id) == CONFLICT:
+                raise AcknowledgementError("conflict requires explicit audited recovery")
+
+            body = self._payload(connection, event_id)
+            expected = commit["value"]
             try:
-                self._validate_ack(event_id, row, acknowledgement, body, read_back_body)
+                encoded = self._validate_ack(
+                    event_id, expected, acknowledgement, body, read_back_body
+                )
             except AcknowledgementError as error:
-                incoming = hashlib.sha256(
-                    json.dumps(
-                        acknowledgement, default=repr, separators=(",", ":"), sort_keys=True
-                    ).encode("utf-8")
-                    + (b"" if read_back_body is None else read_back_body)
-                ).hexdigest()
-                self._record_conflict(
+                incoming_body = self._incoming_ack_bytes(acknowledgement, read_back_body)
+                self._append_conflict(
                     connection,
                     event_id=event_id,
                     reason="ACKNOWLEDGEMENT_MISMATCH",
-                    accepted_digest=row["body_sha256"],
-                    incoming_digest=incoming,
-                    incoming_body=(
-                        json.dumps(
-                            acknowledgement, default=repr, separators=(",", ":"), sort_keys=True
-                        ).encode("utf-8")
-                        + b"\n"
-                        + (b"" if read_back_body is None else read_back_body)
-                    ),
+                    accepted_digest=expected["body_sha256"],
+                    incoming_body=incoming_body,
                 )
                 connection.commit()
                 raise error
-            encoded = json.dumps(
-                acknowledgement, separators=(",", ":"), sort_keys=True, allow_nan=False
-            ).encode("utf-8")
-            receipt = connection.execute(
-                "SELECT * FROM receipts WHERE event_id = ?", (event_id,)
-            ).fetchone()
-            receipt_values = (
-                event_id,
-                row["body_sha256"],
-                row["body_bytes"],
-                acknowledgement["canonical_sequence"],
-                acknowledgement["contract_version"],
-                encoded,
-            )
-            if receipt is None:
-                connection.execute("INSERT INTO receipts VALUES (?, ?, ?, ?, ?, ?)", receipt_values)
-            elif (
-                receipt["body_sha256"] != row["body_sha256"]
-                or receipt["body_bytes"] != row["body_bytes"]
-                or receipt["canonical_sequence"] != acknowledgement["canonical_sequence"]
-                or receipt["contract_version"] != acknowledgement["contract_version"]
-                or bytes(receipt["acknowledgement_json"]) != encoded
-            ):
-                self._record_conflict(
-                    connection,
-                    event_id=event_id,
-                    reason="ACKNOWLEDGEMENT_REPLAY_CONFLICT",
-                    accepted_digest=receipt["body_sha256"],
-                    incoming_digest=hashlib.sha256(encoded).hexdigest(),
-                    incoming_body=encoded,
-                )
-                connection.commit()
-                raise AcknowledgementError("acknowledgement replay differs from durable receipt")
-            connection.execute(
-                "UPDATE outbox SET state = ?, acknowledgement_json = ? WHERE event_id = ?",
-                (ACKNOWLEDGED, encoded, event_id),
-            )
+
+            prior_ack = self._record_for(records, "device_ack", event_id)
+            ack_value = {
+                "event_id": event_id,
+                "commit_record_hash": commit["record_hash"],
+                "acknowledgement_json_b64": base64.b64encode(encoded).decode("ascii"),
+            }
+            if prior_ack is not None:
+                if prior_ack["value"] != ack_value:
+                    self._append_conflict(
+                        connection,
+                        event_id=event_id,
+                        reason="ACKNOWLEDGEMENT_REPLAY_CONFLICT",
+                        accepted_digest=expected["body_sha256"],
+                        incoming_body=encoded,
+                    )
+                    connection.commit()
+                    raise AcknowledgementError(
+                        "acknowledgement replay differs from immutable authority"
+                    )
+                if self._event_state(records, event_id) == ACKNOWLEDGED:
+                    connection.rollback()
+                    return
+            self._append_record(connection, "device_ack", event_id, ack_value)
+            if crash_at == "before_commit":
+                os._exit(93)
             connection.commit()
+            if crash_at == "after_commit":
+                os._exit(94)
         except BaseException:
             if connection.in_transaction:
                 connection.rollback()
@@ -269,73 +211,88 @@ class OutboxStore:
         finally:
             connection.close()
 
-    @staticmethod
-    def _validate_ack(
-        event_id: str,
-        row: sqlite3.Row,
-        acknowledgement: dict[str, Any],
-        body: bytes | None,
-        read_back_body: bytes | None,
-    ) -> None:
-        required = {
-            "ack_version",
-            "status",
-            "event_id",
-            "accepted_body_sha256",
-            "accepted_body_bytes",
-            "canonical_sequence",
-            "contract_version",
-        }
-        if not isinstance(acknowledgement, dict) or set(acknowledgement) != required:
-            raise AcknowledgementError("acknowledgement fields are incomplete or unknown")
-        expected = {
-            "ack_version": ACK_VERSION,
-            "status": "accepted",
-            "event_id": event_id,
-            "accepted_body_sha256": row["body_sha256"],
-            "accepted_body_bytes": row["body_bytes"],
-            "contract_version": CONTRACT_VERSION,
-        }
-        for key, value in expected.items():
-            if acknowledgement.get(key) != value:
-                raise AcknowledgementError(f"acknowledgement does not match exact body: {key}")
-        sequence = acknowledgement["canonical_sequence"]
-        if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence < 1:
-            raise AcknowledgementError("canonical_sequence must be a positive integer")
-        if body is not None and hashlib.sha256(body).hexdigest() != row["body_sha256"]:
-            raise AcknowledgementError("local outbox body no longer matches its stored digest")
-        if read_back_body is None:
-            raise AcknowledgementError("canonical exact-body read-back is required")
-        if (
-            len(read_back_body) != row["body_bytes"]
-            or hashlib.sha256(read_back_body).hexdigest() != row["body_sha256"]
-        ):
-            raise AcknowledgementError("canonical read-back does not match the exact queued body")
-
-    def clear_verified_payloads(self) -> int:
+    def record_recovery(self, event_id: str, *, actor: str, reason: str) -> str:
+        self._bounded_text(actor, "actor")
+        self._bounded_text(reason, "reason")
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            self._assert_no_orphans(connection, error_type=ClearBlocked)
-            unresolved = connection.execute(
-                "SELECT COUNT(*) FROM outbox WHERE state != ? OR acknowledgement_json IS NULL",
-                (ACKNOWLEDGED,),
-            ).fetchone()[0]
-            if unresolved:
-                raise ClearBlocked("clear refused: unresolved outbox obligations exist")
+            records = self._validated_records(connection)
+            conflict = self._latest_record(records, "device_conflict", event_id)
+            if conflict is None or self._event_state(records, event_id) != CONFLICT:
+                raise OutboxError("no unresolved durable conflict exists")
+            record_hash = self._append_record(
+                connection,
+                "device_recovery",
+                event_id,
+                {
+                    "event_id": event_id,
+                    "actor": actor,
+                    "reason": reason,
+                    "recovered_conflict_hash": conflict["record_hash"],
+                },
+            )
+            connection.commit()
+            return record_hash
+        except BaseException:
+            if connection.in_transaction:
+                connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+    def clear_verified_payloads(self, *, crash_at: str | None = None) -> int:
+        connection = self._connect()
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            records = self._validated_records(connection)
             event_ids = [
-                row[0]
-                for row in connection.execute(
-                    "SELECT event_id FROM outbox WHERE body IS NOT NULL ORDER BY created_order"
-                )
+                record["subject_id"] for record in records if record["kind"] == "device_commit"
             ]
             for event_id in event_ids:
-                if not self._terminal_evidence_valid(connection, event_id):
-                    raise ClearBlocked("clear refused: terminal evidence is invalid")
-            connection.execute("UPDATE outbox SET body = NULL WHERE body IS NOT NULL")
-            connection.execute("UPDATE source_events SET body = NULL")
+                self._assert_event_recoverable(records, connection, event_id)
+                if self._event_state(records, event_id) != ACKNOWLEDGED:
+                    raise ClearBlocked("clear refused: unresolved outbox obligations exist")
+
+            payload_ids = [
+                row["event_id"]
+                for row in connection.execute(
+                    "SELECT event_id FROM authority_payloads ORDER BY rowid"
+                )
+            ]
+            for event_id in payload_ids:
+                commit = self._record_for(records, "device_commit", event_id)
+                ack = self._record_for(records, "device_ack", event_id)
+                if commit is None or ack is None:
+                    raise ClearBlocked("clear refused: terminal authority is incomplete")
+                value = {
+                    "event_id": event_id,
+                    "body_sha256": commit["value"]["body_sha256"],
+                    "body_bytes": commit["value"]["body_bytes"],
+                    "commit_record_hash": commit["record_hash"],
+                    "ack_record_hash": ack["record_hash"],
+                }
+                encoded = self._canonical(value)
+                if len(encoded) > MAX_COMPACTION_RECORD_BYTES:
+                    raise ClearBlocked("clear refused: compaction evidence exceeds its bound")
+                self._append_record(connection, "device_compaction", event_id, value)
+                connection.execute(
+                    "DELETE FROM authority_payloads WHERE event_id = ?", (event_id,)
+                )
+            if crash_at == "before_commit":
+                os._exit(95)
             connection.commit()
-            return len(event_ids)
+            if crash_at == "after_commit":
+                os._exit(96)
+            return len(payload_ids)
+        except ClearBlocked:
+            if connection.in_transaction:
+                connection.rollback()
+            raise
+        except OutboxError as error:
+            if connection.in_transaction:
+                connection.rollback()
+            raise ClearBlocked(str(error)) from error
         except BaseException:
             if connection.in_transaction:
                 connection.rollback()
@@ -348,249 +305,529 @@ class OutboxStore:
             raise ValueError("compaction bounds must be non-negative")
         connection = self._connect()
         try:
-            connection.execute("BEGIN IMMEDIATE")
             rows = list(
                 connection.execute(
-                    """
-                    SELECT event_id, body_bytes FROM outbox
-                    WHERE state = ? AND body IS NOT NULL AND acknowledgement_json IS NOT NULL
-                    ORDER BY created_order
-                    """,
-                    (ACKNOWLEDGED,),
+                    "SELECT event_id, length(body) AS body_bytes FROM authority_payloads ORDER BY rowid"
                 )
             )
-            row_count = len(rows)
-            byte_count = sum(row["body_bytes"] for row in rows)
-            remove: list[str] = []
-            for row in rows:
-                if row_count <= max_payload_rows and byte_count <= max_payload_bytes:
-                    break
-                if not self._terminal_evidence_valid(connection, row["event_id"]):
-                    raise OutboxError("cannot compact: terminal evidence is invalid")
-                remove.append(row["event_id"])
-                row_count -= 1
-                byte_count -= row["body_bytes"]
-            for event_id in remove:
-                connection.execute("UPDATE outbox SET body = NULL WHERE event_id = ?", (event_id,))
-                connection.execute(
-                    "UPDATE source_events SET body = NULL WHERE event_id = ?", (event_id,)
+        finally:
+            connection.close()
+        selected = list(rows)
+        while selected and (
+            len(selected) > max_payload_rows
+            or sum(row["body_bytes"] for row in selected) > max_payload_bytes
+        ):
+            selected.pop(0)
+        remove_count = len(rows) - len(selected)
+        if remove_count == 0:
+            return 0
+        # A single atomic clear is intentionally stricter than selective deletion.
+        if remove_count != len(rows):
+            raise OutboxError("partial compaction is not an approved recovery boundary")
+        return self.clear_verified_payloads()
+
+    def status(self, event_id: str) -> dict[str, Any]:
+        connection = self._connect()
+        try:
+            try:
+                records = self._validated_records(connection)
+                commit = self._record_for(records, "device_commit", event_id)
+                if commit is None:
+                    return {"user_state": CREATED, "event_id": event_id}
+                self._assert_event_recoverable(records, connection, event_id)
+                state = self._event_state(records, event_id)
+                user_state = (
+                    USER_CONFLICT
+                    if state == CONFLICT
+                    else USER_ACKNOWLEDGED
+                    if state == ACKNOWLEDGED
+                    else DURABLE_QUEUED
                 )
-            connection.commit()
-            return len(remove)
-        except BaseException:
-            if connection.in_transaction:
-                connection.rollback()
-            raise
+                return {"user_state": user_state, "event_id": event_id}
+            except (OutboxError, ValueError, TypeError, KeyError, UnicodeError, json.JSONDecodeError):
+                return {"user_state": USER_CONFLICT, "event_id": event_id}
+        finally:
+            connection.close()
+
+    def pending_bodies(self) -> list[bytes]:
+        connection = self._connect()
+        try:
+            records = self._validated_records(connection)
+            bodies: list[bytes] = []
+            for record in records:
+                if record["kind"] != "device_commit":
+                    continue
+                event_id = record["subject_id"]
+                self._assert_event_recoverable(records, connection, event_id)
+                if self._event_state(records, event_id) == PENDING:
+                    body = self._payload(connection, event_id)
+                    if body is None:
+                        raise OutboxError("pending obligation is missing recoverable payload")
+                    bodies.append(body)
+            return bodies
+        finally:
+            connection.close()
+
+    def payload(self, event_id: str) -> bytes | None:
+        connection = self._connect()
+        try:
+            return self._payload(connection, event_id)
         finally:
             connection.close()
 
     def source_body(self, event_id: str) -> bytes | None:
-        connection = self._connect()
-        try:
-            row = connection.execute(
-                "SELECT body FROM source_events WHERE event_id = ?", (event_id,)
-            ).fetchone()
-            return None if row is None or row["body"] is None else bytes(row["body"])
-        finally:
-            connection.close()
+        return self.payload(event_id)
 
     def outbox_item(self, event_id: str) -> dict[str, Any] | None:
         connection = self._connect()
         try:
-            row = connection.execute("SELECT * FROM outbox WHERE event_id = ?", (event_id,)).fetchone()
-            if row is None:
+            records = self._validated_records(connection)
+            if self._record_for(records, "device_commit", event_id) is None:
                 return None
-            item = dict(row)
-            item["body"] = None if item["body"] is None else bytes(item["body"])
-            return item
+            state = self._event_state(records, event_id)
+            return {"event_id": event_id, "body": self._payload(connection, event_id), "state": state}
+        except OutboxError:
+            return {"event_id": event_id, "body": self._payload(connection, event_id), "state": CONFLICT}
         finally:
             connection.close()
 
     def receipt(self, event_id: str) -> dict[str, Any] | None:
         connection = self._connect()
         try:
-            row = connection.execute("SELECT * FROM receipts WHERE event_id = ?", (event_id,)).fetchone()
-            return None if row is None else dict(row)
-        finally:
-            connection.close()
-
-    def status(self, event_id: str) -> dict[str, Any]:
-        connection = self._connect()
-        try:
-            source = connection.execute(
-                "SELECT 1 FROM source_events WHERE event_id = ?", (event_id,)
-            ).fetchone()
-            outbox = connection.execute(
-                "SELECT * FROM outbox WHERE event_id = ?", (event_id,)
-            ).fetchone()
-            if outbox is None:
-                state = "conflict_recovery_required" if source is not None else "not_saved"
-                return {"user_state": state, "event_id": event_id}
-            if outbox["state"] == CONFLICT:
-                return {"user_state": "conflict_recovery_required", "event_id": event_id}
-            if outbox["state"] == ACKNOWLEDGED:
-                state = (
-                    "server_acknowledged"
-                    if self._terminal_evidence_valid(connection, event_id)
-                    else "conflict_recovery_required"
-                )
-                return {"user_state": state, "event_id": event_id}
-            return {"user_state": "saved_on_device_and_queued", "event_id": event_id}
-        finally:
-            connection.close()
-
-    @staticmethod
-    def _record_conflict(
-        connection: sqlite3.Connection,
-        *,
-        event_id: str,
-        reason: str,
-        accepted_digest: str,
-        incoming_digest: str,
-        incoming_body: bytes,
-    ) -> None:
-        details = json.dumps(
-            {
+            records = self._validated_records(connection)
+            ack = self._record_for(records, "device_ack", event_id)
+            if ack is None:
+                return None
+            decoded = json.loads(base64.b64decode(ack["value"]["acknowledgement_json_b64"]))
+            return {
                 "event_id": event_id,
-                "reason": reason,
-                "accepted_body_sha256": accepted_digest,
-                "incoming_sha256": incoming_digest,
-            },
-            separators=(",", ":"),
-            sort_keys=True,
-        ).encode("utf-8")
-        connection.execute(
-            """
-            INSERT INTO conflict_evidence (
-                event_id, reason_code, accepted_body_sha256, incoming_sha256,
-                incoming_body, details_json
-            ) VALUES (?, ?, ?, ?, ?, ?)
-            ON CONFLICT(event_id, reason_code, incoming_sha256) DO NOTHING
-            """,
-            (event_id, reason, accepted_digest, incoming_digest, incoming_body, details),
-        )
-        connection.execute("UPDATE outbox SET state = ? WHERE event_id = ?", (CONFLICT, event_id))
-
-    @staticmethod
-    def _terminal_evidence_valid(connection: sqlite3.Connection, event_id: str) -> bool:
-        row = connection.execute(
-            """
-            SELECT o.state, o.body AS outbox_body,
-                   o.body_sha256 AS outbox_sha256, o.body_bytes AS outbox_bytes,
-                   o.acknowledgement_json AS outbox_ack,
-                   s.body AS source_body, s.body_sha256 AS source_sha256,
-                   s.body_bytes AS source_bytes,
-                   r.body_sha256 AS receipt_sha256, r.body_bytes AS receipt_bytes,
-                   r.canonical_sequence, r.contract_version, r.acknowledgement_json AS receipt_ack
-            FROM outbox o
-            JOIN source_events s ON s.event_id = o.event_id
-            LEFT JOIN receipts r ON r.event_id = o.event_id
-            WHERE o.event_id = ?
-            """,
-            (event_id,),
-        ).fetchone()
-        if row is None or row["state"] != ACKNOWLEDGED or row["receipt_sha256"] is None:
-            return False
-        if (
-            row["outbox_sha256"] != row["receipt_sha256"]
-            or row["source_sha256"] != row["receipt_sha256"]
-            or row["outbox_bytes"] != row["receipt_bytes"]
-            or row["source_bytes"] != row["receipt_bytes"]
-            or row["contract_version"] != CONTRACT_VERSION
-            or row["canonical_sequence"] < 1
-            or row["outbox_ack"] is None
-            or bytes(row["outbox_ack"]) != bytes(row["receipt_ack"])
-        ):
-            return False
-        outbox_body = None if row["outbox_body"] is None else bytes(row["outbox_body"])
-        source_body = None if row["source_body"] is None else bytes(row["source_body"])
-        if (outbox_body is None) != (source_body is None):
-            return False
-        if outbox_body is not None and (
-            outbox_body != source_body
-            or len(outbox_body) != row["receipt_bytes"]
-            or hashlib.sha256(outbox_body).hexdigest() != row["receipt_sha256"]
-        ):
-            return False
-        try:
-            ack = json.loads(bytes(row["receipt_ack"]))
-        except (json.JSONDecodeError, UnicodeError):
-            return False
-        return (
-            ack.get("event_id") == event_id
-            and ack.get("accepted_body_sha256") == row["receipt_sha256"]
-            and ack.get("accepted_body_bytes") == row["receipt_bytes"]
-            and ack.get("canonical_sequence") == row["canonical_sequence"]
-            and ack.get("contract_version") == CONTRACT_VERSION
-            and ack.get("status") == "accepted"
-            and ack.get("ack_version") == ACK_VERSION
-        )
-
-    @staticmethod
-    def _assert_no_orphans(connection: sqlite3.Connection, *, error_type: type[OutboxError]) -> None:
-        source_without_outbox = connection.execute(
-            "SELECT 1 FROM source_events s LEFT JOIN outbox o ON o.event_id=s.event_id WHERE o.event_id IS NULL LIMIT 1"
-        ).fetchone()
-        outbox_without_source = connection.execute(
-            "SELECT 1 FROM outbox o LEFT JOIN source_events s ON s.event_id=o.event_id WHERE s.event_id IS NULL LIMIT 1"
-        ).fetchone()
-        if source_without_outbox or outbox_without_source:
-            raise error_type("source/outbox invariant is broken")
+                "body_sha256": decoded["accepted_body_sha256"],
+                "body_bytes": decoded["accepted_body_bytes"],
+                "canonical_sequence": decoded["canonical_sequence"],
+                "contract_version": decoded["contract_version"],
+            }
+        except (OutboxError, ValueError, KeyError, json.JSONDecodeError):
+            return None
+        finally:
+            connection.close()
 
     def conflict_count(self, event_id: str) -> int:
         connection = self._connect()
         try:
-            return connection.execute(
-                "SELECT COUNT(*) FROM conflict_evidence WHERE event_id = ?", (event_id,)
-            ).fetchone()[0]
+            records = self._validated_records(connection)
+            return sum(
+                record["kind"] == "device_conflict" and record["subject_id"] == event_id
+                for record in records
+            )
         finally:
             connection.close()
 
     def latest_conflict_body(self, event_id: str) -> bytes | None:
         connection = self._connect()
         try:
-            row = connection.execute(
-                """
-                SELECT incoming_body FROM conflict_evidence
-                WHERE event_id = ? ORDER BY conflict_id DESC LIMIT 1
-                """,
-                (event_id,),
-            ).fetchone()
-            return None if row is None else bytes(row["incoming_body"])
+            record = self._latest_record(
+                self._validated_records(connection), "device_conflict", event_id
+            )
+            if record is None:
+                return None
+            return base64.b64decode(record["value"]["incoming_body_b64"], validate=True)
+        finally:
+            connection.close()
+
+    def latest_conflict_digest(self, event_id: str) -> str | None:
+        connection = self._connect()
+        try:
+            record = self._latest_record(
+                self._validated_records(connection), "device_conflict", event_id
+            )
+            return None if record is None else record["value"]["incoming_sha256"]
+        finally:
+            connection.close()
+
+    def recovery_events(self, event_id: str) -> list[dict[str, Any]]:
+        connection = self._connect()
+        try:
+            return [
+                dict(record["value"])
+                for record in self._validated_records(connection)
+                if record["kind"] == "device_recovery" and record["subject_id"] == event_id
+            ]
+        finally:
+            connection.close()
+
+    def compaction_events(self, event_id: str) -> list[dict[str, Any]]:
+        connection = self._connect()
+        try:
+            return [
+                dict(record["value"])
+                for record in self._validated_records(connection)
+                if record["kind"] == "device_compaction" and record["subject_id"] == event_id
+            ]
         finally:
             connection.close()
 
     def reset_conflict_for_retry(self, event_id: str) -> None:
-        """Explicit test/reference recovery action; conflict evidence remains immutable."""
-        connection = self._connect()
-        try:
-            connection.execute("BEGIN IMMEDIATE")
-            if connection.execute(
-                "SELECT 1 FROM conflict_evidence WHERE event_id = ?", (event_id,)
-            ).fetchone() is None:
-                raise OutboxError("no durable conflict evidence exists")
-            connection.execute(
-                "UPDATE outbox SET state = ? WHERE event_id = ? AND state = ?",
-                (PENDING, event_id, CONFLICT),
-            )
-            connection.commit()
-        finally:
-            connection.close()
+        self.record_recovery(
+            event_id,
+            actor="legacy-test-adapter",
+            reason="explicit compatibility recovery action",
+        )
 
     def counts(self) -> dict[str, int]:
         connection = self._connect()
         try:
-            return {
-                "sources": connection.execute("SELECT COUNT(*) FROM source_events").fetchone()[0],
-                "outbox": connection.execute("SELECT COUNT(*) FROM outbox").fetchone()[0],
-                "receipts": connection.execute("SELECT COUNT(*) FROM receipts").fetchone()[0],
-            }
+            records = self._validated_records(connection)
+            commits = sum(record["kind"] == "device_commit" for record in records)
+            acknowledgements = sum(record["kind"] == "device_ack" for record in records)
+            return {"sources": commits, "outbox": commits, "receipts": acknowledgements}
         finally:
             connection.close()
 
     def integrity_check(self) -> str:
         connection = self._connect()
         try:
-            return connection.execute("PRAGMA integrity_check").fetchone()[0]
+            sqlite_result = connection.execute("PRAGMA integrity_check").fetchone()[0]
+            if sqlite_result != "ok":
+                return sqlite_result
+            self._validated_records(connection)
+            return "ok"
         finally:
             connection.close()
+
+    @classmethod
+    def _validated_records(cls, connection: sqlite3.Connection) -> list[dict[str, Any]]:
+        rows = list(connection.execute("SELECT * FROM authority_records ORDER BY sequence"))
+        records: list[dict[str, Any]] = []
+        previous_hash: str | None = None
+        for expected_sequence, row in enumerate(rows, start=1):
+            data = bytes(row["data"])
+            if row["sequence"] != expected_sequence or len(data) > MAX_AUTHORITY_RECORD_BYTES:
+                raise OutboxError("immutable authority sequence or size bound is invalid")
+            if row["previous_hash"] != previous_hash:
+                raise OutboxError("immutable authority chain is broken")
+            calculated = cls._record_digest(previous_hash, row["kind"], row["subject_id"], data)
+            if row["record_hash"] != calculated:
+                raise OutboxError("immutable authority record hash mismatch")
+            try:
+                value = cls._strict_json(data)
+            except (ValueError, TypeError, UnicodeError, json.JSONDecodeError) as error:
+                raise OutboxError("immutable authority record JSON is invalid") from error
+            if not isinstance(value, dict) or value.get("event_id") != row["subject_id"]:
+                raise OutboxError("immutable authority record subject is invalid")
+            records.append(
+                {
+                    "sequence": row["sequence"],
+                    "kind": row["kind"],
+                    "subject_id": row["subject_id"],
+                    "record_hash": row["record_hash"],
+                    "value": value,
+                }
+            )
+            previous_hash = calculated
+        cls._validate_semantics(records)
+        return records
+
+    @classmethod
+    def _validate_semantics(cls, records: list[dict[str, Any]]) -> None:
+        commits: dict[str, dict[str, Any]] = {}
+        acknowledgements: dict[str, dict[str, Any]] = {}
+        latest_conflicts: dict[str, str] = {}
+        recovered: set[str] = set()
+        compacted: set[str] = set()
+        for record in records:
+            event_id = record["subject_id"]
+            value = record["value"]
+            if record["kind"] == "device_commit":
+                if event_id in commits or set(value) != {
+                    "event_id", "body_sha256", "body_bytes", "contract_version"
+                }:
+                    raise OutboxError("device commit authority is malformed or duplicated")
+                if value["contract_version"] != CONTRACT_VERSION or not cls._is_digest(
+                    value["body_sha256"]
+                ):
+                    raise OutboxError("device commit authority is invalid")
+                if isinstance(value["body_bytes"], bool) or not isinstance(value["body_bytes"], int) or value["body_bytes"] < 1:
+                    raise OutboxError("device commit byte count is invalid")
+                commits[event_id] = record
+            elif record["kind"] == "device_conflict":
+                if event_id not in commits or not cls._is_digest(value.get("incoming_sha256")):
+                    raise OutboxError("device conflict authority is invalid")
+                incoming = base64.b64decode(value["incoming_body_b64"], validate=True)
+                if hashlib.sha256(incoming).hexdigest() != value["incoming_sha256"]:
+                    raise OutboxError("device conflict incoming bytes do not match their digest")
+                latest_conflicts[event_id] = record["record_hash"]
+                recovered.discard(event_id)
+            elif record["kind"] == "device_recovery":
+                if value.get("recovered_conflict_hash") != latest_conflicts.get(event_id):
+                    raise OutboxError("device recovery does not target the latest conflict")
+                cls._bounded_text(value.get("actor"), "actor")
+                cls._bounded_text(value.get("reason"), "reason")
+                recovered.add(event_id)
+            elif record["kind"] == "device_ack":
+                commit = commits.get(event_id)
+                if commit is None or value.get("commit_record_hash") != commit["record_hash"]:
+                    raise OutboxError("device acknowledgement is not commit-bound")
+                try:
+                    ack_bytes = base64.b64decode(value["acknowledgement_json_b64"], validate=True)
+                    ack = cls._strict_json(ack_bytes)
+                except (ValueError, KeyError, UnicodeError, json.JSONDecodeError) as error:
+                    raise OutboxError("device acknowledgement JSON is invalid") from error
+                cls._validate_ack_value(event_id, commit["value"], ack)
+                if event_id in acknowledgements and acknowledgements[event_id]["value"] != value:
+                    raise OutboxError("device acknowledgement authority is duplicated")
+                acknowledgements[event_id] = record
+            elif record["kind"] == "device_compaction":
+                encoded = cls._canonical(value)
+                commit = commits.get(event_id)
+                ack = acknowledgements.get(event_id)
+                if (
+                    len(encoded) > MAX_COMPACTION_RECORD_BYTES
+                    or commit is None
+                    or ack is None
+                    or value != {
+                        "event_id": event_id,
+                        "body_sha256": commit["value"]["body_sha256"],
+                        "body_bytes": commit["value"]["body_bytes"],
+                        "commit_record_hash": commit["record_hash"],
+                        "ack_record_hash": ack["record_hash"],
+                    }
+                    or event_id in compacted
+                ):
+                    raise OutboxError("device compaction authority is invalid")
+                compacted.add(event_id)
+            else:
+                raise OutboxError(f"unknown immutable authority record kind: {record['kind']}")
+
+    @classmethod
+    def _assert_event_recoverable(
+        cls,
+        records: list[dict[str, Any]],
+        connection: sqlite3.Connection,
+        event_id: str,
+    ) -> None:
+        commit = cls._record_for(records, "device_commit", event_id)
+        if commit is None:
+            raise OutboxError("device commit authority is missing")
+        payload = cls._payload(connection, event_id)
+        compaction = cls._record_for(records, "device_compaction", event_id)
+        if payload is None:
+            if compaction is None:
+                raise OutboxError("last recoverable payload is missing without compaction evidence")
+            return
+        if compaction is not None:
+            raise OutboxError("payload exists after terminal compaction authority")
+        if (
+            len(payload) != commit["value"]["body_bytes"]
+            or hashlib.sha256(payload).hexdigest() != commit["value"]["body_sha256"]
+        ):
+            raise OutboxError("recoverable payload bytes do not match immutable authority")
+        try:
+            envelope = parse_envelope(payload)
+        except Exception as error:
+            raise OutboxError("recoverable payload is not a valid canonical envelope") from error
+        if envelope["event_id"] != event_id:
+            raise OutboxError("recoverable payload identity differs from authority")
+
+    @classmethod
+    def _event_state(cls, records: list[dict[str, Any]], event_id: str) -> str:
+        state = PENDING
+        for record in records:
+            if record["subject_id"] != event_id:
+                continue
+            if record["kind"] == "device_conflict":
+                state = CONFLICT
+            elif record["kind"] == "device_recovery":
+                state = PENDING
+            elif record["kind"] == "device_ack" and state != CONFLICT:
+                state = ACKNOWLEDGED
+        return state
+
+    @staticmethod
+    def _validate_ack(
+        event_id: str,
+        commit: dict[str, Any],
+        acknowledgement: dict[str, Any],
+        body: bytes | None,
+        read_back_body: bytes | None,
+    ) -> bytes:
+        try:
+            encoded = OutboxStore._canonical(acknowledgement)
+        except (TypeError, ValueError) as error:
+            raise AcknowledgementError("acknowledgement is not canonical finite JSON") from error
+        OutboxStore._validate_ack_value(event_id, commit, acknowledgement)
+        if body is None:
+            raise AcknowledgementError("local recoverable body is unavailable")
+        if (
+            len(body) != commit["body_bytes"]
+            or hashlib.sha256(body).hexdigest() != commit["body_sha256"]
+        ):
+            raise AcknowledgementError("local recoverable body no longer matches authority")
+        if read_back_body is None:
+            raise AcknowledgementError("canonical exact-body read-back is required")
+        if (
+            len(read_back_body) != commit["body_bytes"]
+            or hashlib.sha256(read_back_body).hexdigest() != commit["body_sha256"]
+        ):
+            raise AcknowledgementError("canonical read-back does not match exact queued body")
+        return encoded
+
+    @staticmethod
+    def _validate_ack_value(
+        event_id: str, commit: dict[str, Any], acknowledgement: object
+    ) -> None:
+        required = {
+            "ack_version", "status", "event_id", "accepted_body_sha256",
+            "accepted_body_bytes", "canonical_sequence", "contract_version",
+        }
+        if not isinstance(acknowledgement, dict) or set(acknowledgement) != required:
+            raise AcknowledgementError("acknowledgement fields are incomplete or unknown")
+        expected = {
+            "ack_version": ACK_VERSION,
+            "status": "accepted",
+            "event_id": event_id,
+            "accepted_body_sha256": commit["body_sha256"],
+            "accepted_body_bytes": commit["body_bytes"],
+            "contract_version": CONTRACT_VERSION,
+        }
+        if any(acknowledgement.get(key) != value for key, value in expected.items()):
+            raise AcknowledgementError("acknowledgement does not match immutable commit")
+        sequence = acknowledgement["canonical_sequence"]
+        if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence < 1:
+            raise AcknowledgementError("canonical_sequence must be a positive integer")
+
+    @classmethod
+    def _append_conflict(
+        cls,
+        connection: sqlite3.Connection,
+        *,
+        event_id: str,
+        reason: str,
+        accepted_digest: str,
+        incoming_body: bytes,
+    ) -> str:
+        return cls._append_record(
+            connection,
+            "device_conflict",
+            event_id,
+            {
+                "event_id": event_id,
+                "reason_code": reason,
+                "accepted_body_sha256": accepted_digest,
+                "incoming_sha256": hashlib.sha256(incoming_body).hexdigest(),
+                "incoming_body_b64": base64.b64encode(incoming_body).decode("ascii"),
+            },
+        )
+
+    @classmethod
+    def _append_record(
+        cls,
+        connection: sqlite3.Connection,
+        kind: str,
+        subject_id: str,
+        value: dict[str, Any],
+    ) -> str:
+        data = cls._canonical(value)
+        if len(data) > MAX_AUTHORITY_RECORD_BYTES:
+            raise OutboxError("immutable authority record exceeds its bound")
+        prior = connection.execute(
+            "SELECT record_hash FROM authority_records ORDER BY sequence DESC LIMIT 1"
+        ).fetchone()
+        previous_hash = None if prior is None else prior["record_hash"]
+        record_hash = cls._record_digest(previous_hash, kind, subject_id, data)
+        connection.execute(
+            """
+            INSERT INTO authority_records (kind, subject_id, previous_hash, data, record_hash)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (kind, subject_id, previous_hash, data, record_hash),
+        )
+        return record_hash
+
+    @staticmethod
+    def _record_digest(previous_hash: str | None, kind: str, subject_id: str, data: bytes) -> str:
+        previous = b"" if previous_hash is None else bytes.fromhex(previous_hash)
+        framed = (
+            len(previous).to_bytes(2, "big") + previous
+            + len(kind.encode()).to_bytes(2, "big") + kind.encode()
+            + len(subject_id.encode()).to_bytes(2, "big") + subject_id.encode()
+            + len(data).to_bytes(8, "big") + data
+        )
+        return hashlib.sha256(framed).hexdigest()
+
+    @staticmethod
+    def _canonical(value: object) -> bytes:
+        return json.dumps(
+            value, ensure_ascii=False, allow_nan=False, separators=(",", ":"), sort_keys=True
+        ).encode("utf-8")
+
+    @classmethod
+    def _strict_json(cls, data: bytes) -> Any:
+        value = json.loads(
+            data.decode("utf-8"),
+            object_pairs_hook=cls._unique_object,
+            parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)),
+        )
+        if cls._canonical(value) != data:
+            raise ValueError("authority JSON is not canonical")
+        return value
+
+    @staticmethod
+    def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate JSON key: {key}")
+            result[key] = value
+        return result
+
+    @staticmethod
+    def _payload(connection: sqlite3.Connection, event_id: str) -> bytes | None:
+        row = connection.execute(
+            "SELECT body FROM authority_payloads WHERE event_id = ?", (event_id,)
+        ).fetchone()
+        return None if row is None else bytes(row["body"])
+
+    @staticmethod
+    def _record_for(
+        records: list[dict[str, Any]], kind: str, event_id: str
+    ) -> dict[str, Any] | None:
+        matches = [
+            record for record in records
+            if record["kind"] == kind and record["subject_id"] == event_id
+        ]
+        return None if not matches else matches[0]
+
+    @staticmethod
+    def _latest_record(
+        records: list[dict[str, Any]], kind: str, event_id: str
+    ) -> dict[str, Any] | None:
+        matches = [
+            record for record in records
+            if record["kind"] == kind and record["subject_id"] == event_id
+        ]
+        return None if not matches else matches[-1]
+
+    @staticmethod
+    def _incoming_ack_bytes(
+        acknowledgement: dict[str, Any], read_back_body: bytes | None
+    ) -> bytes:
+        try:
+            acknowledgement_bytes = OutboxStore._canonical(acknowledgement)
+        except (TypeError, ValueError):
+            acknowledgement_bytes = repr(acknowledgement).encode("utf-8", "backslashreplace")
+        return acknowledgement_bytes + b"\n" + (b"" if read_back_body is None else read_back_body)
+
+    @staticmethod
+    def _bounded_text(value: object, label: str) -> None:
+        if not isinstance(value, str) or not value or len(value) > 512:
+            raise OutboxError(f"{label} must be a non-empty string of at most 512 characters")
+        if any(ord(character) < 0x20 for character in value):
+            raise OutboxError(f"{label} contains a control character")
+
+    @staticmethod
+    def _is_digest(value: object) -> bool:
+        return (
+            isinstance(value, str)
+            and len(value) == 64
+            and all(character in "0123456789abcdef" for character in value)
+        )

@@ -15,21 +15,51 @@ from mhpss_v2 import (  # noqa: E402
     CONTRACT_VERSION,
     EnvelopeError,
     canonical_bytes,
-    new_correction,
-    new_legacy_import,
-    new_submission,
+    new_correction as _new_correction,
+    new_legacy_import as _new_legacy_import,
+    new_submission as _new_submission,
     parse_envelope,
     uuid7,
 )
-from release_contract import verify_runtime_components  # noqa: E402
+from release_contract import ReleaseManifest, verify_runtime_components  # noqa: E402
+
+
+def new_submission(**values):
+    values.pop("event_id", None)
+    return _new_submission(**values)
+
+
+def new_correction(**values):
+    values.pop("event_id", None)
+    return _new_correction(**values)
+
+
+def new_legacy_import(**values):
+    values.pop("event_id", None)
+    return _new_legacy_import(**values)
 
 
 def runtime_proof(release_id: str = "test-release-a"):
-    return verify_runtime_components(
-        {
-            name: {"release_id": release_id, "contract_version": CONTRACT_VERSION}
-            for name in ("form", "hub", "contracts")
+    bodies = {"/index.html": b"public", "/form/app.js": b"form", "/hub/app.js": b"hub"}
+    manifest = ReleaseManifest.from_bodies(
+        release_id=release_id,
+        contract_version=CONTRACT_VERSION,
+        cache_version="test-cache-a",
+        bodies=bodies,
+    )
+    components = {
+        name: {
+            "release_id": release_id,
+            "contract_version": CONTRACT_VERSION,
+            "manifest_sha256": manifest.digest(),
         }
+        for name in ("form", "hub", "contracts")
+    }
+    return verify_runtime_components(
+        manifest=manifest,
+        cached_bodies=bodies,
+        components=components,
+        trusted_manifest_sha256=manifest.digest(),
     )
 
 
@@ -218,7 +248,7 @@ class EnvelopeValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(EnvelopeError, "unknown envelope fields"):
                 canonical_bytes(changed)
         with self.subTest("unsupported version"):
-            changed = {**event, "contract_version": "mhpss.event/2.0"}
+            changed = {**event, "contract_version": "mhpss.event/3.0"}
             raw = json.dumps(changed, separators=(",", ":"), sort_keys=True).encode()
             with self.assertRaisesRegex(EnvelopeError, "unsupported contract_version"):
                 parse_envelope(raw)

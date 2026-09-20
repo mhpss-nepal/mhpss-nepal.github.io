@@ -16,9 +16,9 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from release_contract import RuntimeProof
+from release_contract import MixedReleaseError, runtime_proof_values
 
-CONTRACT_VERSION = "mhpss.event/1.0"
+CONTRACT_VERSION = "mhpss.event/2.0"
 MAX_ENVELOPE_BYTES = 262_144
 MAX_JSON_DEPTH = 12
 MAX_JSON_NODES = 4_096
@@ -35,6 +35,7 @@ _REQUIRED_FIELDS = frozenset(
         "occurred_at",
         "client_version",
         "release_id",
+        "release_manifest_sha256",
         "duplicate_fingerprint",
         "payload",
         "provenance",
@@ -69,13 +70,12 @@ def new_submission(
     occurred_at: str,
     client_version: str,
     release_id: str,
-    runtime_proof: RuntimeProof,
-    event_id: str | None = None,
+    runtime_proof: object,
     provenance: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Create one new immutable stream at revision one."""
-    _runtime_matches(runtime_proof, release_id)
-    identity = event_id or uuid7()
+    manifest_sha256 = _runtime_matches(runtime_proof, release_id)
+    identity = uuid7()
     envelope = {
         "contract_version": CONTRACT_VERSION,
         "schema_name": schema_name,
@@ -87,6 +87,7 @@ def new_submission(
         "occurred_at": occurred_at,
         "client_version": client_version,
         "release_id": release_id,
+        "release_manifest_sha256": manifest_sha256,
         "duplicate_fingerprint": duplicate_fingerprint,
         "payload": payload,
         "provenance": {} if provenance is None else provenance,
@@ -103,20 +104,19 @@ def new_correction(
     occurred_at: str,
     client_version: str,
     release_id: str,
-    runtime_proof: RuntimeProof,
-    event_id: str | None = None,
+    runtime_proof: object,
     provenance: dict[str, Any] | None = None,
     event_type: str = "correction",
 ) -> dict[str, Any]:
     """Create an immutable correction or void linked to its predecessor."""
     validate_envelope(predecessor)
-    _runtime_matches(runtime_proof, release_id)
+    manifest_sha256 = _runtime_matches(runtime_proof, release_id)
     if event_type not in {"correction", "void"}:
         raise EnvelopeError("a successor event_type must be correction or void")
     envelope = {
         "contract_version": CONTRACT_VERSION,
         "schema_name": predecessor["schema_name"],
-        "event_id": event_id or uuid7(),
+        "event_id": uuid7(),
         "event_type": event_type,
         "stream_id": predecessor["stream_id"],
         "revision": predecessor["revision"] + 1,
@@ -124,6 +124,7 @@ def new_correction(
         "occurred_at": occurred_at,
         "client_version": client_version,
         "release_id": release_id,
+        "release_manifest_sha256": manifest_sha256,
         "duplicate_fingerprint": duplicate_fingerprint,
         "payload": payload,
         "provenance": {} if provenance is None else provenance,
@@ -144,8 +145,7 @@ def new_legacy_import(
     occurred_at: str,
     client_version: str,
     release_id: str,
-    runtime_proof: RuntimeProof,
-    event_id: str | None = None,
+    runtime_proof: object,
 ) -> dict[str, Any]:
     """Create a V2 event while retaining, but never trusting, V1 identity."""
     for value, label in (
@@ -168,7 +168,6 @@ def new_legacy_import(
         client_version=client_version,
         release_id=release_id,
         runtime_proof=runtime_proof,
-        event_id=event_id,
         provenance={
             "kind": "legacy_import",
             "legacy_id": legacy_id,
@@ -265,6 +264,13 @@ def validate_envelope(envelope: dict[str, Any]) -> None:
     _rfc3339_utc(envelope["occurred_at"])
     _bounded_string(envelope["client_version"], "client_version", 128)
     _bounded_string(envelope["release_id"], "release_id", 128)
+    manifest_sha256 = envelope["release_manifest_sha256"]
+    if (
+        not isinstance(manifest_sha256, str)
+        or len(manifest_sha256) != 64
+        or any(character not in "0123456789abcdef" for character in manifest_sha256)
+    ):
+        raise EnvelopeError("release_manifest_sha256 must be a lowercase SHA-256 digest")
     fingerprint = envelope["duplicate_fingerprint"]
     if fingerprint is not None:
         _bounded_string(fingerprint, "duplicate_fingerprint", 160)
@@ -321,13 +327,16 @@ def _rfc3339_utc(value: Any) -> None:
         raise EnvelopeError("occurred_at must be UTC")
 
 
-def _runtime_matches(runtime_proof: RuntimeProof, release_id: str) -> None:
-    if not isinstance(runtime_proof, RuntimeProof):
-        raise EnvelopeError("event creation requires verified runtime components")
-    if runtime_proof.contract_version != CONTRACT_VERSION:
+def _runtime_matches(runtime_proof: object, release_id: str) -> str:
+    try:
+        proof_release_id, proof_contract_version, manifest_sha256 = runtime_proof_values(runtime_proof)
+    except MixedReleaseError as error:
+        raise EnvelopeError("event creation requires verified runtime components") from error
+    if proof_contract_version != CONTRACT_VERSION:
         raise EnvelopeError("runtime contract_version does not match event contract")
-    if runtime_proof.release_id != release_id:
+    if proof_release_id != release_id:
         raise EnvelopeError("runtime release_id does not match event release_id")
+    return manifest_sha256
 
 
 def _walk_json(root: Any) -> None:

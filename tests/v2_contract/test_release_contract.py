@@ -66,31 +66,65 @@ class ReleaseContractTests(unittest.TestCase):
                     verify_cached_release(manifest, cached)
 
     def test_runtime_components_must_share_release_and_contract_versions(self) -> None:
-        components = {
-            "form": {"release_id": "test-release-a", "contract_version": "mhpss.event/1.0"},
-            "hub": {"release_id": "test-release-a", "contract_version": "mhpss.event/1.0"},
-            "contracts": {"release_id": "test-release-a", "contract_version": "mhpss.event/1.0"},
+        bodies = {
+            "/index.html": b"index-body",
+            "/form/app.js": b"form-body",
+            "/hub/app.js": b"hub-body",
         }
-        proof = verify_runtime_components(components)
+        manifest = ReleaseManifest.from_bodies(
+            release_id="test-release-a",
+            contract_version="mhpss.event/2.0",
+            cache_version="test-cache-a",
+            bodies=bodies,
+        )
+        components = {
+            name: {
+                "release_id": "test-release-a",
+                "contract_version": "mhpss.event/2.0",
+                "manifest_sha256": manifest.digest(),
+            }
+            for name in ("form", "hub", "contracts")
+        }
+        proof = verify_runtime_components(
+            manifest=manifest,
+            cached_bodies=bodies,
+            components=components,
+            trusted_manifest_sha256=manifest.digest(),
+        )
         self.assertEqual(proof.release_id, "test-release-a")
-        self.assertEqual(proof.contract_version, "mhpss.event/1.0")
+        self.assertEqual(proof.contract_version, "mhpss.event/2.0")
         for field, bad_value in (
             ("release_id", "test-release-b"),
-            ("contract_version", "mhpss.event/2.0"),
+            ("contract_version", "mhpss.event/3.0"),
         ):
             with self.subTest(field=field):
                 changed = {name: dict(value) for name, value in components.items()}
                 changed["hub"][field] = bad_value
                 with self.assertRaises(MixedReleaseError):
-                    verify_runtime_components(changed)
+                    verify_runtime_components(
+                        manifest=manifest,
+                        cached_bodies=bodies,
+                        components=changed,
+                        trusted_manifest_sha256=manifest.digest(),
+                    )
 
         for incomplete in ({}, {"form": components["form"]}):
             with self.subTest(incomplete=incomplete):
                 with self.assertRaises(MixedReleaseError):
-                    verify_runtime_components(incomplete)
-        unsupported = {name: {**value, "contract_version": "mhpss.event/2.0"} for name, value in components.items()}
+                    verify_runtime_components(
+                        manifest=manifest,
+                        cached_bodies=bodies,
+                        components=incomplete,
+                        trusted_manifest_sha256=manifest.digest(),
+                    )
+        unsupported = {name: {**value, "contract_version": "mhpss.event/3.0"} for name, value in components.items()}
         with self.assertRaises(MixedReleaseError):
-            verify_runtime_components(unsupported)
+            verify_runtime_components(
+                manifest=manifest,
+                cached_bodies=bodies,
+                components=unsupported,
+                trusted_manifest_sha256=manifest.digest(),
+            )
 
     def test_manifest_digest_is_deterministic_and_covers_all_assets(self) -> None:
         bodies = {"/b": b"two", "/a": b"one"}

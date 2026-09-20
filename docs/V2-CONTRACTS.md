@@ -1,166 +1,142 @@
-# MHPSS Nepal V2 executable contract foundation
+# MHPSS Nepal V2 immutable-authority contract
 
-Implementation checkpoint: **DONE — REVIEW ARTIFACT** candidate. Independent verdict: **HELD** after two adversarial review rounds. Local-only, synthetic-data reference. Not production-ready, not integrated, not deployed.
+Implementation checkpoint: **DONE — REVIEW ARTIFACT candidate**. Local-only, synthetic-data reference. Not production-ready, not integrated, not deployed.
 
-The contracts below state the required V2 invariants. The current executable
-candidate does not yet satisfy every invariant under novel corruption and
-interleaving probes. The preserved blockers in `V2-EVIDENCE-LEDGER.md` govern;
-passing the committed suite does not override them.
+## Scope and design decision
 
-## Scope and authority
+The held `mhpss.event/1.0` artifact trusted mutable source/outbox rows, acknowledgements, receipts, and projection metadata in different operations. V2 replaces that model with one byte-rehashed, append-only authority in each trust domain:
 
-This foundation turns the approved 19 September 2026 architecture direction into executable Python standard-library contracts. It does not select a production runtime, alter the current applications, write to Firebase/Firestore, or establish institutional policy.
+- the device authority is a hash-chained commit log for durable commit, conflict, audited recovery, acknowledgement, and compaction events, with payload bytes held only as a recoverable materialization;
+- the ingestion authority is a hash-chained canonical event log containing exact event bytes; lineage, acknowledgement, current projection, DQ state, and reconciliation are derived by replaying and rehashing this log;
+- projection caches and retained payloads are non-authoritative materializations and never authorize transitions;
+- every authority read validates contiguous sequence, previous-record hash, current-record hash, canonical JSON, exact retained bytes, and domain semantics before making a claim or deleting bytes.
 
-The SQLite modules model transaction, crash, idempotency, projection, and reconciliation semantics that a later IndexedDB client and institutionally approved ingestion datastore must preserve. SQLite is not the selected browser or production datastore.
+SQLite is an executable transaction/crash model, not a selected browser or production datastore. A future IndexedDB and institutionally selected server runtime must preserve the same authority and transaction semantics.
 
-## 1. Immutable event envelope
+## 1. Event envelope and trusted identity
 
-Contract version: `mhpss.event/1.0`.
+Contract version: `mhpss.event/2.0`.
 
-Required fields:
-
-- `contract_version`
-- `schema_name`
-- `event_id`
-- `event_type`: `submission`, `correction`, or `void`
-- `stream_id`
-- `revision`
-- `predecessor_event_id`
-- `occurred_at`
-- `client_version`
-- `release_id`
-- `duplicate_fingerprint`
-- `payload`
-- `provenance`
+Required fields are `contract_version`, `schema_name`, `event_id`, `event_type`, `stream_id`, `revision`, `predecessor_event_id`, `occurred_at`, `client_version`, `release_id`, `release_manifest_sha256`, `duplicate_fingerprint`, `payload`, and `provenance`.
 
 Rules:
 
-1. Every independent submission gets a random canonical UUIDv7 `event_id`. Identical content remains two events.
-2. Retry sends the byte-identical stored envelope with the same `event_id`.
-3. A new stream begins at revision 1 with `stream_id == event_id` and no predecessor.
-4. A correction or void is a new immutable event with a new `event_id`, the original `stream_id`, revision exactly current revision plus one, and the current event as predecessor.
-5. `duplicate_fingerprint` is a non-unique data-quality signal. It cannot select identity, authorize overwrite, or merge events.
-6. Legacy identity is retained only in `provenance`, together with source dataset, source row, and source checksum. It is never a V2 primary key.
-7. Canonical JSON is UTF-8 with sorted keys, compact separators, finite numbers, unique keys, strict fields, and bounded bytes/depth/nodes. Acceptance stores and acknowledges the exact canonical bytes.
-8. Event creation requires a verified runtime proof covering exactly Form, Hub, and contracts at one supported `release_id` and contract version. Mixed or incomplete runtime components fail before identity allocation.
+1. Public event-creation APIs do not accept `event_id`; the trusted boundary allocates a random UUIDv7.
+2. A retry reuses the byte-identical persisted envelope, not the creation API.
+3. A submission begins revision 1 with `stream_id == event_id`; a correction or void gets a new trusted identity and names its exact predecessor.
+4. Legacy identity remains provenance only and cannot become canonical identity.
+5. Canonical JSON is strict finite UTF-8 with sorted keys, compact separators, unique keys, and enforced byte/depth/node bounds.
+6. Every event binds `release_manifest_sha256`, not only a release label.
+7. Creation requires an opaque proof emitted only after the complete trusted manifest, every cached asset, and Form/Hub/contracts component metadata are verified together.
 
-The executable reference selects UUIDv7 and exact canonical UTF-8 bytes so tests can run. Institutional approval of those choices remains blocked below.
+Institutional approval of UUIDv7, entropy/clock operations, and canonical byte rules remains blocked below.
 
-## 2. Sync state machine and frontend interface
+## 2. One executable state vocabulary
 
-Evidence states are separate and cannot be skipped:
+`packages/contracts/sync_states.py` is the sole vocabulary exported to the frontend contract:
 
 | State | Required evidence | Permitted interface claim |
 |---|---|---|
-| `created_memory_only` | Page-memory event only | Not saved |
-| `durable_queued` | Source and exact outbox bytes committed together | Saved on this device and queued |
+| `created_memory_only` | Page-memory event only | Not durably saved |
+| `durable_queued` | Rehashed commit record and exact retained payload | Saved on this device and queued |
 | `in_flight` | Transmission attempt started | Sending; acknowledgement pending |
-| `retryable_failure` | Durable obligation retained after failure | Still queued; do not resubmit or clear storage |
-| `server_acknowledged` | Receipt plus read-back of the exact accepted body | Received by the server for this exact revision |
-| `conflict_recovery_required` | Receipt/body mismatch or identity conflict | Do not resubmit or clear; export recovery evidence |
-| `projected_reconciled` | Current projection reconciled to the accepted event | Included in the reconciled dashboard projection |
+| `retryable_failure` | Durable obligation retained after failure | Still queued |
+| `server_acknowledged` | Rehashed acknowledgement event and exact canonical read-back | Received for this exact revision |
+| `conflict_recovery_required` | Conflict, corruption, missing recovery copy, or invalid authority | Stop; export evidence; do not clear |
+| `projected_reconciled` | Projection reconciled to canonical authority | Included in reconciled projection |
 | `reviewed_accepted` | Explicit review decision | Reviewed and accepted |
 
-Frontend preview lanes consume this state/message contract. They must not claim “saved”, “sent”, “received”, “included in dashboard”, or “reviewed” at a weaker state. They must not expose a canonical-write API, derive identity from content, perform destructive correction, or maintain independent KPI formulas.
+No alternate status identifier is emitted by the outbox. Corrupt or malformed evidence returns `conflict_recovery_required`; status inspection does not crash.
 
-## 3. Transactional outbox and crash boundary
+## 3. Device commit-log authority
 
-The local reference transaction atomically creates:
+A save transaction atomically appends one `device_commit` authority record and one exact recoverable payload. The record binds identity, SHA-256, byte count, and contract version. Retry and status rehash the complete log and exact retained bytes.
 
-- one immutable source event row;
-- one exact-byte outbox row with the same identity, digest, length, and order.
+Conflict rules:
 
-Crash invariants:
+- identity/body or acknowledgement/read-back mismatch appends a `device_conflict` record;
+- `incoming_sha256` is computed over the exact retained `incoming_body` bytes;
+- conflict is sticky; later valid acknowledgement cannot bypass it;
+- only `record_recovery(actor, reason)` can append an audited recovery event against the latest conflict hash;
+- an acknowledgement after recovery appends a new authority event; previous conflict and recovery evidence remain immutable.
 
-- termination before commit leaves neither source nor outbox;
-- termination after commit leaves both and retry reuses the identity;
-- source bytes and outbox bytes cannot diverge;
-- a retry after verified compaction cannot resurrect or requeue a terminal event;
-- pending, conflict, or unverified obligations block clear;
-- clear and bounded compaction remove payload bytes only for acknowledged events with durable receipts;
-- receipt/digest evidence remains after payload compaction.
-- identity or acknowledgement mismatch creates durable conflict evidence, preserves the attempted bytes, and requires an explicit recovery action;
-- retry, status, clear, and compaction revalidate source, outbox, receipt, acknowledgement, digest, length, and terminal-state parity before trusting or deleting payloads.
+Clear/compaction rules:
 
-The reference uses SQLite `BEGIN IMMEDIATE`, foreign keys, WAL, and `synchronous=FULL`. A browser implementation must provide equivalent semantics in one IndexedDB transaction. Separate source and queue writes do not satisfy this contract.
+- every commit in the authority, including already compacted commits, is validated before any later clear;
+- every obligation must derive as acknowledged, with no unresolved conflict;
+- a payload can be removed only in the same transaction that appends bounded `device_compaction` evidence binding its commit and acknowledgement record hashes;
+- missing one of multiple payload copies is a corruption, not permission to remove the remaining copy;
+- corrupted or oversized compaction metadata blocks all deletion;
+- selective/asymmetric compaction is rejected by the reference; one atomic boundary clears all verified payloads or none.
 
-## 4. Ingestion, idempotency, acknowledgement, and errors
+Process-termination failpoints before and after save, acknowledgement, and clear commits prove either no effect or a complete idempotently recoverable effect.
 
-Only an ingestion boundary may write canonical V2 events. A collection client receives a transport interface; it receives no canonical datastore mutation capability.
+## 4. Canonical ingestion authority
 
-Acceptance is one transaction covering immutable event bytes, projection update, acknowledgement, and applicable DQ work. Retry behavior:
+Only the ingestion boundary appends canonical records. Browser direct canonical writes and V1/V2 dual-write are prohibited.
 
-- same `event_id` + same exact body: return the committed acknowledgement; do not append;
-- same `event_id` + different body: retain the accepted body, durably record conflict evidence, and return `EVENT_ID_BODY_CONFLICT`;
-- stale, gapped, or wrong-predecessor correction: reject with `STALE_OR_GAPPED_REVISION`; never roll back the projection;
-- malformed, duplicate-key, non-finite, oversized, noncanonical, or incompatible envelope: reject with `INVALID_ENVELOPE`; never partially project.
+One canonical-event authority record embeds the exact canonical event bytes plus their SHA-256 and length. Acceptance validates the pre-existing log, derives lineage from its rehashed bytes, appends the event, revalidates the resulting log, refreshes the projection cache, and returns a derived `mhpss.ack/2.0` acknowledgement.
 
-Acknowledgement contract: `mhpss.ack/1.0`, status, event identity, exact body SHA-256, exact byte length, canonical sequence, and contract version. The client may transition to acknowledged only after a separate canonical read-back body matches its stored exact digest and length.
+Retry rules:
 
-Reserved production error classes must remain explicit when a runtime is selected: validation/incompatible version, identity conflict, stale revision, authorization, rate/resource limit, retryable dependency failure, and internal failure. The local reference implements the contract-relevant validation, conflict, and revision classes; it does not invent production authentication or retry policy.
+- same `event_id` and exact bytes: revalidate the full authority and derive the same acknowledgement;
+- same `event_id` and different bytes: append immutable conflict evidence and return `EVENT_ID_BODY_CONFLICT`;
+- stale, gapped, wrong-predecessor, schema-changing, or forked successor: reject with `STALE_OR_GAPPED_REVISION`;
+- malformed, duplicate-key, non-finite, oversized, noncanonical, or incompatible envelope: reject with `INVALID_ENVELOPE`.
 
-## 5. Projection, correction, DQ, and reconciliation
+The mutable projection cache is disposable. It cannot authorize a successor and is refreshed from rehashed immutable events after acceptance.
 
-- Accepted raw event bytes are append-only and immutable.
-- Current projection advances only through exact predecessor and revision lineage.
-- Stale or out-of-order events cannot select a winner by arrival order.
-- Duplicate fingerprints can open idempotent `POSSIBLE_DUPLICATE` DQ items, but both events and projections remain distinct.
-- DQ evidence records the rule version and evidence digest. Domain rule catalogue, severities, ownership, and resolution authority remain blocked decisions.
-- Reconciliation is read-only. It compares client receipt identities/digests with canonical events and reports machine-readable differences such as missing canonical event, digest mismatch, and orphan projection. It never averages or silently repairs discrepancies.
-- Reconciliation requires a complete, unique receipt set, checks both client→canonical and canonical→client directions, validates each current projection against the latest accepted event, and includes the normalized receipt set in a single-snapshot evidence digest.
-- Analytics snapshot and indicator calculation are outside this foundation. A future engine must use versioned rules, atomic snapshots, freshness/provenance, and accepted-event reconciliation.
+## 5. Projection, DQ, and reconciliation
 
-## 6. Cache and mixed-version contract
+- Lineage and current projection are derived from contiguous exact predecessor/revision chains in immutable event bytes.
+- Forks, gaps, duplicate roots, duplicate canonical identities, malformed records, and record-hash mutations fail closed.
+- Duplicate fingerprints remain non-unique DQ signals and never select identity or overwrite canonical events.
+- DQ resolution is an immutable authority event naming an accepted correction.
+- Reconciliation rehashes canonical authority first, normalizes receipts into deterministic `(event_id, body_sha256)` order, reports duplicate receipts independently of input order, checks both client→canonical and canonical→client directions, and validates all projection-cache keys and values.
+- Canonical body/digest mutation returns `AUTHORITY_INTEGRITY_FAILURE`; unrelated or miskeyed projection cache rows return `UNRELATED_PROJECTION`.
+- Reconciliation never silently repairs or averages discrepancies.
 
-A deeply immutable paired release manifest binds `release_id`, `contract_version`, `cache_version`, every unique asset path, byte length, and SHA-256 digest. Verification rejects malformed manifests and missing, extra, tampered, truncated, or swapped cache entries. Runtime Form, Hub, and contract components must share one complete supported release and contract version before an event can be created.
+## 6. Trusted release manifest
 
-This is an executable integrity contract, not a modified service worker or deployment. Trusting/authenticating the release manifest and selecting last-known-good fallback remain blocked decisions.
+`mhpss.release/2.0` binds `release_id`, `contract_version`, `cache_version`, and every asset path/length/SHA-256.
 
-## 7. Executable tests
+Asset paths must be absolute, NFC-normalized, unencoded canonical URL paths. Validation rejects dot/traversal components, empty or duplicate separators, percent encodings, backslashes, Unicode control/format characters, trailing dot/space components, Windows reserved names, excessive length, and collisions under `NFC(path).casefold()`.
 
-Run:
+The runtime proof type and seal are closure-private. A proof can only be obtained by verifying:
 
-```bash
-python3 -m unittest discover -s tests/v2_contract -p 'test_*.py' -v
-```
+1. the complete manifest digest equals a trusted manifest digest;
+2. exact path, length, and SHA-256 parity for every cached body;
+3. exactly Form, Hub, and contracts;
+4. every component names the same release, contract, and trusted manifest digest.
 
-The synthetic suite covers:
+A proof from another manifest cannot authorize event creation even if `release_id` is reused.
 
-- the known V1 FNV-1a identity collision and distinct V2 identities;
-- stable retry identity and legacy provenance;
-- strict envelopes, correction lineage, and malformed input;
-- source/outbox termination immediately before and after commit;
-- ingestion termination immediately before and after commit;
-- idempotent retry, exact read-back acknowledgement, and same-ID/different-body conflict;
-- stale/out-of-order correction rejection and immutable current projection;
-- fail-closed clear, terminal retry, and bounded compaction;
-- DQ candidate creation without identity merge;
-- read-only reconciliation and digest mismatch reporting;
-- cache content digests and mixed release/version rejection;
-- truthful frontend sync transitions and prohibited shortcuts.
+## 7. Executable verification
 
-All fixtures are synthetic. Crash tests use child-process termination rather than caught exceptions.
+Focused suite:
+
+`python3 -m unittest discover -s tests/v2_contract -p 'test_*.py' -v`
+
+The synthetic tests cover all preserved findings plus event identity, strict envelopes, cache integrity, state wording, DQ, concurrency at first open, and process termination before/after each implemented durable transaction boundary.
 
 ## 8. BLOCKED — DECISION
 
-No implementation may infer or silently settle these dependencies:
+No implementation may infer or settle these dependencies:
 
 1. **BLOCKED — DECISION:** institutional system owner, data controller, approver, and operational administrator.
-2. **BLOCKED — DECISION:** production Firebase/GCP ownership, billing, authoritative Firestore Rules, indexes, environments, and backup capability.
-3. **BLOCKED — DECISION:** production ingestion and analytics runtimes and service identities.
-4. **BLOCKED — DECISION:** storage, retention, conflict-evidence, compaction, backup, restore, disaster-recovery, and incident policies.
-5. **BLOCKED — DECISION:** UUIDv7 institutional approval, stream allocation authority, and clock/entropy operational policy.
-6. **BLOCKED — DECISION:** canonical-byte specification approval and supported envelope/client/release compatibility matrix.
-7. **BLOCKED — DECISION:** duplicate-fingerprint fields, normalization, privacy constraints, and versioning authority.
-8. **BLOCKED — DECISION:** legacy dataset/row identity, changed-row behavior, migration acceptance, and V1 cutover authority.
-9. **BLOCKED — DECISION:** stale/gapped/forked correction policy beyond the reference’s safe rejection; resolution authorization.
-10. **BLOCKED — DECISION:** DQ rules, severities, workflow, owners, and eligibility for projection/analytics.
-11. **BLOCKED — DECISION:** reconciliation authority, cadence, tolerances, and definition of clean-with-history.
-12. **BLOCKED — DECISION:** envelope/outbox/resource limits for field and production operation.
-13. **BLOCKED — DECISION:** trusted release-manifest root, cache fallback, atomic activation, paired rollback, staging domain, and rollout criteria.
-14. **BLOCKED — DECISION:** Nepal HMIS/DHIS2 metadata and acceptance owner; OCHA format/delivery/acceptance owner; FHIR requirements.
-15. **BLOCKED — DECISION:** identity/role model, post-trial data classification/publication rules, indicator definitions, and approval authority.
+2. **BLOCKED — DECISION:** production Firebase/GCP ownership, billing, authoritative Rules, indexes, environments, and backup capability.
+3. **BLOCKED — DECISION:** production ingestion, device storage, analytics runtimes, service identities, and trusted manifest root.
+4. **BLOCKED — DECISION:** storage, retention, conflict evidence, compaction, backup, restore, disaster recovery, and incident policies.
+5. **BLOCKED — DECISION:** UUIDv7, stream-allocation, canonical-byte, clock, and entropy policy.
+6. **BLOCKED — DECISION:** supported envelope/client/release compatibility matrix and migration/cutover authority.
+7. **BLOCKED — DECISION:** duplicate-fingerprint fields, normalization, privacy controls, and DQ ownership.
+8. **BLOCKED — DECISION:** stale/gapped/forked-event resolution authority beyond safe rejection.
+9. **BLOCKED — DECISION:** reconciliation authority, cadence, tolerances, and clean-with-history definition.
+10. **BLOCKED — DECISION:** resource limits for field and production operation.
+11. **BLOCKED — DECISION:** cache fallback, atomic activation, paired rollback, staging domain, and rollout criteria.
+12. **BLOCKED — DECISION:** Nepal HMIS/DHIS2 metadata and acceptance owner; OCHA format/delivery/acceptance owner; FHIR requirements.
+13. **BLOCKED — DECISION:** identity/role model, post-trial classification/publication, indicator definitions, and approval authority.
 
 ## Completion boundary
 
-Passing these tests proves an executable contract foundation only. It does not prove IndexedDB behavior in supported browsers, a production ingestion service, authorization, operational monitoring, analytics, migration, backup/restore, institutional acceptance, or deployment safety. The maximum classification is **DONE — REVIEW ARTIFACT**.
+Passing tests proves an executable immutable-authority review artifact only. It does not prove IndexedDB behavior, production authentication/authorization, production limits, monitoring, analytics, migration, backup/restore, institutional acceptance, or deployment safety. The maximum classification is **DONE — REVIEW ARTIFACT**.

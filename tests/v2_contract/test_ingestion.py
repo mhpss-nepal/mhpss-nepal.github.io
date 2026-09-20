@@ -20,15 +20,39 @@ INGEST = ROOT / "services" / "ingest"
 sys.path[:0] = [str(CONTRACTS), str(INGEST)]
 
 from ingest import IngestStore  # noqa: E402
-from mhpss_v2 import canonical_bytes, new_correction, new_submission, uuid7  # noqa: E402
-from release_contract import verify_runtime_components  # noqa: E402
+from mhpss_v2 import canonical_bytes, new_correction as _new_correction, new_submission as _new_submission, uuid7  # noqa: E402
+from release_contract import ReleaseManifest, verify_runtime_components  # noqa: E402
 
-RUNTIME_PROOF = verify_runtime_components(
-    {
-        name: {"release_id": "test-release-a", "contract_version": "mhpss.event/1.0"}
-        for name in ("form", "hub", "contracts")
-    }
+_BODIES = {"/index.html": b"public", "/form/app.js": b"form", "/hub/app.js": b"hub"}
+_MANIFEST = ReleaseManifest.from_bodies(
+    release_id="test-release-a",
+    contract_version="mhpss.event/2.0",
+    cache_version="test-cache-a",
+    bodies=_BODIES,
 )
+RUNTIME_PROOF = verify_runtime_components(
+    manifest=_MANIFEST,
+    cached_bodies=_BODIES,
+    components={
+        name: {
+            "release_id": "test-release-a",
+            "contract_version": "mhpss.event/2.0",
+            "manifest_sha256": _MANIFEST.digest(),
+        }
+        for name in ("form", "hub", "contracts")
+    },
+    trusted_manifest_sha256=_MANIFEST.digest(),
+)
+
+
+def new_submission(**values):
+    values.pop("event_id", None)
+    return _new_submission(**values)
+
+
+def new_correction(**values):
+    values.pop("event_id", None)
+    return _new_correction(**values)
 
 
 def submission(index: int, *, fingerprint: str | None = None) -> dict[str, object]:
@@ -255,8 +279,8 @@ class IngestionTests(unittest.TestCase):
             body = canonical_bytes(submission(8))
             body_path.write_bytes(body)
             for failpoint, returncode, expected in (
-                ("before_commit", 93, 0),
-                ("after_commit", 94, 1),
+                ("before_commit", 97, 0),
+                ("after_commit", 98, 1),
             ):
                 with self.subTest(failpoint=failpoint):
                     database = root / f"{failpoint}.sqlite3"
@@ -319,7 +343,7 @@ class IngestionTests(unittest.TestCase):
             first_event = json.loads(bodies[0])
             with sqlite3.connect(database) as connection:
                 connection.execute(
-                    "UPDATE projections SET revision = 99, body_sha256 = ? WHERE stream_id = ?",
+                    "UPDATE projection_cache SET revision = 99, body_sha256 = ? WHERE stream_id = ?",
                     ("0" * 64, first_event["stream_id"]),
                 )
             report = store.reconcile(client_receipts=receipts)
