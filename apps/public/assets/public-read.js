@@ -115,7 +115,12 @@
   }
 
   function floodBody(d) {
-    var floor = typeof d.suppressed_below === "number" ? d.suppressed_below : FLOOR;
+    /* Defence in depth: the publisher refuses a declared floor below the
+       policy minimum, but a document already in the collection must not be
+       able to LOWER this page's floor either. The reader never honours a
+       declared floor below its own FLOOR. */
+    var floor = (typeof d.suppressed_below === "number" && d.suppressed_below >= FLOOR)
+      ? d.suppressed_below : FLOOR;
     var C = window.CODES;
     var h = [];
     h.push('<div class="kpis">' +

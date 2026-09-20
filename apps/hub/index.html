@@ -437,13 +437,17 @@
     <!-- PUBLISH -->
     <div class="panel pub" id="p-pub">
       <h2 class="sechead">What the public website is given</h2>
-      <p class="secsay">The website never reads the register. It reads three documents on a public shelf that a coordinator writes on purpose, from this screen, with the filters above applied.</p>
-      <div class="banner warn"><b>Demonstration mode, until the review by WHO and the Ministry.</b> Everything this
-        dashboard computes is published as it stands — site level, organisation names, no small-cell
-        suppression — so the full behaviour of the system can be judged. Two things are never published:
-        the free-text description of a report, and any focal-point contact, which never reaches the
-        register at all. After the review, what is public and what is not is decided and a reviewed
-        server policy is versioned. Server enforcement is unverified in this branch.</div>
+      <p class="secsay">The website never reads the register. It reads two aggregate documents on a public shelf
+        that a coordinator writes on purpose, from this screen, with the filters above applied. The referral
+        directory is <b>not</b> publishable here: organisation × palika names are referral content and must not
+        reach the public aggregate shelf.</p>
+      <div class="banner warn"><b>Publication is held until the review by WHO and the Ministry.</b> The public
+        shelf refuses a document whose mode is not production, and refuses any declared suppression floor below
+        10 — so a demonstration or staged document cannot reach the public collection, and no document can
+        disable small-cell suppression. What a suppressed cell looks like on the public page is still an open
+        decision. Never published: the free-text description of a report, and any focal-point contact, which
+        never reaches the register at all. A reviewed server policy is not versioned in this branch, so this
+        client-side refusal is defence in depth, not the authoritative control.</div>
 
       <div class="docs" id="pubDocs"></div>
 
@@ -456,7 +460,6 @@
           <label>Documents to publish</label>
           <div class="chks">
             <label class="chk"><input type="checkbox" id="pubFlood" checked><span>Flood response summary</span></label>
-            <label class="chk"><input type="checkbox" id="pubDir" checked><span>Referral directory</span></label>
             <label class="chk"><input type="checkbox" id="pubFull" checked><span>Full coordination picture</span></label>
           </div>
         </div>
@@ -1553,18 +1556,19 @@
     S.download("mhpss_np_coverage_gaps_" + S.stamp() + ".csv", "﻿" + head + body + "\n", "text/csv");
   });
   /* ---------- publish: the public shelf --------------------------------
-     public_stats is the only thing the public website reads. Three documents:
+     public_stats is the only thing the public website reads. Two aggregate documents:
        flood_response      schema 1 -- the summary the Flood Response page shows
-       referral_directory  schema 1 -- organisation x palika x activities
        coordination_full   schema 2 -- everything this screen computes, with
                            names inline so the public site depends on no file
                            of ours
-     Demonstration mode (decided 17 Sep 2026, until the WHO / Ministry review):
-     no small-cell suppression (suppressed_below: 1), site level, organisation
-     names. Never published by this client: `description` (free text) or
-     focal-point contact. Client validation requires computed_at, a `basis`
-     string and fewer than 40 top-level fields. Server enforcement is unverified. */
-  var PUB_IDS = ["flood_response", "referral_directory", "coordination_full"];
+     Referral-directory content is intentionally excluded: organisation x
+     palika names are referral content and must not structurally reach this
+     public aggregate publication path.
+     Demonstration output remains preview-only. The public_stats sink refuses
+     non-production mode and a declared suppression floor below 10. Never
+     published by this client: `description` (free text) or focal-point contact.
+     Server enforcement is unverified. */
+  var PUB_IDS = ["flood_response", "coordination_full"];
   var PUB_ROLE = null;
 
   function pubFilters() {
@@ -1611,17 +1615,6 @@
     var flood = Object.assign({ schema: 1, suppressed_below: 1, reports: rows.length, contacts: contacts,
       people_reported: people, distinct_people_reported: distinct, organisations: orgSet.size, palikas: palSet.size,
       districts: districts, families: families }, common);
-
-    var byOP = {};
-    rows.forEach(function (r) {
-      var pc = palikaOf(r); if (!pc) return;
-      var k = (r.org || "?") + "|" + pc;
-      var b = byOP[k] = byOP[k] || { district: r.district || "", pcode: pc, palika: C.palikaName(pc) || pc, org: r.org || "", org_name: orgName(r), activities: new Set(), last_report: "" };
-      if (r.activity) b.activities.add(r.activity);
-      if ((r.dateAD || "") > b.last_report) b.last_report = r.dateAD || "";
-    });
-    var dirRows = Object.values(byOP).map(function (b) { return { district: b.district, pcode: b.pcode, palika: b.palika, org: b.org, org_name: b.org_name, activities: Array.from(b.activities).sort(), last_report: b.last_report }; });
-    var referral = Object.assign({ schema: 1, rows: dirRows }, common);
 
     /* schema 2: the whole screen, names inline */
     var sites = P.ROSTER.map(function (s) {
@@ -1684,14 +1677,14 @@
       matrix: matrix, sadd: sadd, gaps: gaps, duplication: duplication, names: names,
       excluded: ["description (free text of a report)", "focal-point name, phone and email (never stored in the register)"],
       codes_version: C.META.version, schema_version: S.SCHEMA_VERSION }, common);
-    return { flood_response: flood, referral_directory: referral, coordination_full: full };
+    return { flood_response: flood, coordination_full: full };
   }
 
   function pubDocsPanel() {
     var el = $("pubDocs");
     if (!el.innerHTML) {
       el.innerHTML = PUB_IDS.map(function (id) {
-        var title = id === "flood_response" ? "Flood response summary" : id === "referral_directory" ? "Referral directory" : "Full coordination picture";
+        var title = id === "flood_response" ? "Flood response summary" : "Full coordination picture";
         var reads = id === "coordination_full" ? "read by whoever builds on it (names inline)" : "read live by the public website";
         return '<div class="doc"><h3>' + title + '</h3><div class="id">public_stats/' + id + '</div><p class="st" id="pubst-' + id + '">' + reads + ' · checking what is published…</p></div>';
       }).join("");
@@ -1752,7 +1745,7 @@
      the two schema-1 documents when its file can be loaded (root assets) */
   function pubRenderPreview(docs) {
     var out = [];
-    var f = docs.flood_response, d = docs.referral_directory, full = docs.coordination_full;
+    var f = docs.flood_response, full = docs.coordination_full;
     out.push('<div class="pubprev"><h3>Flood response summary <span class="xs">public_stats/flood_response</span></h3>' +
       '<div class="kpis"><div class="kpi"><span class="n">' + f.reports + '</span><span class="l">reports</span></div>' +
       '<div class="kpi"><span class="n">' + f.contacts.toLocaleString() + '</span><span class="l">service contacts</span></div>' +
@@ -1762,12 +1755,7 @@
       f.districts.map(function (x) { return "<tr><td>" + esc(x.name) + '</td><td class="n">' + x.reports + '</td><td class="n">' + x.contacts.toLocaleString() + '</td><td class="n">' + x.organisations + "</td></tr>"; }).join("") +
       '</tbody></table><div id="pubL3flood" style="margin-top:10px"></div>' +
       '<details><summary>the document as the website will read it</summary><pre>' + esc(JSON.stringify(f, null, 1)) + "</pre></details></div>");
-    out.push('<div class="pubprev"><h3>Referral directory <span class="xs">public_stats/referral_directory · ' + d.rows.length + ' rows</span></h3>' +
-      '<table><thead><tr><th>District</th><th>Palika</th><th>Organisation</th><th>Activities</th><th>Last report</th></tr></thead><tbody>' +
-      d.rows.slice().sort(function (a, b) { return (a.district + a.palika + a.org_name).localeCompare(b.district + b.palika + b.org_name); }).map(function (r) {
-        return "<tr><td>" + esc(distName(r.district)) + "</td><td>" + esc(r.palika) + "</td><td>" + esc(r.org_name) + "</td><td>" + esc(r.activities.map(actName).join(", ")) + "</td><td>" + esc(r.last_report) + "</td></tr>"; }).join("") +
-      '</tbody></table><div id="pubL3dir" style="margin-top:10px"></div>' +
-      '<details><summary>the document as the website will read it</summary><pre>' + esc(JSON.stringify(d, null, 1)) + "</pre></details></div>");
+
     out.push('<div class="pubprev"><h3>Full coordination picture <span class="xs">public_stats/coordination_full · schema 2</span></h3>' +
       '<p class="xs" style="margin:0 0 8px">' + full.sites.length + " sites (" + full.roster_reached + " of " + full.roster_total + " roster sites reached, " + full.gaps.length + " gaps) · " +
       full.organisations.length + " organisations · " + full.activities.length + " activities · " + full.matrix.length + " matrix rows · " + full.duplication.length + " site-days flagged · " +
@@ -1777,7 +1765,7 @@
     /* the website's own renderer, if its file loads -- exactly what the public page will draw */
     function paintL3() {
       if (!window.PUBLIC_STATS || !window.PUBLIC_STATS.preview) return;
-      [["pubL3flood", f, "flood"], ["pubL3dir", d, "referral"]].forEach(function (x) {
+      [["pubL3flood", f, "flood"]].forEach(function (x) {
         var host = $(x[0]); if (!host) return;
         host.innerHTML = '<p class="xs" style="margin:0 0 4px">As the public website draws it:</p><p class="xs" data-state></p><div data-body></div>';
         try { window.PUBLIC_STATS.preview({ state: host.querySelector("[data-state]"), body: host.querySelector("[data-body]"), panel: host, kind: x[2] }, x[1]); }
@@ -1801,7 +1789,7 @@
     var docs = buildPublicDocs();
     var want = [];
     if ($("pubFlood").checked) want.push("flood_response");
-    if ($("pubDir").checked) want.push("referral_directory");
+
     if ($("pubFull").checked) want.push("coordination_full");
     if (!want.length) return toast("Tick at least one document", true);
     var b = $("pubGo"); b.disabled = true; b.textContent = "Publishing…";

@@ -491,6 +491,7 @@
   function publish(docId, body) {
     /* Fail closed before connection/auth checks so restricted data is refused
        by this real public_stats sink under every runtime state. */
+    var PUBLIC_SUPPRESSION_FLOOR = 10;
     var restrictedKinds = { referral: true, phq9: true };
     var restrictedPrivacy = {
       "restricted-referral-person-list": true,
@@ -508,6 +509,20 @@
     }
     if (containsRestricted(body)) {
       return Promise.reject(new Error("restricted or clinical records cannot be published to public_stats"));
+    }
+    /* public_stats is a public aggregate shelf, never a staging destination.
+       The browser is not the authoritative policy boundary, but this exact
+       sink must still refuse a document-declared floor that disables policy. */
+    if (docId === "referral_directory") {
+      return Promise.reject(new Error("referral_directory cannot be published to public_stats"));
+    }
+    if (!body || body.mode !== "production") {
+      return Promise.reject(new Error("non-public mode cannot be published to public_stats"));
+    }
+    if (typeof body.suppressed_below !== "number" ||
+        !isFinite(body.suppressed_below) ||
+        body.suppressed_below < PUBLIC_SUPPRESSION_FLOOR) {
+      return Promise.reject(new Error("public_stats requires a suppression floor of at least " + PUBLIC_SUPPRESSION_FLOOR));
     }
     if (!state.ready) return Promise.reject(new Error("not connected"));
     if (!state.user) return Promise.reject(new Error("not signed in"));
