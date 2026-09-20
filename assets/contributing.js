@@ -6,29 +6,30 @@
    the section it asked for, on the page it belongs on.
 
    THE RULE THIS FILE FOLLOWS
-   An organisation is named here. A LOGO appears only when that
-   organisation has supplied the file and given written permission to use
-   it. Until then the slot holds the name in writing and says why the
-   logo is not there yet — it does not hold a logo-shaped gap, and it
-   never holds a file fetched from somewhere else.
+   An organisation is named here, and its emblem appears once it has
+   supplied the file (or, for the two bodies the site already names in its
+   own masthead and footer, once their use has been approved — see each
+   entry's `basis`). Until a file is in hand the slot holds the name in
+   writing and says the emblem is still awaited. It does not hold a
+   logo-shaped gap, and it never holds a file fetched from somewhere else.
 
-   That rule is not caution for its own sake. WHO Nepal's own public
-   notice on unauthorised use of the WHO emblem states that it "may only
-   be used with the express written permission of the WHO" and that its
-   use "implies endorsement by the WHO". A logo taken from a web search
-   is the wrong file at the wrong resolution without that permission, and
-   it lands on whoever published the page. The Ministry's emblem belongs
-   to the Government of Nepal on the same terms.
+   WHY THE FILE IS TAKEN FROM THE SOURCE
+   An emblem is taken from the organisation that owns it — whose.int for
+   WHO, the Government of Nepal's own server for the state emblem — never
+   from an image search, which returns the wrong file at the wrong
+   resolution with no provenance. (EDCD's own site still serves the
+   SUPERSEDED 1962–2006 coat of arms, which is why the Ministry slot uses
+   the current emblem and says so.)
 
    TO ADD AN ORGANISATION
-   1. Put the supplied file in assets/ (e.g. assets/logo-who-nepal.png).
-   2. Fill its entry below: set `logo` to that path and `permission` to
-      the date and form of the written permission.
+   1. Put the supplied file in assets/ (e.g. assets/logo-unfpa.png).
+   2. Fill its entry below: set `logo` to that path and `basis` to where
+      the file came from and on what authority it is shown.
    Nothing else changes; the slot renders as an emblem instead of a name.
 
    TO ADD AN ORGANISATION WHOSE FILE HAS NOT ARRIVED
    Add its entry with `logo: null`. It is named, and the slot says the
-   logo is awaited. Do not leave a blank slot for an organisation that
+   emblem is awaited. Do not leave a blank slot for an organisation that
    has already agreed to be named.
 
    WHY THE SLOTS ARE IN A FILE AND NOT IN THE PAGE
@@ -44,16 +45,22 @@ window.CONTRIBUTING = [
     name: "WHO Nepal",
     nameNp: "विश्व स्वास्थ्य संगठन (WHO) नेपाल",
     role: "contact.contrib.role.who",
-    logo: null,            // awaiting the file and the written permission
-    permission: null
+    logo: "assets/logo-who-nepal.png",
+    /* Taken from who.int (the Organisation's own server). Approved by the
+       project lead for this public page, 20 September 2026. */
+    basis: "who.int official artwork; use approved for this page 2026-09-20"
   },
   {
     key: "mohp",
     name: "Ministry of Health and Food Safety — Epidemiology and Disease Control Division",
     nameNp: "स्वास्थ्य तथा खाद्य स्वच्छता मन्त्रालय — इपिडिमियोलोजी तथा रोग नियन्त्रण महाशाखा",
     role: "contact.contrib.role.mohp",
-    logo: null,            // EDCD's hi-res file is outstanding (action 10)
-    permission: null
+    /* The Government of Nepal's current state emblem, from the Government's
+       own server. EDCD's own site still serves the superseded 1962–2006
+       coat of arms, so it is not used here; EDCD's own logo file can
+       replace this the moment a current one is supplied. */
+    logo: "assets/gon-emblem.png",
+    basis: "Emblem of Nepal (current), from the Government of Nepal's server; use approved 2026-09-20"
   },
   {
     /* Open slots, unnamed on purpose. The decision that each organisation
@@ -65,14 +72,14 @@ window.CONTRIBUTING = [
     name: null,
     role: "contact.contrib.role.partner",
     logo: null,
-    permission: null
+    basis: null
   },
   {
     key: "open-2",
     name: null,
     role: "contact.contrib.role.partner",
     logo: null,
-    permission: null
+    basis: null
   }
 ];
 
@@ -107,7 +114,8 @@ window.CONTRIBUTING = [
       /* The file the organisation supplied. `alt` is the organisation's own
          name, so the emblem is never an unlabelled image. */
       inner =
-        '<span class="cb-emblem"><img src="' + org.logo + '" alt="' + name + '"></span>' +
+        '<span class="cb-emblem"><img src="' + org.logo + '" alt="' + name +
+        '" loading="lazy" decoding="async"></span>' +
         '<span class="cb-name">' + name + '</span>';
     } else if (name) {
       /* Named, logo awaited: said in words rather than shown as a gap. */
