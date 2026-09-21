@@ -1,0 +1,15 @@
+test_a_form_cannot_declare_direct_canonical_writes_or_its_own_identity (tests.test_form_registry.FormRegistryTests.test_a_form_cannot_declare_direct_canonical_writes_or_its_own_identity) ... ok
+test_a_form_cannot_invent_its_own_public_document (tests.test_form_registry.FormRegistryTests.test_a_form_cannot_invent_its_own_public_document) ... ok
+test_a_form_cannot_route_to_a_home_that_does_not_accept_its_kind (tests.test_form_registry.FormRegistryTests.test_a_form_cannot_route_to_a_home_that_does_not_accept_its_kind) ... ok
+test_a_form_with_a_nonexistent_reading_home_fails_closed (tests.test_form_registry.FormRegistryTests.test_a_form_with_a_nonexistent_reading_home_fails_closed) ... ok
+test_a_form_without_a_reading_home_fails_closed (tests.test_form_registry.FormRegistryTests.test_a_form_without_a_reading_home_fails_closed) ... ok
+test_clinical_and_safeguarding_classes_can_never_publish (tests.test_form_registry.FormRegistryTests.test_clinical_and_safeguarding_classes_can_never_publish) ... ok
+test_coordination_publication_uses_a_named_rule_gated_route (tests.test_form_registry.FormRegistryTests.test_coordination_publication_uses_a_named_rule_gated_route) ... ok
+test_generated_landing_fixture_contains_only_trial_visible_forms (tests.test_form_registry.FormRegistryTests.test_generated_landing_fixture_contains_only_trial_visible_forms) ... ok
+test_repository_registry_is_valid_and_declares_every_current_kind (tests.test_form_registry.FormRegistryTests.test_repository_registry_is_valid_and_declares_every_current_kind) ... ok
+test_retired_form_keeps_kind_and_version_history_resolvable (tests.test_form_registry.FormRegistryTests.test_retired_form_keeps_kind_and_version_history_resolvable) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.013s
+
+OK

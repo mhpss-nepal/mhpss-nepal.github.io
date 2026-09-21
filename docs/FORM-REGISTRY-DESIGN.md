@@ -150,7 +150,9 @@ python3 packages/form_registry/form_registry.py config/form-registry.yaml --root
 python3 -m unittest tests.test_form_registry tests.test_publication_privacy_gate -v
 ```
 
-The final exact outputs are recorded in the task handoff. No network or production endpoint is called by these commands.
+The final exact outputs are recorded in `docs/FORM-REGISTRY-EVIDENCE.md` (card
+`t_abf0b818`, which supersedes the judge-stalled `t_d3d2bbfb`) and in the task
+handoff. No network or production endpoint is called by these commands.
 
 ## Open institutional decisions
 
