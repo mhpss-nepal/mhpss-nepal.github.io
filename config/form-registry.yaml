@@ -1,0 +1,113 @@
+registry_version: mhpss.form-registry/0.1.0
+policy:
+  public_sink: public_stats
+  public_documents:
+    - flood_response
+    - coordination_full
+  publishable_privacy_classes:
+    - coordination-aggregate
+  never_publish_privacy_classes:
+    - clinical
+    - safeguarding
+    - anonymous-free-text
+    - restricted-person-record
+  v2_contract: mhpss.event/2.0
+homes:
+  hub.dashboard.reports:
+    path: apps/hub/index.html
+    selector: 'id="p-raw"'
+    url: ../hub/#reports
+    accepted_kinds:
+      - activity
+  hub.forms.contact:
+    path: apps/hub/forms.html
+    selector: 'id="p-contact"'
+    url: ../hub/forms.html#contact
+    accepted_kinds:
+      - service_contact
+  hub.forms.referral:
+    path: apps/hub/forms.html
+    selector: 'id="p-referral"'
+    url: ../hub/forms.html#referral
+    accepted_kinds:
+      - referral
+  hub.forms.phq9:
+    path: apps/hub/forms.html
+    selector: 'id="p-phq9"'
+    url: ../hub/forms.html#phq9
+    accepted_kinds:
+      - phq9
+  hub.forms.selfreport:
+    path: apps/hub/forms.html
+    selector: 'id="p-selfreport"'
+    url: ../hub/forms.html#selfreport
+    accepted_kinds:
+      - self_report
+forms:
+  - id: activity-5ws
+    file_path: apps/form/5ws-report.html
+    kind: activity
+    title: MHPSS Activity Report (5Ws)
+    trial_status: approved-for-trial
+    field_landing: true
+    reading_home: hub.dashboard.reports
+    privacy_class: coordination-aggregate
+    schema_versions:
+      - mhpss-np-5ws/5ws-np-0.5.0
+    public_output:
+      route: rule-gated-aggregate
+      documents:
+        - flood_response
+        - coordination_full
+  - id: service-contact
+    file_path: apps/form/contact.html
+    kind: service_contact
+    title: Service Contact Record
+    trial_status: dummy
+    field_landing: false
+    reading_home: hub.forms.contact
+    privacy_class: restricted-person-record
+    schema_versions:
+      - mhpss-np-contact/0.1.0-draft
+    public_output:
+      route: never
+      documents: []
+  - id: referral
+    file_path: apps/form/referral.html
+    kind: referral
+    title: Referral Out / In
+    trial_status: dummy
+    field_landing: false
+    reading_home: hub.forms.referral
+    privacy_class: safeguarding
+    schema_versions:
+      - mhpss-np-referral/0.1.0-draft
+    public_output:
+      route: never
+      documents: []
+  - id: phq9
+    file_path: apps/form/phq9.html
+    kind: phq9
+    title: PHQ-9 Follow-up
+    trial_status: dummy
+    field_landing: false
+    reading_home: hub.forms.phq9
+    privacy_class: clinical
+    schema_versions:
+      - mhpss-np-phq9/0.1.0-draft
+    public_output:
+      route: never
+      documents: []
+  - id: self-report
+    file_path: apps/form/selfreport.html
+    kind: self_report
+    title: Anonymous Self-report
+    trial_status: dummy
+    field_landing: false
+    reading_home: hub.forms.selfreport
+    privacy_class: anonymous-free-text
+    schema_versions:
+      - mhpss-np-selfreport/0.1.0-draft
+    public_output:
+      route: never
+      documents: []
