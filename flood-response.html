@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Flood Response — MHPSS Technical Working Group Nepal</title>
+<title>Flood Response — MHPSS Nepal</title>
 <meta name="description" content="Mental health and psychosocial support in the Rasuwa–Bhotekoshi flood response, Nepal: what happened, helplines, tools for field partners, and how the response is coordinated.">
 <meta name="theme-color" content="#006996">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +29,7 @@
     <a class="id" href="./">
       <span data-mark="58"></span>
       <span style="min-width:0">
-        <b data-i18n-skip>MHPSS Technical Working Group</b>
+        <b data-i18n-skip>MHPSS Nepal</b>
         <span class="place" data-i18n="mast.place"></span>
       </span>
     </a>
@@ -148,12 +148,10 @@
     <ul class="srclist">
       <li><span class="t" data-i18n-skip><a href="https://mohp.gov.np/category/flash-flood-in-rasuwa" lang="ne">रसुवा आकस्मिक बाढिमा स्वास्थ्य क्षेत्रको प्रतिकार्य</a></span>
         <span class="by" data-i18n="flood.p172"></span><span class="lang" data-i18n="flood.p171"></span></li>
-      <li><span class="t" data-i18n-skip><a href="https://giwmscdnone.gov.np/media/pdf_upload/EN_SitRep_22_Health_Sector_Response_to_Flash_Flood_in_Rasuwa_16-09-2026_b8ivpxn.pdf">Situation Report #22 on the health sector response to the flash flood in Rasuwa</a></span>
-        <span class="by" data-i18n="flood.p170"></span><span class="lang" data-i18n="flood.p169"></span></li>
-      <li><span class="t" data-i18n-skip><a href="https://edcd.gov.np/news/bhotekoshi-flash-flood-response-report-18">Bhotekoshi Flash Flood Response Report 18</a></span>
-        <span class="by" data-i18n="flood.p168"></span><span class="lang" data-i18n="flood.p167"></span></li>
-      <li><span class="t" data-i18n-skip><a href="https://heoc.mohp.gov.np/flashflood/">Rasuwa Flash Flood 2026</a></span>
-        <span class="by" data-i18n="flood.p166"></span><span class="lang" data-i18n="flood.p165"></span></li>
+      <li><span class="t" data-i18n-skip><a href="https://heoc.mohp.gov.np/flashflood/">Situation reports on the health sector response to the flash flood in Rasuwa</a></span>
+        <span class="by" data-i18n="flood.src.heoc"></span><span class="lang" data-i18n="flood.p169"></span></li>
+      <li><span class="t" data-i18n-skip><a href="https://edcd.gov.np/news">Bhotekoshi Flash Flood Response Reports</a></span>
+        <span class="by" data-i18n="flood.src.edcd"></span><span class="lang" data-i18n="flood.p167"></span></li>
       <li><span class="t" data-i18n-skip><a href="https://ndrrma.gov.np/mediafiles/rasuwa/Rasuwa_Flood_SitRep_Temp_ENG_01_01092026.pdf">Rasuwa-Bhotekoshi Flood: Search, Rescue and Relief Response</a></span>
         <span class="by" data-i18n="flood.p164"></span><span class="lang" data-i18n="flood.p163"></span></li>
       <li><span class="t" data-i18n-skip><a href="https://reliefweb.int/report/nepal/nepal-rasuwa-flood-flash-appeal-4-september-2026">Nepal: Rasuwa Flood — Flash Appeal (4&nbsp;September 2026)</a></span>
@@ -163,9 +161,31 @@
     </ul>
   </section>
 
-  <!-- ============ 2 · response summary (public_stats) ============ -->
+  <!-- ============ 2 · response summary ============ -->
+  <!-- The Ministry's own MHPSS figures, as printed in its situation reports
+       (assets/heoc-series.js holds every row with its report number). Below
+       them, the panel that reads public_stats -- this website's own published
+       summary -- which says plainly when nothing has been published. -->
   <section class="sec2" id="summary">
     <h2 data-i18n="flood.p079" data-i18n-html></h2>
+    <p class="intro" data-i18n="flood.heoc.intro"></p>
+    <div class="heoc" data-heoc>
+      <p class="hc-asof" data-heoc-asof></p>
+      <div class="hc-tiles">
+        <div class="hc-k lead"><span class="num" data-heoc-k="svc" data-i18n-skip></span><span class="lab" data-i18n="flood.heoc.k.svc"></span></div>
+        <div class="hc-k"><span class="num" data-heoc-k="staff" data-i18n-skip></span><span class="lab" data-i18n="flood.heoc.k.staff"></span></div>
+        <div class="hc-k"><span class="num" data-heoc-k="day" data-i18n-skip></span><span class="lab" data-i18n="flood.heoc.k.day"></span></div>
+        <div class="hc-k"><span class="num" data-heoc-k="calls" data-i18n-skip></span><span class="lab" data-i18n="flood.heoc.k.calls"></span></div>
+      </div>
+      <div class="hc-charts">
+        <div class="hc-chart" data-heoc-chart="svc"></div>
+        <div class="hc-chart" data-heoc-chart="staff"></div>
+      </div>
+      <details class="hc-tbl"><summary data-i18n="flood.heoc.table"></summary><div class="tscroll" data-heoc-table></div></details>
+      <p class="figsrc" data-i18n="flood.heoc.src" data-i18n-html></p>
+    </div>
+
+    <h3 class="subh" data-i18n="flood.sum.own"></h3>
     <p class="intro" data-i18n="flood.p050"></p>
     <div class="live3" id="sumPanel">
       <div class="lstrip"><span class="dot" aria-hidden="true"></span><span id="sumState"></span></div>
@@ -196,6 +216,21 @@
     <span class="name" data-i18n="hl.tpo.name"></span>
     <p class="meta" data-i18n="hl.tpo.meta"></p>
     <p class="from" data-i18n="hl.tpo.from" data-i18n-html></p>
+  </div>
+  <div class="hlc">
+    <span class="kind" data-i18n="hl.1145.kind"></span>
+    <a class="num" href="tel:1145" data-i18n-skip>1145</a>
+    <span class="name" data-i18n="hl.1145.name"></span>
+    <span class="np" lang="ne" data-i18n-skip>राष्ट्रिय महिला आयोग</span>
+    <p class="meta" data-i18n="hl.1145.meta"></p>
+    <p class="from" data-i18n="hl.1145.from" data-i18n-html></p>
+  </div>
+  <div class="hlc">
+    <span class="kind" data-i18n="hl.1098.kind"></span>
+    <a class="num" href="tel:1098" data-i18n-skip>1098</a>
+    <span class="name" data-i18n="hl.1098.name"></span>
+    <p class="meta" data-i18n="hl.1098.meta"></p>
+    <p class="from" data-i18n="hl.1098.from" data-i18n-html></p>
   </div>
   <div class="hlc">
     <span class="kind" data-i18n="hl.1115.kind"></span>
@@ -257,191 +292,6 @@
     <h2 data-i18n="flood.p074" data-i18n-html></h2>
     <p class="intro" data-i18n="flood.p040"></p>
 
-<!-- the coordination picture: moved here from the home page, 16 Sep 2026 -->
-  <div class="sheet">
-    <div class="split">
-      <div>
-        <div class="stamp">
-          <span data-i18n="flood.stamp" data-i18n-html></span>
-          <span class="tagpill" data-i18n="flood.p154"></span>
-        </div>
-        <h3 class="title" data-i18n="flood.p093"></h3>
-        <p class="subtitle" data-i18n="flood.p039"></p>
-
-        <div class="figblock">
-          <div class="cap" data-i18n="flood.p007"></div>
-          <div class="big pending" data-i18n="flood.p006"></div>
-          <div class="breakdown" data-i18n="flood.p005" data-i18n-html></div>
-        </div>
-      </div>
-
-      <!-- The ring that used to sit here showed four equal slices, none of
-           them filled. It was a shape, not a figure: three of these four
-           things have to be agreed before the fourth can happen at all, and
-           a circle cut in four says the opposite. -->
-      <div class="gates">
-        <h4 data-i18n="flood.p102"></h4>
-        <div class="count" data-i18n="flood.p004" data-i18n-html></div>
-        <ol>
-          <li data-i18n="flood.p072" data-i18n-html></li>
-          <li data-i18n="flood.p071" data-i18n-html></li>
-          <li data-i18n="flood.p070" data-i18n-html></li>
-          <li class="needs" data-i18n="flood.p069" data-i18n-html></li>
-        </ol>
-      </div>
-    </div>
-
-    <!-- Placed here because it answers the question the figures above raise:
-         why is everything empty? -->
-    <div class="fig">
-      <h4 data-i18n="flood.p101"></h4>
-      <p class="lede" data-i18n="flood.p038"></p>
-      <div class="fscroll">
-      <svg viewBox="0 0 860 150" role="img"
-           aria-label="Three stations. The Bhotekoshi flood on 26 August 2026, Bhadra 10 2083. Today. And the first reporting cycle, which is not yet scheduled." data-i18n-aria="flood.tl.aria">
-       <g font-family="Mukta,sans-serif">
-        <!-- Three dated stations, deliberately NOT drawn to scale: the third
-             has no date, so an axis with a length would be inventing one. -->
-        <line x1="102" y1="70" x2="416" y2="70" stroke="#006996" stroke-width="3"/>
-        <line x1="444" y1="70" x2="756" y2="70" stroke="#939391" stroke-width="2"
-              stroke-dasharray="6 5"/>
-        <rect x="84" y="64" width="12" height="12" fill="#006996"/>
-        <circle cx="430" cy="70" r="7" fill="#006996"/>
-        <circle cx="770" cy="70" r="7" fill="#fff" stroke="#767674" stroke-width="1.6"
-                stroke-dasharray="3 3"/>
-
-        <g text-anchor="middle">
-          <text x="259" y="52" font-size="15" font-weight="800" fill="#006996"
-                id="tlSpan" data-i18n-skip>21 days</text>
-          <text x="259" y="36" font-size="11" fill="#5c5c5a" data-i18n="flood.tl.1"></text>
-          <text x="600" y="52" font-size="13" font-weight="700" fill="#5c5c5a" data-i18n="flood.tl.2"></text>
-          <text x="600" y="36" font-size="11" fill="#5c5c5a" data-i18n="flood.tl.3"></text>
-
-          <text x="90" y="95" font-size="13" font-weight="700" fill="#153f4c" data-i18n="flood.tl.4"></text>
-          <text x="90" y="111" font-size="11.5" fill="#5c5c5a" data-i18n="flood.tl.5"></text>
-          <text x="90" y="125" font-size="11" fill="#5c5c5a" data-i18n="flood.tl.6"></text>
-
-          <text x="430" y="95" font-size="13" font-weight="700" fill="#006996" data-i18n="flood.tl.7"></text>
-          <text x="430" y="111" font-size="11.5" fill="#5c5c5a" id="tlToday" data-i18n-skip>16 September 2026</text>
-          <text x="430" y="125" font-size="11" fill="#5c5c5a" data-i18n="flood.tl.8"></text>
-
-          <text x="770" y="95" font-size="13" font-weight="700" fill="#153f4c" data-i18n="flood.tl.9"></text>
-          <text x="770" y="111" font-size="11.5" fill="#5c5c5a" data-i18n="flood.tl.10"></text>
-          <text x="770" y="125" font-size="11" fill="#5c5c5a" data-i18n="flood.tl.11"></text>
-        </g>
-       </g>
-      </svg>
-      </div>
-      <div class="insight">
-        <b data-i18n="flood.p145"></b>
-        <p data-i18n="flood.p037"></p>
-      </div>
-      <p class="figsrc" data-i18n="flood.p036" data-i18n-html></p>
-    </div>
-
-    <div class="rowcards">
-      <div class="rc">
-        <span class="ico" data-icon="pin" data-icon-size="22"></span>
-        <h3 data-i18n="flood.p092"></h3>
-        <p class="desc" data-i18n="flood.p035"></p>
-        <span class="num sm" data-i18n="flood.p153"></span>
-        <span class="foot" data-i18n="flood.p152"></span>
-      </div>
-      <div class="rc">
-        <span class="ico" data-icon="people" data-icon-size="22"></span>
-        <h3 data-i18n="flood.p091"></h3>
-        <p class="desc" data-i18n="flood.p034"></p>
-        <span class="num sm" data-i18n="flood.p151"></span>
-        <span class="foot" data-i18n="flood.p150"></span>
-      </div>
-      <div class="rc tint">
-        <span class="ico" data-icon="grid" data-icon-size="22"></span>
-        <h3 data-i18n="flood.p090"></h3>
-        <p class="desc" data-i18n="flood.p033"></p>
-        <span class="num sm" data-i18n="flood.p149"></span>
-        <span class="foot" data-i18n="flood.p148"></span>
-      </div>
-      <div class="rc fill">
-        <span class="ico" data-icon="form" data-icon-size="22"></span>
-        <h3 data-i18n="flood.p089"></h3>
-        <p class="desc" data-i18n="flood.p032"></p>
-        <span class="num">5</span>
-        <span class="foot" data-i18n="flood.p147"></span>
-      </div>
-    </div>
-
-    <div class="adv">
-      <span class="m">!</span>
-      <p data-i18n="flood.p031" data-i18n-html></p>
-    </div>
-  </div>
-
-  
-<!-- ============ 1 · coverage ============ -->
-  <div class="subsec" id="coverage">
-    <h3 class="subh" data-i18n="cov.p007"></h3>
-    <p class="intro" data-i18n="cov.p006"></p>
-
-    <!-- The figure is generated from assets/codes.js by tools/roster-fig.py and
-         checked by the deploy guard, so the number of squares drawn cannot
-         drift from the number of site codes the forms actually offer. -->
-    <div class="fig" data-sitefig="23,12,16,15">
-      <h4 data-i18n="cov.p008"></h4>
-      <p class="lede" data-i18n="cov.p005"></p>
-      <div class="urow">
-        <p class="ulab"><b>23</b> <em data-i18n="fig.roster"></em> <span data-i18n="fig.roster.note"></span></p>
-        <div class="units"><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i><i class="u roster"></i></div>
-      </div>
-      <div class="urow">
-        <p class="ulab"><b>12</b> <em data-i18n="fig.govlist"></em> <span data-i18n="fig.govlist.note"></span></p>
-        <div class="units"><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i><i class="u govlist"></i></div>
-      </div>
-      <div class="urow">
-        <p class="ulab"><b>16</b> <em data-i18n="fig.offlist"></em> <span data-i18n="fig.offlist.note"></span></p>
-        <div class="units"><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i><i class="u offlist"></i></div>
-      </div>
-      <div class="urow">
-        <p class="ulab"><b>15</b> <em data-i18n="fig.outside"></em> <span data-i18n-skip>Dhading, Kathmandu, Nawalparasi (Bardaghat Susta East), Sindhupalchok</span></p>
-        <div class="units"><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i><i class="u outside"></i></div>
-      </div>
-      <div class="ukey" data-i18n="cov.p001" data-i18n-html></div>
-      <div class="insight">
-        <b data-i18n="cov.p028"></b>
-        <p data-i18n="cov.p004"></p>
-      </div>
-      <p class="figsrc" data-i18n="cov.p003" data-i18n-html></p>
-    </div>
-
-    <div class="tscroll">
-      <table class="t2">
-        <caption data-i18n="cov.cap.1"></caption>
-        <thead><tr>
-          <th data-i18n="cov.p012"></th><th data-i18n="cov.p011"></th><th data-i18n="cov.p010"></th><th data-i18n="cov.p009"></th>
-        </tr></thead>
-        <tbody>
-          <tr><td class="k" data-i18n="cov.p027"></td>
-              <td data-i18n="cov.p026"></td>
-              <td data-i18n="cov.p025"></td>
-              <td class="pend" data-i18n="cov.p024"></td></tr>
-          <tr><td class="k" data-i18n="cov.p023"></td>
-              <td data-i18n="cov.p022"></td>
-              <td data-i18n="cov.p021"></td>
-              <td class="pend" data-i18n="cov.p020"></td></tr>
-          <tr><td class="k" data-i18n="cov.p019"></td>
-              <td data-i18n="cov.p018"></td>
-              <td>—</td>
-              <td class="pend" data-i18n="cov.p017"></td></tr>
-          <tr><td class="k" data-i18n="cov.p016"></td>
-              <td data-i18n="cov.p015"></td>
-              <td data-i18n="cov.p014"></td>
-              <td class="pend" data-i18n="cov.p013"></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p class="src" data-i18n="cov.p002" data-i18n-html></p>
-  </div>
-
   <!-- ============ 2 · the pyramid ============ -->
   <div class="subsec" id="pyramid">
     <h3 class="subh" data-i18n="flood.p087"></h3>
@@ -451,19 +301,19 @@
       <h4 data-i18n="flood.p099"></h4>
       <p class="lede" data-i18n="flood.p021"></p>
       <div class="pyrgrid">
-      <svg viewBox="0 0 400 320" role="img"
-           aria-label="A four-layer pyramid. The layers are named beside it, from the top down.">
-       <g font-family="Mukta,sans-serif">
-        <polygon points="61.25,232.5 338.75,232.5 385,306 15,306"     fill="#eaf7fd" stroke="#acd9ec"/>
-        <polygon points="107.5,159 292.5,159 338.75,232.5 61.25,232.5" fill="#acd9ec" stroke="#79bbd8"/>
-        <polygon points="153.75,85.5 246.25,85.5 292.5,159 107.5,159"  fill="#009fe3" stroke="#009fe3"/>
-        <polygon points="200,12 246.25,85.5 153.75,85.5"               fill="#006996" stroke="#006996"/>
-        <g font-size="17" font-weight="800" text-anchor="middle">
-          <text x="200" y="283" fill="#006996">1</text>
-          <text x="200" y="209" fill="#004969">2</text>
-          <text x="200" y="136" fill="#153f4c">3</text>
-          <text x="200" y="71"  fill="#ffffff">4</text>
-        </g>
+      <svg viewBox="0 0 480 400" role="img" data-i18n-aria="flood.pyr.aria"
+           aria-label="The IASC intervention pyramid: specialised services at the top, then focused, non-specialised supports, community and family supports, and basic services and security at the base.">
+       <g font-family="Mukta,sans-serif" font-weight="700" text-anchor="middle">
+        <polygon points="240.0,10.0 302.4,114.0 177.6,114.0" fill="#0B3C5D" stroke="#ffffff" stroke-width="2"/>
+        <polygon points="177.6,114.0 302.4,114.0 357.6,206.0 122.4,206.0" fill="#0B6E9F" stroke="#ffffff" stroke-width="2"/>
+        <polygon points="122.4,206.0 357.6,206.0 412.8,298.0 67.2,298.0" fill="#009ADE" stroke="#ffffff" stroke-width="2"/>
+        <polygon points="67.2,298.0 412.8,298.0 468.0,390.0 12.0,390.0" fill="#BFE3F5" stroke="#ffffff" stroke-width="2"/>
+        <text x="240.0" y="75.3" font-size="13" fill="#ffffff" data-i18n="flood.pyr.l4a"></text>
+        <text x="240.0" y="91.3" font-size="13" fill="#ffffff" data-i18n="flood.pyr.l4b"></text>
+        <text x="240.0" y="162.0" font-size="13.5" fill="#ffffff" data-i18n="flood.pyr.l3a"></text>
+        <text x="240.0" y="178.0" font-size="13.5" fill="#ffffff" data-i18n="flood.pyr.l3b"></text>
+        <text x="240.0" y="257.0" font-size="15" fill="#0B2540" data-i18n="flood.p141"></text>
+        <text x="240.0" y="349.0" font-size="15.5" fill="#0B2540" data-i18n="flood.p140"></text>
        </g>
       </svg>
       <!-- The layer names are HTML, not text inside the drawing: on a phone
@@ -491,34 +341,6 @@
       <p class="figsrc" data-i18n="flood.p015" data-i18n-html></p>
     </div>
 
-    <div class="tscroll">
-      <table class="t2">
-        <caption data-i18n="flood.cap.2"></caption>
-        <thead><tr>
-          <th data-i18n="flood.p107"></th><th data-i18n="flood.p106"></th><th class="n" data-i18n="flood.p105"></th><th data-i18n="flood.p104"></th>
-        </tr></thead>
-        <tbody>
-          <tr><td class="k" data-i18n="flood.p123"></td>
-              <td data-i18n="flood.p122"></td>
-              <td class="n">2</td>
-              <td class="pend" data-i18n="flood.p121"></td></tr>
-          <tr><td class="k" data-i18n="flood.p120"></td>
-              <td data-i18n="flood.p119"></td>
-              <td class="n">4</td>
-              <td class="pend" data-i18n="flood.p118"></td></tr>
-          <tr><td class="k" data-i18n="flood.p117"></td>
-              <td data-i18n="flood.p116"></td>
-              <td class="n">4</td>
-              <td class="pend" data-i18n="flood.p115"></td></tr>
-          <tr><td class="k" data-i18n="flood.p114"></td>
-              <td data-i18n="flood.p113"></td>
-              <td class="n">—</td>
-              <td class="pend" data-i18n="flood.p112"></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p class="src" data-i18n="flood.p014" data-i18n-html></p>
   </div>
 
   
@@ -526,55 +348,6 @@
   <div class="subsec" id="method">
     <h3 class="subh" data-i18n="flood.p086"></h3>
     <p class="intro" data-i18n="flood.p013"></p>
-
-    <div class="flowfig">
-      <div class="fscroll wide">
-      <svg viewBox="0 0 820 210" role="img"
-           aria-label="Three layers. Layer 1, field entry: a record with a code, never a name. Layer 2, coordination: counts by site and week. Layer 3, public: gaps against the roster. Data flows upward only." data-i18n-aria="flood.flow.aria">
-        <g font-family="Mukta,sans-serif">
-          <!-- layer 1 -->
-          <rect x="1" y="139" width="524" height="62" fill="#eaf7fd" stroke="#acd9ec"/>
-          <rect x="1" y="139" width="4" height="62" fill="#006996"/>
-          <text x="22" y="161" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#006996" data-i18n="flood.flow.1"></text>
-          <text x="22" y="182" font-size="15" font-weight="600" fill="#153f4c" data-i18n="flood.flow.2"></text>
-          <!-- layer 2 -->
-          <rect x="1" y="72" width="524" height="60" fill="#f6f6f5" stroke="#dadada"/>
-          <rect x="1" y="72" width="4" height="60" fill="#009fe3"/>
-          <text x="22" y="93" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#006996" data-i18n="flood.flow.3"></text>
-          <text x="22" y="114" font-size="15" font-weight="600" fill="#153f4c" data-i18n="flood.flow.4"></text>
-          <!-- layer 3 -->
-          <rect x="1" y="5" width="524" height="60" fill="#153f4c"/>
-          <rect x="1" y="5" width="4" height="60" fill="#006996"/>
-          <text x="22" y="26" font-size="10.5" font-weight="800" letter-spacing="1.4" fill="#79bbd8" data-i18n="flood.flow.5"></text>
-          <text x="22" y="47" font-size="15" font-weight="600" fill="#ffffff" data-i18n="flood.flow.6"></text>
-
-          <!-- the one-way arrows, sitting IN the gap between the bars. The
-               first version put them at x=505, hard against the right edge of
-               the bars, where they read as stray marks rather than as flow. -->
-          <g stroke="#006996" stroke-width="2" fill="none" stroke-linecap="round"
-             stroke-linejoin="round">
-            <path d="M263 138 263 133"/><path d="M258.5 136 263 131.5 267.5 136"/>
-            <path d="M263 71 263 66"/><path d="M258.5 69 263 64.5 267.5 69"/>
-          </g>
-          <g font-size="10" font-weight="700" fill="#006996" letter-spacing=".6">
-            <text x="276" y="138" data-i18n="flood.flow.7"></text>
-            <text x="276" y="71" data-i18n="flood.flow.8"></text>
-          </g>
-
-          <!-- what each layer is allowed to hold -->
-          <g font-size="12.5" fill="#5c5c5a">
-            <text x="552" y="164" data-i18n="flood.flow.9"></text>
-            <text x="552" y="181" font-weight="700" fill="#006996" data-i18n="flood.flow.10"></text>
-            <text x="552" y="105" data-i18n="flood.flow.11"></text>
-            <text x="552" y="38" data-i18n="flood.flow.12"></text>
-          </g>
-          <g stroke="#dadada" stroke-width="1.3">
-            <path d="M540 160 532 160"/><path d="M540 101 532 101"/><path d="M540 34 532 34"/>
-          </g>
-        </g>
-      </svg>
-      </div>
-    </div>
 
     <div class="twocol" style="margin-top:18px">
       <div>
@@ -621,7 +394,7 @@
   <div class="in">
     <div class="fid">
       <span data-mark="46" data-mark-mono></span>
-      <span class="fid-t"><b data-i18n-skip>MHPSS Technical Working Group</b><span data-i18n="mast.place"></span></span>
+      <span class="fid-t"><b data-i18n-skip>MHPSS Nepal</b><span data-i18n="mast.place"></span></span>
     </div>
     <div class="cols">
       <div><h4 data-i18n="foot.site"></h4>
@@ -639,7 +412,7 @@
         <a href="access-explained.html" data-i18n="ref.access"></a><br>
         <a href="layer3.html" data-i18n="ref.layer3"></a></p></div>
     </div>
-    <p data-i18n="foot.draft" data-i18n-html></p>
+    <p><span data-i18n="foot.draft" data-i18n-html></span> <span data-i18n="foot.updated"></span> <span data-updated data-i18n-skip></span></p>
     <p data-i18n="foot.privacy"></p>
   </div>
 </footer>
@@ -654,28 +427,8 @@
      only thing this page reads from the register side -->
 <script src="assets/fb-config.js"></script>
 <script src="assets/public-read.js"></script>
+<script src="assets/heoc-series.js"></script>
 <script>
-(function () {
-  /* The timeline's middle station. The flood date is fixed; "today" and the
-     days elapsed are not, so they are filled here rather than typed into the
-     markup and left to go quietly wrong. The typed values are correct on the
-     day this was written, so a browser with scripting off is not misled. */
-  var flood = new Date(Date.UTC(2026, 7, 26)), now = new Date();
-  var days = Math.floor((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
-                         - flood.getTime()) / 86400000);
-  var sp = document.getElementById("tlSpan"), td = document.getElementById("tlToday");
-  function paintDays() {
-    if (!sp || days < 0) return;
-    var T = window.I18N ? window.I18N.t : null;
-    sp.textContent = T ? T(days === 1 ? "flood.tl.day" : "flood.tl.days", { n: days })
-                       : (days === 1 ? "1 day" : days + " days");
-  }
-  paintDays();
-  document.addEventListener("i18n:changed", paintDays);
-  if (td) td.textContent = now.toLocaleDateString("en-GB",
-          { day: "numeric", month: "long", year: "numeric" });
-})();
-
 (function () {
   /* The response summary. public_stats/flood_response is written only by a
      coordinator, deliberately, and read here by anyone. Until something is

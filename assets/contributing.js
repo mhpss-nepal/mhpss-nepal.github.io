@@ -14,8 +14,8 @@
    logo-shaped gap, and it never holds a file fetched from somewhere else.
 
    WHY THE FILE IS TAKEN FROM THE SOURCE
-   An emblem is taken from the organisation that owns it — whose.int for
-   WHO, the Government of Nepal's own server for the state emblem — never
+   An emblem is taken from the organisation that owns it — the WHO Country Office Nepal lockup for
+   WHO Nepal, the Government of Nepal's own server for the state emblem — never
    from an image search, which returns the wrong file at the wrong
    resolution with no provenance. (EDCD's own site still serves the
    SUPERSEDED 1962–2006 coat of arms, which is why the Ministry slot uses
@@ -45,15 +45,18 @@ window.CONTRIBUTING = [
     name: "WHO Nepal",
     nameNp: "विश्व स्वास्थ्य संगठन (WHO) नेपाल",
     role: "contact.contrib.role.who",
-    logo: "assets/logo-who-nepal.png",
-    /* Taken from who.int (the Organisation's own server). Approved by the
-       project lead for this public page, 20 September 2026. */
-    basis: "who.int official artwork; use approved for this page 2026-09-20"
+    logo: "assets/who-nepal-logo.png",
+    /* The WHO Country Office Nepal lockup -- "World Health Organization"
+       with "Nepal" beneath it. The generic global WHO emblem is not used on
+       this site (decision of 28 September 2026). Use on this page was
+       approved verbally by WHO Country Office Nepal; the official vector
+       file from WHO Nepal communications replaces this one when supplied. */
+    basis: "WHO Country Office Nepal lockup; generic global emblem not used (2026-09-28)"
   },
   {
     key: "mohp",
-    name: "Ministry of Health and Food Safety — Epidemiology and Disease Control Division",
-    nameNp: "स्वास्थ्य तथा खाद्य स्वच्छता मन्त्रालय — इपिडिमियोलोजी तथा रोग नियन्त्रण महाशाखा",
+    name: "Ministry of Health and Food Safety",
+    nameNp: "स्वास्थ्य तथा खाद्य स्वच्छता मन्त्रालय",
     role: "contact.contrib.role.mohp",
     /* The Government of Nepal's current state emblem, from the Government's
        own server. EDCD's own site still serves the superseded 1962–2006

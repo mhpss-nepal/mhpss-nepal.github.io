@@ -280,8 +280,10 @@ def check_facilities():
         if person.search(text):
             fails.append("%s: looks like a person is named (Dr/Prof) -- hospitals are listed, never people" % where)
     for n in data.get("not_listed", []):
-        if n.get("why") not in ("no-psychiatry", "unreachable"):
-            fails.append("referral-facilities.js not_listed %s: reason must be no-psychiatry or unreachable" % n.get("name"))
+        if n.get("why") not in ("no-psychiatry", "unreachable", "moved"):
+            fails.append("referral-facilities.js not_listed %s: reason must be no-psychiatry, unreachable or moved" % n.get("name"))
+        if n.get("why") == "moved" and not n.get("read"):
+            fails.append("referral-facilities.js not_listed %s: a moved page needs the date it was found gone" % n.get("name"))
     if os.path.exists(FINDER):
         fj = io.open(FINDER, encoding="utf-8").read()
         table = re.findall(r'\["(NP\d{4})",\s*"([^"]+)"\]', fj.split("var DIST_NAME", 1)[0])
