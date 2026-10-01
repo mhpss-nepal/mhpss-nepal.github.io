@@ -26,8 +26,9 @@
        and neither are hospitals whose website could not be opened (they are
        recorded in "not_listed" below, so the gap is visible)
 
-   Read on 17 September 2026. A service listed here is not a promise that it
-   is open today.
+   Read on 17 September 2026; the two helplines 1145 and 1098 were added, and
+   two hospitals whose pages had moved were taken off the list, on 1 October
+   2026. A service listed here is not a promise that it is open today.
 
    Codes follow assets/codes.js 0.3.0 (the lists agreed with EDCD on 17 Sep
    2026): a service at the hospital is FAC, the facility setting, where it was
@@ -127,48 +128,6 @@ window.REFERRAL_FACILITIES = {
      "lon": 85.140763,
      "url": "https://trishulihospital.bagamati.gov.np/"
     },
-    "read": "2026-09-17"
-   }
-  },
-  {
-   "id": "bharatpur",
-   "kind": "hospital",
-   "name": {
-    "en": "Provincial Hospital Bharatpur",
-    "ne": "भरतपुर अस्पताल"
-   },
-   "address": "भरतपुर, चितवन",
-   "district": "NP0335",
-   "pcode": "NP0335101",
-   "phones": [],
-   "quotes": [
-    {
-     "text": "Psychiatric",
-     "src": 0,
-     "context": "consultants"
-    }
-   ],
-   "services": {
-    "SPEC": 0
-   },
-   "cadres": {
-    "PSYT": 0
-   },
-   "modes": {
-    "FAC": 0
-   },
-   "sources": [
-    {
-     "title": "Consultants — Bharatpur Hospital",
-     "url": "https://www.bharatpurhospital.gov.np/Consultant"
-    }
-   ],
-   "pin": {
-    "lat": 27.682068,
-    "lon": 84.435801,
-    "pcode": "NP0335101",
-    "osm": "way/930045826",
-    "osm_name": "BHARATPUR HOSPITAL",
     "read": "2026-09-17"
    }
   },
@@ -290,51 +249,6 @@ window.REFERRAL_FACILITIES = {
      "lon": 85.33026,
      "url": "https://tuth.org.np/"
     },
-    "read": "2026-09-17"
-   }
-  },
-  {
-   "id": "csh",
-   "kind": "hospital",
-   "name": {
-    "en": "Civil Service Hospital",
-    "ne": "निजामती कर्मचारी अस्पताल"
-   },
-   "address": "Minbhawan, Kathmandu, Nepal",
-   "district": "NP0327",
-   "pcode": null,
-   "phones": [],
-   "quotes": [
-    {
-     "text": "Psychiatry Unit",
-     "src": 0
-    },
-    {
-     "text": "General OPD Services (2:30 PM ONWARDS)",
-     "src": 0
-    }
-   ],
-   "services": {
-    "SPEC": 0
-   },
-   "cadres": {
-    "PSYT": 0
-   },
-   "modes": {
-    "FAC": 1
-   },
-   "sources": [
-    {
-     "title": "Psychiatry Unit — Civil Service Hospital",
-     "url": "https://csh.gov.np/en/department/psychiatry2985unit-4556"
-    }
-   ],
-   "pin": {
-    "lat": 27.686906,
-    "lon": 85.338742,
-    "pcode": "NP0327101",
-    "osm": "relation/10953876",
-    "osm_name": "Civil Service Hospital",
     "read": "2026-09-17"
    }
   },
@@ -534,6 +448,95 @@ window.REFERRAL_FACILITIES = {
      "url": "https://www.tponepal.org/"
     }
    ]
+  },
+  {
+   "id": "hl1145",
+   "kind": "helpline",
+   "name": {
+    "en": "National Women Commission — Hotline 1145",
+    "ne": "राष्ट्रिय महिला आयोग — हटलाइन 1145"
+   },
+   "address": "नारायणहिटी, काठमाडौं",
+   "district": null,
+   "pcode": null,
+   "phones": [
+    {
+     "text": "1145",
+     "tel": "1145",
+     "label": "toll",
+     "src": 0
+    }
+   ],
+   "quotes": [
+    {
+     "text": "हटलाइन 1145 को सेवा 24/7 कायम रहने।",
+     "src": 0
+    },
+    {
+     "text": "टोल फ्री नं. 1145",
+     "src": 0
+    }
+   ],
+   "services": {
+    "HELP": 0
+   },
+   "cadres": {},
+   "modes": {
+    "TEL": 0
+   },
+   "sources": [
+    {
+     "title": "राष्ट्रिय महिला आयोग / National Women Commission — home page",
+     "url": "https://nwc.gov.np/"
+    }
+   ],
+   "read": "2026-10-01"
+  },
+  {
+   "id": "hl1098",
+   "kind": "helpline",
+   "name": {
+    "en": "Child Helpline Nepal 1098 — CWIN Nepal"
+   },
+   "address": "",
+   "district": null,
+   "pcode": null,
+   "phones": [
+    {
+     "text": "1098",
+     "tel": "1098",
+     "label": "toll",
+     "src": 0
+    }
+   ],
+   "quotes": [
+    {
+     "text": "The toll-free number 1098 was launched in 2007",
+     "src": 0
+    },
+    {
+     "text": "To provide emergency rescue, relief, and psychosocial counseling services for children.",
+     "src": 0
+    },
+    {
+     "text": "Children requiring psychosocial counseling.",
+     "src": 0
+    }
+   ],
+   "services": {
+    "HELP": 0
+   },
+   "cadres": {},
+   "modes": {
+    "TEL": 0
+   },
+   "sources": [
+    {
+     "title": "Child Helpline Nepal 1098 — CWIN Nepal",
+     "url": "https://cwin.org.np/?p=810"
+    }
+   ],
+   "read": "2026-10-01"
   }
  ],
  "not_listed": [
@@ -561,6 +564,18 @@ window.REFERRAL_FACILITIES = {
    "name": "Madhyabindu Hospital",
    "why": "unreachable",
    "url": "https://madhyabinduhospital.gandaki.gov.np/"
+  },
+  {
+   "name": "Provincial Hospital Bharatpur",
+   "why": "moved",
+   "url": "https://www.bharatpurhospital.gov.np/Consultant",
+   "read": "2026-10-01"
+  },
+  {
+   "name": "Civil Service Hospital",
+   "why": "moved",
+   "url": "https://csh.gov.np/en/department/psychiatry2985unit-4556",
+   "read": "2026-10-01"
   }
  ],
  "pins_note": "Each hospital's location is an OpenStreetMap feature (© OpenStreetMap contributors, ODbL), read on the date given, and checked to lie inside the COD-AB palika in pin.pcode (tools/map-build.py check). Where the hospital's own website embeds a map centred on the hospital, its centre is kept in pin.site_map; the two agree within 30 m."

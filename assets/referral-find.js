@@ -498,6 +498,9 @@
         var p = el("p", "fnot");
         if (np.length) p.appendChild(document.createTextNode(t("refdir.find.not.nopsy", { names: np.join(", ") }) + " "));
         if (un.length) p.appendChild(document.createTextNode(t("refdir.find.not.unreach", { names: un.join(", "), date: when(F.read) })));
+        var mv = nl.filter(function (x) { return x.why === "moved"; });
+        if (mv.length) p.appendChild(document.createTextNode(" " + t("refdir.find.not.moved", {
+          names: mv.map(function (x) { return x.name; }).join(", "), date: when(mv[0].read) })));
         res.appendChild(p);
       }
     }

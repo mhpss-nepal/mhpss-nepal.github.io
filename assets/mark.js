@@ -136,7 +136,23 @@
   }
 
   window.MARK = MARK;
-  function boot() { paint(); adoptTop(); adoptMast(); }
+  /* The footer's "Updated" date. document.lastModified is the time the
+     server last published this page, so the date follows each deploy by
+     itself and cannot be left stale by hand. Written as one unit, so the
+     day and the month never split across a line. */
+  function stampUpdated() {
+    var els = document.querySelectorAll("[data-updated]");
+    if (!els.length) return;
+    var d = new Date(document.lastModified);
+    if (isNaN(d.getTime())) return;
+    var txt;
+    try { txt = d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }); }
+    catch (e) { txt = d.toDateString(); }
+    txt = txt.replace(/ /g, "\u00a0");
+    for (var i = 0; i < els.length; i++) els[i].textContent = txt;
+  }
+
+  function boot() { paint(); adoptTop(); adoptMast(); stampUpdated(); }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
   } else { boot(); }

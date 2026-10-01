@@ -701,3 +701,63 @@ html[lang="ne"] .hlc .np{display:none}
 .sheet.hero .split{gap:40px;align-items:center}
 .sheet.hero .hlbox{border-color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 @media (max-width:860px){ .sheet.hero{padding:32px 0 36px} .sheet.hero .subtitle{font-size:17px} }
+.roles.single{grid-template-columns:minmax(0,1fr)}
+
+/* ---- Flood Response, section 2: the Ministry's MHPSS figures (1 Oct 2026) ---- */
+.heoc{border:1px solid var(--grey-3);border-radius:var(--r-md);background:#fff;padding:20px 22px;margin:16px 0 26px}
+.heoc .hc-asof{margin:0 0 14px;font-size:14px;color:var(--hc-mute)}
+.hc-tiles{display:grid;gap:14px;grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:900px){ .hc-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.hc-k{border-left:4px solid #0B6E9F;background:#f4f9fc;padding:12px 14px}
+.hc-k.lead{border-left-color:#0B3C5D}
+.hc-k .num{display:block;font-size:30px;font-weight:800;line-height:1.1;color:#0B3C5D;font-variant-numeric:tabular-nums}
+.hc-k .lab{display:block;margin-top:4px;font-size:13.5px;line-height:1.4;color:var(--hc-ink);text-align:left}
+.hc-charts{display:grid;gap:22px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:20px}
+@media (max-width:900px){ .hc-charts{grid-template-columns:1fr} }
+.hc-chart h4{margin:0 0 6px;font-size:14.5px;color:var(--hc-ink)}
+.hc-plot{position:relative}
+.hc-plot svg{display:block;width:100%;height:auto}
+.hc-plot circle[tabindex]{cursor:pointer;outline:none}
+.hc-tip{position:absolute;transform:translate(-50%,calc(-100% - 12px));background:#153f4c;color:#fff;
+  font-size:12.5px;line-height:1.4;padding:6px 9px;border-radius:4px;pointer-events:none;white-space:nowrap;text-align:left}
+.hc-tip[hidden]{display:none!important}
+.hc-tbl{margin-top:14px}
+.hc-tbl summary{cursor:pointer;font-weight:700;color:var(--wh-d);font-size:14.5px}
+.hc-tbl table{margin-top:10px}
+.hc-tbl td.n,.hc-tbl th.n{text-align:right;font-variant-numeric:tabular-nums}
+
+/* the IASC pyramid, drawn to the shape approved on 28 September 2026 */
+.pyrgrid{grid-template-columns:minmax(0,420px) minmax(0,1fr)}
+@media (max-width:760px){ .pyrgrid{grid-template-columns:1fr} }
+.pyrgrid > svg{max-width:440px}
+.playerlist .sw.l4{background:#0B3C5D;color:#fff}
+.playerlist .sw.l3{background:#0B6E9F;color:#fff}
+.playerlist .sw.l2{background:#009ADE;color:#0B2540}
+.playerlist .sw.l1{background:#BFE3F5;color:#0B2540;border:0;line-height:26px}
+
+/* the nav band on a phone: it scrolls sideways, so say so with a fade at the edge */
+@media (max-width:760px){
+  .navband{position:relative}
+  .navband::after{content:"";position:absolute;top:0;right:0;bottom:0;width:36px;pointer-events:none;
+    background:linear-gradient(90deg,rgba(0,105,150,0),var(--wh-d,#006996) 85%)}
+}
+
+/* ---- the GBV & CP referral pathway, on Find a service (1 Oct 2026) ---- */
+.pway{margin-top:30px;padding-top:22px;border-top:1px solid var(--grey-3)}
+.pwres .pwd{border:1px solid var(--grey-3);border-radius:var(--r-md);margin:0 0 10px;background:#fff}
+.pwres .pwd > summary{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  padding:11px 14px;cursor:pointer;font-size:16.5px;color:var(--hc-ink);list-style:none}
+.pwres .pwd > summary::-webkit-details-marker{display:none}
+.pwres .pwd > summary::before{content:"▸";color:var(--wh-d);margin-right:8px}
+.pwres .pwd[open] > summary::before{content:"▾"}
+.pwres .pwd > summary b{flex:1 1 auto}
+.pwres .pwd > summary .n{font-weight:800;color:var(--hc-mute);font-variant-numeric:tabular-nums}
+.pwres .fcards{padding:0 12px 12px;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))}
+.pwtags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px}
+.pwtags .tagpill{font-size:12.5px;padding:2px 8px;border-radius:999px;background:#eef6fb;color:var(--hc-ink);border:1px solid #cfe5f2}
+.pwtags .tagpill.core{background:#0B3C5D;color:#fff;border-color:#0B3C5D}
+.pwtags .tagpill.comp{background:#fff;color:#0B3C5D;border-color:#0B6E9F}
+.pwtags .tagpill.spec{background:#fff7e6;color:#5a3d00;border-color:#e8c98a}
+.pwcard .pwdet{font-style:italic}
+.hc-tbl .tscroll{overflow-x:auto;max-width:100%}
+.hc-tbl{min-width:0;max-width:100%;overflow:hidden}

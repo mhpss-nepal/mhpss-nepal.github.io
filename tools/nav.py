@@ -88,7 +88,7 @@ MAST = '''<div class="topline">
     <a class="id" href="{home}">
       <span data-mark="58"></span>
       <span style="min-width:0">
-        <b data-i18n-skip>MHPSS Technical Working Group</b>
+        <b data-i18n-skip>MHPSS Nepal</b>
         <span class="place" data-i18n="mast.place"></span>
       </span>
     </a>
@@ -148,7 +148,7 @@ FOOT = '''<footer class="gfoot">
   <div class="in">
     <div class="fid">
       <span data-mark="46" data-mark-mono></span>
-      <span class="fid-t"><b data-i18n-skip>MHPSS Technical Working Group</b><span data-i18n="mast.place"></span></span>
+      <span class="fid-t"><b data-i18n-skip>MHPSS Nepal</b><span data-i18n="mast.place"></span></span>
     </div>
     <div class="cols">
       <div><h4 data-i18n="foot.site"></h4>
@@ -166,7 +166,7 @@ FOOT = '''<footer class="gfoot">
         <a href="access-explained.html" data-i18n="ref.access"></a><br>
         <a href="layer3.html" data-i18n="ref.layer3"></a></p></div>
     </div>
-    <p data-i18n="foot.draft" data-i18n-html></p>
+    <p><span data-i18n="foot.draft" data-i18n-html></span> <span data-i18n="foot.updated"></span> <span data-updated data-i18n-skip></span></p>
     <p data-i18n="foot.privacy"></p>
   </div>
 </footer>'''
@@ -181,13 +181,16 @@ def foot_block(key):
 # written once, here, and generated into both pages between
 #   <!--NAV:help KEY--> ... <!--/NAV-->
 # A number is listed only where the service itself, or the Ministry, prints
-# it -- read on 16 Sep 2026, source beside each one. A number seen only in a
-# news story (for example the child helpline 1098) is not listed until an
-# official page carrying it has been read.
+# it -- read on 16 Sep 2026, source beside each one. 1145 (National Women
+# Commission, on its own site) and 1098 (Child Helpline Nepal, on the page of
+# CWIN Nepal, which runs it) were added on 1 Oct 2026, once those pages had
+# been read.
 HELPLINES = [
     # (key, css, tel, shown number, official Nepali name or None)
     ("1166", "lead", "1166",        "1166",          "आत्महत्या रोकथाम हेल्पलाइन सेवा"),
     ("tpo",  "",     "16600102005", "1660 010 2005", None),
+    ("1145", "",     "1145",        "1145",          "राष्ट्रिय महिला आयोग"),
+    ("1098", "",     "1098",        "1098",          None),
     ("1115", "",     "1115",        "1115",          None),
 ]
 
