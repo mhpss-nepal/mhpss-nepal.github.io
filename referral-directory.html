@@ -274,26 +274,6 @@
       <div class="fres" id="fRes"></div>
     </div>
     <p class="src" data-i18n="refdir.find.scope" data-i18n-html></p>
-
-    <!-- The Protection Cluster's GBV & CP referral pathway, the services on it
-         that carry mental health or psychosocial support, across Nepal. Built
-         by tools/pathway-build.py into assets/referral-pathway.js and drawn by
-         assets/referral-pathway-view.js. Organisations and services only:
-         no person, number, email or address, and shelters by district. -->
-    <div class="pway" id="pathway">
-      <h3 class="subh" data-i18n="pw.h"></h3>
-      <p class="intro" data-i18n="pw.intro"></p>
-      <form class="finder" role="search" onsubmit="return false">
-        <label class="fld"><span class="fl" data-i18n="pw.f.prov"></span><select id="pwProv"></select></label>
-        <label class="fld"><span class="fl" data-i18n="pw.f.dist"></span><select id="pwDist"></select></label>
-        <label class="fld"><span class="fl" data-i18n="pw.f.cat"></span><select id="pwCat"></select></label>
-        <label class="fld"><span class="fl" data-i18n="pw.f.mh"></span><select id="pwMh"></select></label>
-        <button type="button" class="btn grey fclear" id="pwClear" data-i18n="refdir.find.clear"></button>
-      </form>
-      <p class="fsum" id="pwSum" role="status" aria-live="polite"></p>
-      <div class="pwres" id="pwRes"></div>
-      <p class="src" data-i18n="pw.src" data-i18n-html></p>
-    </div>
   </section>
 
   <!-- ============ 3 · the declared area ============ -->
@@ -444,8 +424,6 @@
 <script src="assets/referral-geo.js"></script>
 <script src="assets/referral-map.js"></script>
 <script src="assets/referral-find.js"></script>
-<script src="assets/referral-pathway.js"></script>
-<script src="assets/referral-pathway-view.js"></script>
 <script src="assets/workforce.js"></script>
 <script src="assets/workforce-view.js"></script>
 <script>
