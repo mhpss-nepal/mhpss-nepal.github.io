@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Referral Directory — MHPSS Technical Working Group Nepal</title>
+<title>Referral Directory — MHPSS Nepal</title>
 <meta name="description" content="Where to refer someone for mental health and psychosocial support in the Rasuwa–Bhotekoshi flood response: helplines, a way to find services by type, provider and place, the declared affected area, and which organisation provides which service in which palika.">
 <meta name="theme-color" content="#006996">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +30,7 @@
     <a class="id" href="./">
       <span data-mark="58"></span>
       <span style="min-width:0">
-        <b data-i18n-skip>MHPSS Technical Working Group</b>
+        <b data-i18n-skip>MHPSS Nepal</b>
         <span class="place" data-i18n="mast.place"></span>
       </span>
     </a>
@@ -94,6 +94,21 @@
     <span class="name" data-i18n="hl.tpo.name"></span>
     <p class="meta" data-i18n="hl.tpo.meta"></p>
     <p class="from" data-i18n="hl.tpo.from" data-i18n-html></p>
+  </div>
+  <div class="hlc">
+    <span class="kind" data-i18n="hl.1145.kind"></span>
+    <a class="num" href="tel:1145" data-i18n-skip>1145</a>
+    <span class="name" data-i18n="hl.1145.name"></span>
+    <span class="np" lang="ne" data-i18n-skip>राष्ट्रिय महिला आयोग</span>
+    <p class="meta" data-i18n="hl.1145.meta"></p>
+    <p class="from" data-i18n="hl.1145.from" data-i18n-html></p>
+  </div>
+  <div class="hlc">
+    <span class="kind" data-i18n="hl.1098.kind"></span>
+    <a class="num" href="tel:1098" data-i18n-skip>1098</a>
+    <span class="name" data-i18n="hl.1098.name"></span>
+    <p class="meta" data-i18n="hl.1098.meta"></p>
+    <p class="from" data-i18n="hl.1098.from" data-i18n-html></p>
   </div>
   <div class="hlc">
     <span class="kind" data-i18n="hl.1115.kind"></span>
@@ -259,6 +274,26 @@
       <div class="fres" id="fRes"></div>
     </div>
     <p class="src" data-i18n="refdir.find.scope" data-i18n-html></p>
+
+    <!-- The Protection Cluster's GBV & CP referral pathway, the services on it
+         that carry mental health or psychosocial support, across Nepal. Built
+         by tools/pathway-build.py into assets/referral-pathway.js and drawn by
+         assets/referral-pathway-view.js. Organisations and services only:
+         no person, number, email or address, and shelters by district. -->
+    <div class="pway" id="pathway">
+      <h3 class="subh" data-i18n="pw.h"></h3>
+      <p class="intro" data-i18n="pw.intro"></p>
+      <form class="finder" role="search" onsubmit="return false">
+        <label class="fld"><span class="fl" data-i18n="pw.f.prov"></span><select id="pwProv"></select></label>
+        <label class="fld"><span class="fl" data-i18n="pw.f.dist"></span><select id="pwDist"></select></label>
+        <label class="fld"><span class="fl" data-i18n="pw.f.cat"></span><select id="pwCat"></select></label>
+        <label class="fld"><span class="fl" data-i18n="pw.f.mh"></span><select id="pwMh"></select></label>
+        <button type="button" class="btn grey fclear" id="pwClear" data-i18n="refdir.find.clear"></button>
+      </form>
+      <p class="fsum" id="pwSum" role="status" aria-live="polite"></p>
+      <div class="pwres" id="pwRes"></div>
+      <p class="src" data-i18n="pw.src" data-i18n-html></p>
+    </div>
   </section>
 
   <!-- ============ 3 · the declared area ============ -->
@@ -373,7 +408,7 @@
   <div class="in">
     <div class="fid">
       <span data-mark="46" data-mark-mono></span>
-      <span class="fid-t"><b data-i18n-skip>MHPSS Technical Working Group</b><span data-i18n="mast.place"></span></span>
+      <span class="fid-t"><b data-i18n-skip>MHPSS Nepal</b><span data-i18n="mast.place"></span></span>
     </div>
     <div class="cols">
       <div><h4 data-i18n="foot.site"></h4>
@@ -391,7 +426,7 @@
         <a href="access-explained.html" data-i18n="ref.access"></a><br>
         <a href="layer3.html" data-i18n="ref.layer3"></a></p></div>
     </div>
-    <p data-i18n="foot.draft" data-i18n-html></p>
+    <p><span data-i18n="foot.draft" data-i18n-html></span> <span data-i18n="foot.updated"></span> <span data-updated data-i18n-skip></span></p>
     <p data-i18n="foot.privacy"></p>
   </div>
 </footer>
@@ -409,6 +444,8 @@
 <script src="assets/referral-geo.js"></script>
 <script src="assets/referral-map.js"></script>
 <script src="assets/referral-find.js"></script>
+<script src="assets/referral-pathway.js"></script>
+<script src="assets/referral-pathway-view.js"></script>
 <script src="assets/workforce.js"></script>
 <script src="assets/workforce-view.js"></script>
 <script>
