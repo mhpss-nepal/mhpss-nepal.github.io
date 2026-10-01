@@ -70,6 +70,10 @@ JUMP = {
     "referral": ["#helplines", "#find", "#map", "#directory", "#staff"],
 }
 
+# Unlisted draft pages (preview/) carry their own key so they get no jump
+# strip, and light the band item of the page they preview.
+BAND_ON = {"preview": "referral"}
+
 # Every visible string in these blocks is a dictionary key (assets/i18n-strings.js)
 # and the elements are written EMPTY, as on every keyed page: the dictionary is
 # the only place page text lives, so a second English copy here could only drift.
@@ -115,7 +119,7 @@ def top_block(key):
     out.append('<nav class="navband" aria-label="Sections of this site" data-i18n-skip>')
     out.append('  <div class="in">')
     for k, en, np, href in NAV:
-        on = ' class="on" aria-current="page"' if k == key else ''
+        on = ' class="on" aria-current="page"' if k == BAND_ON.get(key, key) else ''
         out.append('    <a%s href="%s"><b>%s</b><i>%s</i></a>' % (on, href, en, np))
     out.append('  </div>')
     out.append('</nav>')
