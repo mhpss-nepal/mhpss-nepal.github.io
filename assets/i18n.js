@@ -380,7 +380,12 @@
 
      Dismissal is remembered per revision: change the English and the
      notice returns, because the Nepali is now a draft of something older. */
+  /* Off on the public website since 7 October 2026. Switched off HERE, in
+     the function, so no caller can bring it back: both page load and the
+     NEP button call mountNotice(). Set to true to show the notice again. */
+  var SHOW_MT_NOTICE = false;
   function mountNotice(cov) {
+    if (!SHOW_MT_NOTICE) return;
     if (lang === "en" || document.getElementById("mtnote")) return;
     var rev = (S._meta && S._meta.revision) || "0";
     var dkey = "mhpss-np-mtnote-" + rev;
