@@ -184,16 +184,6 @@
       <details class="hc-tbl"><summary data-i18n="flood.heoc.table"></summary><div class="tscroll" data-heoc-table></div></details>
       <p class="figsrc" data-i18n="flood.heoc.src" data-i18n-html></p>
     </div>
-
-    <h3 class="subh" data-i18n="flood.sum.own"></h3>
-    <p class="intro" data-i18n="flood.p050"></p>
-    <div class="live3" id="sumPanel">
-      <div class="lstrip"><span class="dot" aria-hidden="true"></span><span id="sumState"></span></div>
-      <div class="lbody" id="sumBody">
-        <p data-i18n="live.flood.none" data-i18n-html></p>
-      </div>
-    </div>
-    <p class="src" data-i18n="flood.p049" data-i18n-html></p>
   </section>
 
   <!-- ============ 3 · helplines ============ -->
@@ -359,14 +349,6 @@
           <li data-i18n="flood.p065"></li>
         </ul>
       </div>
-      <div>
-        <h3 data-i18n="flood.p084"></h3>
-        <ul class="tight">
-          <li data-i18n="flood.p064" data-i18n-html></li>
-          <li data-i18n="flood.p063" data-i18n-html></li>
-          <li data-i18n="flood.p062" data-i18n-html></li>
-        </ul>
-      </div>
     </div>
 
   </div>
@@ -406,11 +388,6 @@
         <p><a href="form/" data-i18n="nav.forms"></a><br>
         <a href="form/cards.html" data-i18n="foot.cards"></a><br>
         <a href="hub/" data-i18n="mast.hub"></a></p></div>
-      <div><h4 data-i18n="ref.strip"></h4>
-        <p><a href="architecture.html" data-i18n="ref.architecture"></a><br>
-        <a href="method.html" data-i18n="ref.method"></a><br>
-        <a href="access-explained.html" data-i18n="ref.access"></a><br>
-        <a href="layer3.html" data-i18n="ref.layer3"></a></p></div>
     </div>
     <p><span data-i18n="foot.draft" data-i18n-html></span> <span data-i18n="foot.updated"></span> <span data-updated data-i18n-skip></span></p>
     <p data-i18n="foot.privacy"></p>
@@ -423,25 +400,6 @@
 <script src="assets/icons.js"></script>
 <script src="assets/i18n-strings.js"></script>
 <script src="assets/i18n.js"></script>
-<!-- the published summary: public_stats, read without an account, and the
-     only thing this page reads from the register side -->
-<script src="assets/fb-config.js"></script>
-<script src="assets/public-read.js"></script>
 <script src="assets/heoc-series.js"></script>
-<script>
-(function () {
-  /* The response summary. public_stats/flood_response is written only by a
-     coordinator, deliberately, and read here by anyone. Until something is
-     published the page says so, and it never shows a number it has not
-     been given. */
-  if (!window.PUBLIC_STATS) return;
-  window.PUBLIC_STATS.render("flood_response", {
-    state: document.getElementById("sumState"),
-    body: document.getElementById("sumBody"),
-    panel: document.getElementById("sumPanel"),
-    kind: "flood"
-  });
-})();
-</script>
 </body>
 </html>

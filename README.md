@@ -41,15 +41,15 @@ they were when the hub and the forms moved out (`design.css`, `app.css`, `codes.
 | [`videos.html`](videos.html) | **Videos** — honestly empty until real, approved Nepal material exists (the BPS+ page was withdrawn on 20 September 2026) |
 | [`referral-directory.html`](referral-directory.html) | **Referral Directory** — helplines; *Find a service* by service, provider, place and way of reaching it, on a map; the declared affected area; staff deployed by district |
 | [`resources.html`](resources.html) · [`contact-us.html`](contact-us.html) | **Resources · Contact** — sourced items only, including Nepal's national strategy, referral guideline and training curriculum; one contact for coordination, name to be confirmed, and the contributing organisations |
-| [`architecture.html`](architecture.html) · [`method.html`](method.html) · [`access-explained.html`](access-explained.html) · [`layer3.html`](layer3.html) | **How this system works** — the architecture, the governance position, the data model and who can see what; reached from the footer, not the menu |
+| [`architecture.html`](architecture.html) · [`method.html`](method.html) · [`access-explained.html`](access-explained.html) · [`layer3.html`](layer3.html) | **How this system works** — the architecture, the governance position, the data model and who can see what; not linked from the site since 7 October 2026: they describe the register as it stood before it moved to SORMAS, and stay at their addresses as a record |
 
 ## Where the content comes from
 
-- **The response summary and the partner directory** read `public_stats`: figures a
-  coordinator publishes on purpose, never the register itself
-  ([`assets/public-read.js`](assets/public-read.js)). Until something is published,
-  both say so. A document published in the hub's demonstration mode is labelled as
-  such on the page.
+- **The public site reads nothing from the old register.** The response summary and the
+  partner directory, which read `public_stats` in the Firestore project, were taken off
+  on 7 October 2026: the register moved to SORMAS and nothing will be published there
+  again. `assets/public-read.js` and `assets/fb-config.js` stay in the repository but no
+  page loads them.
 - **The Ministry's MHPSS figures** on Flood Response come from
   [`assets/heoc-series.js`](assets/heoc-series.js): one row per Situation Report on
   the Health Sector Response (Health Emergency Operation Centre), each number as

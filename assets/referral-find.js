@@ -479,6 +479,10 @@
     if (res) {
       res.textContent = "";
       res.appendChild(group("official", official, el("p", "fempty", t("refdir.find.none.official"))));
+      /* The provider and partner tiers came from public_stats in the old
+         register. The public site stopped reading it on 7 October 2026, so
+         without window.PUBLIC_STATS only hospitals and helplines are drawn. */
+      if (window.PUBLIC_STATS) {
       var pe = el("p", "fempty", providerState());
       /* until the provider list is published, point to where the staff are */
       if (providerDoc === null && window.WORKFORCE && document.getElementById("staff")) {
@@ -490,6 +494,7 @@
       var pstate = partnerState();
       res.appendChild(group("partner", partner, el("p", "fempty", partner.length ? "" :
         (pstate || t("refdir.find.none.partner")))));
+      }
       res.appendChild(group("phone", phone, el("p", "fempty", t("refdir.find.none.phone"))));
       var nl = F.not_listed || [];
       if (nl.length) {

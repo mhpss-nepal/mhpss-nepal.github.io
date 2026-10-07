@@ -67,7 +67,7 @@ REFKEYS = [k for k, _ in REFERENCE]
 # jump.<page>.<n> in the dictionary.
 JUMP = {
     "flood":    ["#overview", "#summary", "#helplines", "#tools", "#guidance", "#coordination"],
-    "referral": ["#helplines", "#find", "#map", "#directory", "#staff"],
+    "referral": ["#helplines", "#find", "#map", "#staff"],
 }
 
 # Unlisted draft pages (preview/) carry their own key so they get no jump
@@ -164,11 +164,6 @@ FOOT = '''<footer class="gfoot">
         <p><a href="form/" data-i18n="nav.forms"></a><br>
         <a href="form/cards.html" data-i18n="foot.cards"></a><br>
         <a href="hub/" data-i18n="mast.hub"></a></p></div>
-      <div><h4 data-i18n="ref.strip"></h4>
-        <p><a href="architecture.html" data-i18n="ref.architecture"></a><br>
-        <a href="method.html" data-i18n="ref.method"></a><br>
-        <a href="access-explained.html" data-i18n="ref.access"></a><br>
-        <a href="layer3.html" data-i18n="ref.layer3"></a></p></div>
     </div>
     <p><span data-i18n="foot.draft" data-i18n-html></span> <span data-i18n="foot.updated"></span> <span data-updated data-i18n-skip></span></p>
     <p data-i18n="foot.privacy"></p>
