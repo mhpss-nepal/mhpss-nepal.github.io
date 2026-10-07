@@ -56,7 +56,7 @@
 .phead .eyebrow{font-size:13px;letter-spacing:1.4px;text-transform:uppercase;
   color:var(--wh-d);font-weight:700}
 .phead h1{font-size:clamp(34px,3.6vw,54px);font-weight:700;line-height:1.12;
-  color:var(--wh-dd);letter-spacing:-.8px;margin:8px 0 0;max-width:28ch}
+  color:var(--wh-dd);letter-spacing:-.8px;margin:8px 0 0;max-width:none}
 .phead .subtitle{max-width:none;font-size:19px;line-height:1.6;margin-top:14px;color:var(--hc-mute)}
 @media (max-width:620px){ .phead{padding:26px 0 24px} .phead .subtitle{font-size:17px} }
 .state{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.5px;

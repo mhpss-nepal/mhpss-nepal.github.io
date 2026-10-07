@@ -1535,7 +1535,7 @@ window.I18N_STRINGS = {
     "iec.p001": "<b>Source</b> — Ministry of Health and Food Safety, Health Emergency and Disaster Management Unit, <a href=\"https://giwmscdnone.gov.np/media/pdf_upload/EN_SitRep_21_Health_Sector_Response_to_Flash_Flood_in_Rasuwa_15-09-2026_lenybiz.pdf\">Situation Report #21</a> on the health sector response to the flash flood in Rasuwa, 15 September 2026.",
     "iec.p002": "The Ministry of Health and Food Safety reports that “Mental Health IEC materials are being distributed” in the response. Those materials are not on this site. They will be listed here, by topic, once they are approved for publication.",
     "iec.p003": "Leaflets, posters and messages on mental health and psychosocial support, to hand out and put up where people affected by the flood will see them.",
-    "iec.p004": "Information, education and communication materials",
+    "iec.p004": "Information, Education and Communication materials",
     "iec.p005": "No materials have been published here yet",
 
     /* ---- swept prose: refdir ---- */
