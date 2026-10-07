@@ -104,8 +104,10 @@ The generated parts are committed. After changing the tables they come from, run
 ## Language
 
 Pages carry an English and Nepali switch. Nepali comes from a translator: where a
-Nepali string is still awaited the English shows, short machine drafts are announced
-as such, and clinical wording stays in English. `python3 tools/i18n-check.py
+Nepali string is still awaited the English shows, and clinical wording stays in English.
+Machine drafts are no longer announced by a notice on each Nepali page (withdrawn on
+7 October 2026); their state is stated on `method.html`, and `mountNotice()` in
+`assets/i18n.js` can switch the notice back on. `python3 tools/i18n-check.py
 --worksheet` writes the worksheet for the translator.
 
 ## Known gaps

@@ -485,7 +485,10 @@
   function start() {
     var cov = apply(document);
     mountToggle(cov);
-    mountNotice(cov);
+    /* The machine-translation notice at the top of the Nepali page was
+       withdrawn on the public website on 7 October 2026. mountNotice() is
+       kept so it can be switched back on; the state of the Nepali is stated
+       on method.html instead. */
     if (cov.missing.length) {
       console.warn("[i18n] keys used on this page with no English string:", cov.missing);
     }
