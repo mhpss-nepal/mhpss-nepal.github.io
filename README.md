@@ -35,7 +35,7 @@ they were when the hub and the forms moved out (`design.css`, `app.css`, `codes.
 
 | Page | What it is |
 |---|---|
-| [`index.html`](index.html) | **Home** — what the website is for, who takes part (by category, to be confirmed), what it supports, the helplines |
+| [`index.html`](index.html) | **Home** — what the website is for, who takes part (by category, to be confirmed), what it supports (the helplines are on the Referral Directory) |
 | [`flood-response.html`](flood-response.html) | **Flood Response** — the event as its sources state it, the Ministry's MHPSS figures from its situation reports, helplines, field tools, programme guidance (none yet), and how the figures are read (IASC pyramid, counting rules) |
 | [`iec.html`](iec.html) | **IEC** — five materials from the National Health Education, Information and Communication Centre (NHEICC), shown as pictures and offered as print files in [`assets/iec/`](assets/iec/); the files are the Centre's own, with the designers' names removed from the PDF metadata |
 | [`videos.html`](videos.html) | **Videos** — honestly empty until real, approved Nepal material exists (the BPS+ page was withdrawn on 20 September 2026) |

@@ -1370,7 +1370,7 @@ window.I18N_STRINGS = {
     "home.p020": "WHO Nepal",
     "home.p021": "District health offices, Rasuwa and Nuwakot",
     "home.p022": "<span lang=\"ne\">स्वास्थ्य तथा खाद्य स्वच्छता मन्त्रालय</span> / Ministry of Health and Food Safety",
-    "home.p023": "MHPSS<br>Nepal",
+    "home.p023": "MHPSS Nepal",
     "home.p024": "<span class=\"no\">3</span> What this website supports",
     "home.p025": "<span class=\"no\">2</span> Who takes part",
     "home.p026": "<span class=\"no\">1</span> Mission",

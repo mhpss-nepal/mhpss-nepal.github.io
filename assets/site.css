@@ -688,7 +688,7 @@ html[lang="ne"] .hlc .np{display:none}
    allows, for rounding. Checked at 320 through 1920: three lines, both
    languages, at every width. */
 .sheet.hero h1.title{color:#fff;max-width:none;
-  font-size:clamp(20px,4.6vw,58px);
+  font-size:clamp(34px,5vw,64px);
   letter-spacing:-.9px;line-height:1.1;margin-top:10px}
 .sheet.hero h1.title br{line-height:1.1}
 .sheet.hero .subtitle{color:#e8f3f9;font-size:19px;line-height:1.62;margin-top:18px}
@@ -698,7 +698,9 @@ html[lang="ne"] .hlc .np{display:none}
 .sheet.hero .split > div:first-child .golinks a{color:#fff;text-decoration:underline;
   text-underline-offset:4px;text-decoration-thickness:1.5px}
 .sheet.hero .split > div:first-child .golinks a:hover{color:var(--wh-b)}
-.sheet.hero .split{gap:40px;align-items:center}
+/* one column since 7 October 2026: the helplines live on the Referral Directory,
+   and the name reads on one line across the full width */
+.sheet.hero .split{gap:40px;align-items:center;grid-template-columns:1fr}
 .sheet.hero .hlbox{border-color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 @media (max-width:860px){ .sheet.hero{padding:32px 0 36px} .sheet.hero .subtitle{font-size:17px} }
 .roles.single{grid-template-columns:minmax(0,1fr)}
