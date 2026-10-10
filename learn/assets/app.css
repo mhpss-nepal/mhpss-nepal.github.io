@@ -29,3 +29,72 @@ html[data-theme=dark] .mhgap-providers>div{background:transparent}
 .mhgap-providers .action{background:transparent;color:var(--blue);padding:6px 0;justify-content:flex-start;text-decoration:underline;text-underline-offset:3px}
 html[data-theme=dark] .mhgap-providers .action{background:transparent;color:var(--blue)}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+/* Guided learning: existing validation, source bytes and device-state contract are unchanged. */
+body.learning-active main>section:not(#reader-root),body.learning-active #released-courses,body.learning-active #load-status{display:none}
+body.learning-active #reader-root{margin-top:16px;border-top:6px solid #116b69}
+body.learning-active #trial-boundary,body.learning-active #locale-review,body.learning-active main>.sectiontitle{display:none}
+#reader-root .trial-details{font-size:16px;margin-bottom:18px}
+#reader-root .course-name{font-size:20px;font-weight:400;margin-block:8px 14px;color:var(--muted)}
+#reader-root .reader-toolbar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+#reader-root .guided-lessons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+#reader-root .guided-lessons button{flex:1 1 150px;text-align:left;line-height:1.35}
+#reader-root .guided-lessons button[aria-current=step]{background:#116b69;color:#fff;border-color:#116b69}
+#reader-root #course-content{font-size:21px;line-height:1.65;max-width:100%}
+#reader-root #course-content h2{font-size:clamp(25px,3vw,34px);line-height:1.2;max-width:35ch;margin-bottom:16px}
+#reader-root #course-content h3{font-size:25px;line-height:1.3;margin:20px 0 16px}
+#reader-root #course-content p,#reader-root #course-content li{max-width:65ch;white-space:pre-line}
+#reader-root .lesson-objective{font-size:18px;color:var(--muted)}
+#reader-root .step-rail{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 0;border-block:1px solid var(--line);font-size:17px}
+#reader-root .step-rail p{flex:1 1 220px;margin:0}
+#reader-root .step-rail select{max-width:100%;min-width:0;flex:1 1 260px;width:260px}
+#reader-root .decision-grid{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,1.3fr);gap:28px;align-items:start}
+#reader-root .learning-scene{margin:0;min-width:0;background:#fff;color:#183744;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+#reader-root .learning-scene img{display:block;width:100%;height:auto;max-height:410px;object-fit:contain;background:#fff}
+#reader-root .learning-scene figcaption{font-size:17px;line-height:1.5;padding:14px 18px}
+#reader-root .learning-scene .media-note{font-size:15px;line-height:1.5;padding:0 18px 14px}
+#reader-root .learning-scene .media-note p{margin-block:10px}
+#reader-root .learning-scene a{color:#006996}
+#reader-root .guided-question{min-width:0;margin:0;padding:0;border:0;font-size:20px}
+#reader-root .guided-question legend{padding:0 0 18px;font-size:23px;line-height:1.45;font-weight:700;width:100%}
+#reader-root .decision-cue{padding:14px 16px;margin-bottom:16px;background:var(--rosewash);border-left:4px solid var(--rose);font-size:18px;line-height:1.55}
+#reader-root .decision-cue p{margin:4px 0 0}
+#reader-root .guided-question .option{display:flex;align-items:flex-start;gap:12px;padding:16px;margin-bottom:12px;border:1px solid var(--line);background:var(--paper);border-radius:6px;line-height:1.5;cursor:pointer;min-height:44px}
+#reader-root .guided-question .option:has(input:checked){border:2px solid var(--teal);background:var(--tealwash);padding:15px}
+#reader-root .guided-question .option input{margin-top:8px;flex-shrink:0;width:18px;height:18px}
+#reader-root .guided-feedback{margin-top:20px}
+#reader-root .guided-feedback section{padding:16px;margin-block:12px;border-left:5px solid var(--rose);background:var(--rosewash)}
+#reader-root .guided-feedback .feedback-correct{border-color:var(--green);background:var(--greenwash)}
+#reader-root .guided-feedback h4{font-size:19px;line-height:1.5;margin-bottom:10px}
+#reader-root .decision-safety{margin-block:24px;padding:20px;border-left:5px solid var(--rose);background:var(--rosewash);font-size:18px;line-height:1.6}
+#reader-root .decision-safety h3,#reader-root .decision-safety h4{font-size:21px;margin:0 0 12px}
+#reader-root .source-details{margin-top:18px;font-size:16px;line-height:1.5}
+#reader-root summary{cursor:pointer;min-height:44px;padding-block:10px;line-height:1.5}
+#reader-root .citations{font-size:16px;line-height:1.55}
+#reader-root .citations a,#reader-root .referral-link,#reader-root .media-note a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;max-width:100%;white-space:normal}
+#reader-root .guided-block{max-width:65ch;padding:20px 0}
+#reader-root .guided-block.example{display:block;border-left:5px solid var(--teal);padding:20px;background:var(--tealwash)}
+#reader-root .guided-block.reflection{padding:20px;background:var(--violetwash)}
+#reader-root .takeaway{padding:20px;background:var(--tealwash);border-left:5px solid var(--teal)}
+#reader-root .rehearsal{margin:22px 0;padding:16px 20px;background:var(--wash);border:1px solid var(--line)}
+#reader-root .step-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;margin:24px 0}
+#reader-root .step-controls button{white-space:normal;text-align:left;max-width:100%;line-height:1.5}
+#reader-root #step-next,#reader-root #next-lesson,#reader-root #mark-read{background:#116b69;color:#fff;border-color:#116b69}
+#reader-root #learning-tools{border-top:1px solid var(--line);margin-top:24px;padding-top:14px}
+#reader-root #learning-tools>summary{font-size:18px}
+#reader-root #learning-tools .settings label{min-height:44px;display:flex;align-items:center;gap:12px;cursor:pointer}
+#reader-root #lineage{overflow-wrap:break-word;word-break:break-word;font-size:14px}
+#reader-root [tabindex="-1"]:focus{outline:3px solid #d66a00;outline-offset:3px;scroll-margin-top:16px}
+@media(max-width:700px){
+ #reader-root #course-content{font-size:19px}
+ #reader-root .decision-grid{grid-template-columns:minmax(0,1fr);gap:20px}
+ #reader-root .learning-scene img{max-height:270px}
+ #reader-root .guided-question{font-size:19px}
+ #reader-root .guided-question legend{font-size:22px}
+ #reader-root .decision-safety{padding:16px;font-size:18px}
+ #reader-root .guided-lessons button{flex-basis:110px;font-size:16px}
+ #reader-root .step-rail{align-items:stretch;gap:8px}
+ #reader-root .step-rail label{width:100%}
+ #reader-root .step-rail select{width:100%;flex-basis:100%}
+ #reader-root .lesson-objective{font-size:17px}
+ #reader-root .step-controls button{flex:1 1 160px}
+}

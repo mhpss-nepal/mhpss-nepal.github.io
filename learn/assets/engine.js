@@ -1,6 +1,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id), SLUG=/^[a-z][a-z0-9-]*$/, VERSION=/^\d+\.\d+\.\d+$/, TYPES=['text','steps','example','safety','reflection','job_aid','external_resource'];
 let D,locale='en',courses=[],C=null,contentHash='',state=null,openGeneration=0,loadGeneration=0,requestedModule=null,pendingIdentity=null;
+let readerMode='guided',guidedPosition=0;
 const tr=(key,args={})=>String(D?.[locale]?.[key]??D?.en?.[key]??key).replace(/\{(\w+)\}/g,(_,k)=>args[k]??'');
 function el(tag,text,attrs={}){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,String(v)));return e;}
 function ui(tag,key,args={},attrs={}){return el(tag,tr(key,args),{lang:locale,...attrs});}
@@ -31,6 +32,7 @@ function safeUrl(raw){try{const u=new URL(raw);return u.protocol==='https:'&&!u.
 async function get(path){const response=await fetch(path,{cache:'no-store',credentials:'omit',redirect:'error'});if(!response.ok)throw Error('Unavailable');const raw=await response.text();must(raw.length<3000000);return raw;}
 async function sha(raw){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('');}
 async function load(){
+ document.body.classList.remove('learning-active');document.querySelector('.skip').href='#main';document.querySelector('.nav a[href="#catalogue"]').onclick=null;
  const loading=++loadGeneration;cancelOpen(null);$('retry').hidden=true;$('load-status').textContent=tr('loading');$('released-courses').replaceChildren();$('reader-root').replaceChildren();courses=[];C=null;state=null;contentHash='';progressKey='';opted=false;storageMessage='';document.body.removeAttribute('data-ready');featuredLaunches();
  try{
   const dictionary=JSON.parse(await get('assets/ui.json'));if(loading!==loadGeneration)return;must(dictionary.en&&dictionary.ne&&Object.keys(dictionary.en).every(k=>typeof dictionary.ne[k]==='string'));D=dictionary;updateLocale();
@@ -62,7 +64,7 @@ function restore(){opted=false;storageMessage='';try{const raw=localStorage.getI
  const sameRendition=saved.rendition_hash===contentHash;state={...saved.state,answers:Object.assign(Object.create(null),sameRendition?saved.state.answers:{}),checked:Object.assign(Object.create(null),sameRendition?saved.state.checked:{})};opted=true;}catch{storageMessage='storageError';}}
 function persist(){if(!opted)return;try{localStorage.setItem(progressKey,JSON.stringify({schema_version:2,rendition_hash:contentHash,state}));}catch{opted=false;storageMessage='storageError';if($('save-progress'))$('save-progress').checked=false;if($('storage-status'))$('storage-status').textContent=tr('storageError');}}
 function clearProgress(){try{localStorage.removeItem(progressKey);}catch{storageMessage='storageError';}}
-function settings(root){const section=el('section',undefined,{class:'settings'}),label=el('label'),input=el('input',undefined,{id:'save-progress',type:'checkbox'});input.checked=opted;input.onchange=()=>{opted=input.checked;if(opted)persist();else clearProgress();};label.append(input,ui('span','save'));section.append(label,ui('p','saveNote'),button('reset',()=>{cancelOpen(C.module_id);opted=false;clearProgress();state=initial();if(storageMessage!=='storageError')storageMessage='resetDone';renderReader();},{id:'reset-progress'}),ui('p',storageMessage||'memoryOnly',{}, {id:'storage-status',role:'status'}));root.append(section);}
+function settings(root){const section=el('section',undefined,{class:'settings'}),label=el('label'),input=el('input',undefined,{id:'save-progress',type:'checkbox'});input.checked=opted;input.onchange=()=>{opted=input.checked;if(opted)persist();else clearProgress();};label.append(input,ui('span','save'));section.append(label,ui('p','saveNote'),button('reset',()=>{cancelOpen(C.module_id);opted=false;clearProgress();state=initial();guidedPosition=0;if(storageMessage!=='storageError')storageMessage='resetDone';renderReader();$('reader-title').focus();},{id:'reset-progress'}),ui('p',storageMessage||'memoryOnly',{}, {id:'storage-status',role:'status'}));root.append(section);}
 // Intent owns authority; an identity promise is only reusable work, never authority.
 function cancelOpen(module){openGeneration++;requestedModule=module;pendingIdentity=null;}
 function rendition(module){return courses.find(r=>r.c.module_id===module&&r.c.language===locale)||courses.find(r=>r.c.module_id===module&&r.c.language==='en')||courses.find(r=>r.c.module_id===module);}
@@ -70,12 +72,21 @@ async function openCourse(row,generation){if(generation===undefined){generation=
  const shape=JSON.stringify({module:c.module_id,version:c.content_version,source:source.hash,lessons:c.lessons.map(l=>l.lesson_id),questions:c.questions.map(q=>[q.question_id,q.options.map(o=>o.option_id),q.correct_option_id])});
  if(!pendingIdentity||pendingIdentity.shape!==shape)pendingIdentity={shape,promise:sha(shape)};
  const identity=pendingIdentity;try{const key='mhpss.learn.v1.'+c.module_id+'.'+await identity.promise;if(generation!==openGeneration||requestedModule!==c.module_id||rendition(requestedModule)!==row)return;
- pendingIdentity=null;C=c;contentHash=row.hash;progressKey=key;state=initial();restore();updateLocale();$('reader-root').scrollIntoView({block:'start'});$('reader-title').focus();
+ pendingIdentity=null;C=c;contentHash=row.hash;progressKey=key;state=initial();readerMode='guided';guidedPosition=0;restore();updateLocale();$('reader-root').scrollIntoView({block:'start'});$('reader-title').focus();
  }catch{if(generation!==openGeneration)return;pendingIdentity=null;$('load-status').textContent=tr('loadError');}}
 function citations(ids){const box=el('div',undefined,{'data-citation':'',class:'citations',lang:C.language});box.append(ui('strong','sources'));ids.forEach(id=>{const s=C.sources.find(s=>s.source_id===id);box.append(el('p',`${s.source_id} · ${s.title} · ${s.edition} · ${s.reference} · ${s.location}`));const url=safeUrl(s.reference);if(url)box.append(el('a',s.title,{href:url,target:'_blank',rel:'noopener noreferrer'}));});return box;}
 function bullets(content,key,values){content.append(ui('h3',key));const ul=el('ul');values.forEach(v=>ul.append(el('li',v,{lang:C.language})));content.append(ul);}
 function download(body,id){const url=URL.createObjectURL(new Blob([body],{type:'text/plain;charset=utf-8'}));const link=el('a',undefined,{href:url,download:id+'-'+C.content_version+'.txt'});document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function renderReader(){const root=$('reader-root');root.replaceChildren();root.append(el('h2',C.title,{id:'reader-title',tabindex:'-1',lang:C.language}),ui('p','lineage',{version:C.content_version,language:C.language,hash:contentHash},{id:'lineage'}));
+function renderReader(){
+ const guided=C.module_id==='pfa'&&C.language==='en'&&contentHash==='632ba399952e424e4c4d5bb37f164b48c432bb14c7dcc4be8ffd7ceda1d39a71';
+ document.body.classList.toggle('learning-active',guided);
+ document.querySelector('.skip').href=guided?'#reader-root':'#main';
+ document.querySelector('.nav a[href="#catalogue"]').onclick=guided?()=>leaveReader():null;
+ if(guided&&readerMode==='guided')renderGuided();else renderReferenceReader(guided);
+}
+function leaveReader(){persist();document.body.classList.remove('learning-active');$('reader-root').replaceChildren();C=null;state=null;opted=false;progressKey='';contentHash='';cancelOpen(null);document.querySelector('.skip').href='#main';document.querySelector('.nav a[href="#catalogue"]').onclick=null;$('main').focus();}
+function renderReferenceReader(guided=false){const root=$('reader-root');root.replaceChildren();root.append(el('h2',C.title,{id:'reader-title',tabindex:'-1',lang:C.language}),ui('p','lineage',{version:C.content_version,language:C.language,hash:contentHash},{id:'lineage'}));
+ if(guided)root.append(englishButton('Return to guided learning',()=>{readerMode='guided';renderReader();$('lesson-title').focus();},{id:'guided-return'}));
  settings(root);const layout=el('div',undefined,{class:'reader-layout'}),nav=el('nav',undefined,{class:'lesson-nav','aria-label':tr('lessons')});
  C.lessons.forEach((l,i)=>nav.append(button('lesson',()=>{state.lesson=l.lesson_id;persist();renderReader();$('lesson-title').focus();},{'data-lesson':l.lesson_id,'aria-current':state.lesson===l.lesson_id?'step':'false','aria-label':tr('lesson',{number:i+1})+' — '+l.title})));
  Array.from(nav.children).forEach((b,i)=>b.textContent=tr('lesson',{number:i+1}));
@@ -84,10 +95,81 @@ function renderReader(){const root=$('reader-root');root.replaceChildren();root.
  const lesson=C.lessons.find(l=>l.lesson_id===state.lesson);content.append(el('h2',lesson.title,{id:'lesson-title',tabindex:'-1'}),el('p',lesson.objective));
  lesson.blocks.forEach((block,i)=>{const section=el('section',undefined,{class:'block '+block.type,'data-block':block.type});section.append(ui('h3',block.type));
   if(block.type==='steps'){const ol=el('ol');block.body.split(/\n+/).filter(x=>x.trim()).forEach(s=>ol.append(el('li',s)));section.append(ol);}else section.append(el('p',block.body));
-  if(block.type==='reflection'){section.append(ui('label','reflectionHint',{}, {for:'reflection-'+i}),el('textarea',undefined,{id:'reflection-'+i,autocomplete:'off',spellcheck:'false','aria-label':tr('reflectionHint')}));}
+  if(block.type==='reflection')section.append(el('p','Optional: think privately or use your own paper. This page has no personal-note entry field.',{lang:'en'}));
   if(block.type==='job_aid')section.append(button('download',()=>download(block.body,'lesson-aid-'+i)));
   section.append(citations(block.source_ids));content.append(section);
  });main.append(content,button('markRead',()=>{if(!state.read.includes(lesson.lesson_id))state.read.push(lesson.lesson_id);persist();renderReader();},{id:'mark-read'}),ui('p','read',{count:state.read.length,total:C.lessons.length},{id:'read-progress',role:'status'}));layout.append(nav,main);root.append(layout);renderQuiz(root);renderResources(root);
+}
+// Presentation map only: the clinical package remains byte-identical. Unknown revisions use the reference reader.
+const GUIDED=[
+ {scene:'companionship',alt:'Two women sit alongside one another, hands on their own laps; one turns attentively toward the other.',version:'returning-home-v0.1',notice:'Observe the space between them. The illustration shows quiet company, not a completed intervention.',titles:['Practical, humane support','Who can offer PFA','Orientation and supervision','What PFA is not','The person can decline','Helping responsibly','Ethical commitments','Hari and Sunita: practical help','Optional private reflection','Key points','Stay within your role']},
+ {scene:'pause-and-look',alt:'Two adults remain outside a closed house, looking across the courtyard. The illustration does not establish that the site is safe.',version:'returning-home-v0.1',notice:'Notice that both people remain outside. This picture cannot tell you whether the site is safe.',titles:['Prepare before you go','Look before you act','Different reactions to crisis','Get help as a priority','People needing extra attention','Bikash: priorities at the site','Key points','Protect a separated child']},
+ {scene:'listening',alt:'A woman sits attentively beside a man holding a tissue to his eye. They sit separately without touching; he remains upset.',version:'body-language-v0.1',notice:'Notice the separate seats and hands kept to themselves. Distress has not disappeared.',titles:['Approach respectfully','Ask what matters now','Listen and allow silence','Helping someone feel calmer','Helpful and unhelpful communication','Culture and personal choice','Maya: approach and listen','Optional private reflection','Key points','Immediate help and limited sharing']},
+ {scene:'practical-help',alt:'A woman points to a sheet of paper while a man responds with an open hand. No medicine or completed referral is depicted.',version:'next-steps-home-v2',notice:'Notice the person pointing to the paper. The scene shows discussion, not proof that a referral succeeded.',titles:['Practical needs and control','Basic needs and services','Support coping with problems','Reliable information and referral','Loved ones and social support','When PFA is not enough','Consent and confidentiality','Note for health workers','End the contact well','Maya: link and hand over','Key points','Referral safety','Open the referral directory']},
+ {scene:'colleague-conversation',alt:'Four adults sit at the same level. One speaks with an open hand while the others listen; no one touches another person.',version:'body-language-v0.1',notice:'Notice one person speaking and others listening. This is an illustration of conversation, not therapy or a required group disclosure.',titles:['Are you ready to help?','Manage stress while working','Rest after helping','Bikash: workload and check-ins','Optional private reflection','Key points','When to seek more support']}
+];
+function englishButton(label,fn,attrs={}){const b=el('button',label,{type:'button',lang:'en',...attrs});b.onclick=fn;return b;}
+function sourceDetails(ids){const d=el('details',undefined,{class:'source-details'});d.append(ui('summary','sources'),citations(ids));return d;}
+function referralLink(root){root.append(el('a','MHPSS Nepal Referral Directory',{href:'https://mhpss-nepal.github.io/referral-directory.html',target:'_blank',rel:'noopener noreferrer',class:'referral-link',lang:'en'}));}
+function pieces(body){
+ // Split on sentence boundaries without rewriting words, punctuation or ordering. Long single sentences remain intact.
+ const sentences=body.split(/(?<=[.!?])\s+/),out=[];let chunk='';
+ for(const sentence of sentences){const next=sentence.trim();if(chunk&&(`${chunk} ${next}`).split(/\s+/).length>85){out.push(chunk);chunk='';}chunk+=(chunk?' ':'')+next;}
+ if(chunk)out.push(chunk);return out;
+}
+function guidedSteps(lesson,index){
+ const questions=C.questions.filter(q=>q.objective===lesson.objective),steps=[{kind:'question',q:questions[0],label:'Try a decision'}];
+ lesson.blocks.forEach((block,i)=>{if(block.type==='safety'||block.body.startsWith('Key points.'))return;const chunks=index===3&&i===6?[block.body]:pieces(block.body);chunks.forEach((body,part,all)=>steps.push({kind:'block',block,body,index:i,label:GUIDED[index].titles[i]+(all.length>1?` · ${part+1}/${all.length}`:'')}));});
+ if(questions[1])steps.push({kind:'question',q:questions[1],label:'Practise another decision'});
+ steps.push({kind:'summary',label:'Rehearse and take away'});return steps;
+}
+function decisionSafety(q,index){
+ const l=C.lessons[index],ids=[],bodies=[];
+ const add=(block,body=block.body)=>{bodies.push(body);ids.push(...block.source_ids);};
+ if(index===0){add(l.blocks[2]);add(l.blocks[3]);}
+ if(index===1){add(l.blocks[1],l.blocks[1].body.split(/(?<=[.!?])\s+/).filter(s=>s.includes('If you are not sure')).join(' '));if(q.question_id==='pfa-q04'){add(l.blocks[3]);add(l.blocks[7]);}}
+ if(index===2){add(l.blocks[9]);if(q.question_id==='pfa-q05')add(l.blocks[0]);}
+ if(index===3){if(q.question_id==='pfa-q08'){add(C.lessons[2].blocks[9]);add(l.blocks[6]);}else add(l.blocks[7]);add(l.blocks[11]);}
+ if(index===4)add(l.blocks[6]);
+ const section=el('aside',undefined,{class:'decision-safety',lang:'en'});section.append(el('h3','Safety for this decision'));bodies.filter(Boolean).forEach(body=>section.append(el('p',body)));if(ids.includes('mhpss-nepal-referral-directory'))referralLink(section);section.append(sourceDetails([...new Set(ids)]));return section;
+}
+function scene(index){const item=GUIDED[index],figure=el('figure',undefined,{class:'learning-scene'});figure.append(el('img',undefined,{src:`../assets/iec/pfa-learning-v1/${item.scene}.webp`,alt:item.alt,loading:'eager',decoding:'async'}),el('figcaption',item.notice));const d=el('details',undefined,{class:'media-note'});d.append(el('summary','About this illustration'),el('p',`Fictional Nepal character illustration study · ${item.version}. A behaviour study, not a depiction of the named scenario. Existing AI-generated art under Adib Asrori creative direction, reused for this English usability trial. Not culturally validated or institutionally endorsed.`),el('a','Artwork provenance',{href:'../assets/iec/pfa-learning-v1/provenance.json'}));figure.append(d);return figure;}
+function guidedQuestion(q,index,root){
+ const field=el('fieldset',undefined,{'data-question':q.question_id,class:'guided-question'}),feedback=el('div',undefined,{class:'guided-feedback','aria-live':'polite'}),err=el('p','',{role:'alert'});
+ field.append(el('legend',q.prompt));
+ const safety=decisionSafety(q,index),cue=el('aside',undefined,{class:'decision-cue'});cue.append(el('strong','Keep in mind'),el('p',safety.querySelector('p').textContent.split(/(?<=[.!?])\s+/)[0]));field.append(cue);
+ q.options.forEach(o=>{const label=el('label',undefined,{class:'option'}),input=el('input',undefined,{type:'radio',name:q.question_id,value:o.option_id});input.checked=state.answers[q.question_id]===o.option_id;input.onchange=()=>{state.answers[q.question_id]=o.option_id;delete state.checked[q.question_id];persist();feedback.replaceChildren();err.textContent='';updateScore();};label.append(input,el('span',o.text));field.append(label);});
+ const show=()=>{feedback.replaceChildren();if(!state.checked[q.question_id])return;const chosen=q.options.find(o=>o.option_id===state.answers[q.question_id]),correct=q.options.find(o=>o.option_id===q.correct_option_id);feedback.append(ui('h3',chosen===correct?'correct':'incorrect'));const rationale=o=>{const box=el('section',undefined,{'data-rationale':o.option_id,class:o===correct?'feedback-correct':'feedback-review'});box.append(el('h4',o.text),el('p',o.rationale));return box;};feedback.append(rationale(chosen));if(chosen!==correct)feedback.append(rationale(correct));const compare=el('details');compare.append(el('summary','Compare the other responses'));q.options.filter(o=>o!==chosen&&o!==correct).forEach(o=>compare.append(rationale(o)));feedback.append(compare,sourceDetails(q.source_ids));};
+ field.append(button('check',()=>{if(!state.answers[q.question_id]){err.textContent=tr('choose');field.querySelector('input').focus();return;}state.checked[q.question_id]=true;persist();show();updateScore();},{'data-check':''}),err,feedback);show();
+ const grid=el('div',undefined,{class:'decision-grid'});grid.append(scene(index),field);root.append(grid,safety);
+}
+function goGuided(position){guidedPosition=position;renderReader();$('step-title').focus();}
+function renderGuided(){
+ const root=$('reader-root'),index=C.lessons.findIndex(l=>l.lesson_id===state.lesson),lesson=C.lessons[index],steps=guidedSteps(lesson,index);guidedPosition=Math.min(Math.max(guidedPosition,0),steps.length-1);const step=steps[guidedPosition];root.replaceChildren();
+ root.append(el('p',`PFA · Lesson ${index+1} of ${C.lessons.length} · English usability trial`,{class:'eyebrow',lang:'en'}),el('h2',C.title,{id:'reader-title',tabindex:'-1',class:'course-name',lang:'en'}));
+ const toolbar=el('div',undefined,{class:'reader-toolbar'});toolbar.append(englishButton('Learning catalogue',leaveReader),englishButton('Full reading & reference',()=>{readerMode='reference';renderReader();$('reader-title').focus();},{id:'full-reference'}));root.append(toolbar);
+ const boundary=el('details',undefined,{class:'trial-details',lang:'en'});boundary.append(el('summary','English learning/usability trial — not for field practice or certification'),el('p',$('trial-boundary').textContent));root.append(boundary);
+ if(locale!=='en')root.append(el('p','English source content and guided controls. Reviewed Nepali course content is not available.',{lang:'en',class:'notice',id:'guided-language-notice'}));
+ const nav=el('nav',undefined,{class:'guided-lessons','aria-label':'PFA lessons',lang:'en'});C.lessons.forEach((l,i)=>nav.append(englishButton(`${i+1}. ${['PFA and your role','Prepare and look','Listen','Link and end well','Care for helpers'][i]}${state.read.includes(l.lesson_id)?' · read':''}`,()=>{state.lesson=l.lesson_id;guidedPosition=0;persist();renderReader();$('lesson-title').focus();},{'data-lesson':l.lesson_id,'aria-current':state.lesson===l.lesson_id?'step':'false'})));root.append(nav);
+ const content=el('article',undefined,{id:'course-content',lang:'en'});content.append(el('h2',lesson.title,{id:'lesson-title',tabindex:'-1'}),el('p',lesson.objective,{class:'lesson-objective'}));
+ const rail=el('div',undefined,{class:'step-rail'}),label=el('label','Jump to a step',{for:'step-picker'}),select=el('select',undefined,{id:'step-picker'});steps.forEach((s,i)=>select.append(el('option',`${i+1}. ${s.label}`,{value:i})));select.value=String(guidedPosition);select.onchange=()=>goGuided(Number(select.value));rail.append(el('p',`Step ${guidedPosition+1} of ${steps.length} · ${step.kind==='question'?'Decision practice':step.kind==='summary'?'Rehearsal and summary':'Reading'}`,{role:'status'}),label,select);content.append(rail,el('h3',step.label,{id:'step-title',tabindex:'-1'}));
+ if(step.kind==='question')guidedQuestion(step.q,index,content);
+ else if(step.kind==='block'){
+  const section=el('section',undefined,{class:'guided-block '+step.block.type,'data-block':step.block.type,'data-source-block':step.index});section.append(el('p',step.body));
+  if(step.block.type==='reflection')section.append(el('p','Optional: think privately or use your own paper. There is no personal-note entry field. You may skip this step.',{class:'notice'}));
+  if(step.block.source_ids.includes('mhpss-nepal-referral-directory'))referralLink(section);section.append(sourceDetails(step.block.source_ids));content.append(section);
+  // Safety remains within the lesson even when a learner jumps past the opening decision.
+  if(step.block.type==='example')content.append(scene(index));
+ }else{
+  const key=lesson.blocks.find(b=>b.body.startsWith('Key points.'));content.append(el('p',key.body,{class:'takeaway'}),sourceDetails(key.source_ids));
+  const rehearsal=el('details',undefined,{class:'rehearsal'});rehearsal.append(el('summary','Optional fictional rehearsal — no recording'),el('p','Revisit this reviewed example. Say aloud, or think through, the helper’s actions. Compare with the example; you do not need to share personal experience. This is rehearsal, not an observed skill assessment.'));const example=lesson.blocks.find(b=>b.type==='example');rehearsal.append(el('p',example.body),sourceDetails(example.source_ids));content.append(rehearsal);
+  lesson.blocks.filter(b=>b.type==='safety').forEach(b=>{const box=el('aside',undefined,{class:'decision-safety'});box.append(el('h4','Safety boundary'),el('p',b.body));if(b.source_ids.includes('mhpss-nepal-referral-directory'))referralLink(box);box.append(sourceDetails(b.source_ids));content.append(box);});
+  content.append(button('markRead',()=>{if(!state.read.includes(lesson.lesson_id))state.read.push(lesson.lesson_id);persist();renderReader();$('step-title').focus();},{id:'mark-read'}));
+  if(index<C.lessons.length-1)content.append(englishButton('Continue to the next lesson',()=>{state.lesson=C.lessons[index+1].lesson_id;guidedPosition=0;persist();renderReader();$('lesson-title').focus();},{id:'next-lesson'}));
+ }
+ const controls=el('div',undefined,{class:'step-controls'});if(guidedPosition>0)controls.append(englishButton('Previous step',()=>goGuided(guidedPosition-1),{id:'step-back'}));if(guidedPosition<steps.length-1)controls.append(englishButton('Next: '+steps[guidedPosition+1].label,()=>goGuided(guidedPosition+1),{id:'step-next'}));content.append(controls);root.append(content);
+ root.append(ui('p','read',{count:state.read.length,total:C.lessons.length},{id:'read-progress',role:'status'}),ui('p','incomplete',{}, {id:'score',role:'status'}),ui('p','completionPending',{}, {id:'completion-summary',role:'status'}));updateScore();
+ const tools=el('details',undefined,{id:'learning-tools'});tools.append(el('summary','Device progress, job aid & source details',{lang:'en'}),el('p','Optional device saving resumes at the start of the last lesson. Step position is kept only while this page is open.',{lang:'en'}));settings(tools);tools.append(ui('p','lineage',{version:C.content_version,language:C.language,hash:contentHash},{id:'lineage'}));renderResources(tools);root.append(tools);
 }
 function renderQuiz(root){root.append(ui('h2','quiz'));const quiz=el('div',undefined,{id:'quiz-content',lang:C.language});
  C.questions.forEach(q=>{const field=el('fieldset',undefined,{'data-question':q.question_id});field.append(el('legend',q.prompt));const feedback=el('div'),err=el('p','',{role:'alert'});
