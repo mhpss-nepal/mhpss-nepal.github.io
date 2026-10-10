@@ -86,3 +86,27 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", paint);
   else paint();
 })();
+
+/* Public navigation: native Tab may only partially reveal an overflow child.
+   This shared entry is already loaded by every generated public nav page. */
+(function () {
+  "use strict";
+  function bindNavFocus() {
+    document.querySelectorAll('.navband .nav-middle').forEach(function (middle) {
+      middle.addEventListener('focusin', function (event) {
+        var link = event.target.closest('a');
+        if (!link || link.parentElement !== middle) return;
+        // Run after the browser's native focus scrolling; never scroll the page.
+        requestAnimationFrame(function () {
+          if (document.activeElement !== link) return;
+          var r = link.getBoundingClientRect();
+          var p = middle.getBoundingClientRect();
+          if (r.left < p.left) middle.scrollLeft += r.left - p.left;
+          else if (r.right > p.right) middle.scrollLeft += r.right - p.right;
+        });
+      });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindNavFocus);
+  else bindNavFocus();
+})();

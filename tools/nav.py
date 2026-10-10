@@ -41,14 +41,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # refuses a band whose words differ from the dictionary's.
 NAV = [
     ("home",      "Home",               "गृहपृष्ठ",          "./"),
+    ("contact",   "Contact",            "सम्पर्क",             "contact-us.html"),
     ("flood",     "Flood Response",     "बाढी प्रतिकार्य",    "flood-response.html"),
     ("iec",       "IEC",                "IEC सामग्री",        "iec.html"),
     ("referral",  "Referral Directory", "रेफरल निर्देशिका",   "referral-directory.html"),
     ("resources", "Resources",          "स्रोत सामग्री",       "resources.html"),
-    # Nonclinical interface label; human Nepali review remains pending.
-    ("learning",  "Learning",           "सिकाइ",              "learn/"),
     ("videos",    "Videos",             "भिडियो",             "videos.html"),
-    ("contact",   "Contact",            "सम्पर्क",             "contact-us.html"),
+    # Dedicated action after the alphabetic information links; labels unchanged.
+    ("learning",  "Learning",           "सिकाइ",              "learn/"),
 ]
 PUBLIC = [k for k, _, _, _ in NAV]
 
@@ -121,8 +121,26 @@ def top_block(key):
     out.append('<nav class="navband" aria-label="Sections of this site" data-i18n-skip>')
     out.append('  <div class="in">')
     for k, en, np, href in NAV:
-        on = ' class="on" aria-current="page"' if k == BAND_ON.get(key, key) else ''
-        out.append('    <a%s href="%s"><b>%s</b><i>%s</i></a>' % (on, href, en, np))
+        if k == 'contact':
+            out.append('    <div class="nav-middle">')
+        if k == 'learning':
+            out.append('    </div>')
+        classes = []
+        if k == 'home':
+            classes.append('nav-home')
+        if k == 'learning':
+            classes.append('nav-learning')
+        active = k == BAND_ON.get(key, key)
+        if active:
+            classes.append('on')
+        attrs = (' class="%s"' % ' '.join(classes)) if classes else ''
+        if active:
+            attrs += ' aria-current="page"'
+        icon = ('<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+                '<path d="M12 5C8 2 4 3 2 4v15c3-2 7-2 10 0 3-2 7-2 10 0V4c-2-1-6-2-10 1Z"/>'
+                '<path d="M12 5v14"/></svg>') if k == 'learning' else ''
+        label = '<span class="nav-label"><b>%s</b><i>%s</i></span>' % (en, np) if icon else '<b>%s</b><i>%s</i>' % (en, np)
+        out.append('    <a%s href="%s">%s%s</a>' % (attrs, href, icon, label))
     out.append('  </div>')
     out.append('</nav>')
     if key in REFKEYS:

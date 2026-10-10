@@ -737,12 +737,8 @@ html[lang="ne"] .hlc .np{display:none}
 .playerlist .sw.l2{background:#009ADE;color:#0B2540}
 .playerlist .sw.l1{background:#BFE3F5;color:#0B2540;border:0;line-height:26px}
 
-/* the nav band on a phone: it scrolls sideways, so say so with a fade at the edge */
-@media (max-width:760px){
-  .navband{position:relative}
-  .navband::after{content:"";position:absolute;top:0;right:0;bottom:0;width:36px;pointer-events:none;
-    background:linear-gradient(90deg,rgba(0,105,150,0),var(--wh-d,#006996) 85%)}
-}
+/* Only the middle information links scroll; Home and Learning stay visible.
+   Do not overlay the dedicated Learning action with the former phone fade. */
 
 /* ---- the GBV & CP referral pathway, on Find a service (1 Oct 2026) ---- */
 .pway{margin-top:30px;padding-top:22px;border-top:1px solid var(--grey-3)}
