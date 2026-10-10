@@ -19,5 +19,13 @@ html[data-theme=dark]{--blue:#78c8ee;--deep:#123e54;--ink:#e5f0f3;--muted:#c2d2d
 .foundation-card,.pipeline-card{border-top:4px solid var(--topic)}
 .pipeline-top svg{background:var(--topic);color:#fff}
 .mhgap{border-top:5px solid #006996}
-.mhgap-topic{border-left:4px solid var(--topic)}
+/* Approved 15% topic-color body tint; text and controls retain full opacity. */
+html:not([data-theme=dark]) .topics .pfa,html:not([data-theme=dark]) .topics .remote-pfa,html:not([data-theme=dark]) .topics .pfa .topicbody,html:not([data-theme=dark]) .topics .remote-pfa .topicbody{background:color-mix(in srgb,var(--catalogue-teal) 15%,white)}
+html:not([data-theme=dark]) .topics .grief,html:not([data-theme=dark]) .topics .grief .topicbody{background:color-mix(in srgb,var(--catalogue-violet) 15%,white)}
+.mhgap-providers{display:flex;flex-direction:column;gap:16px;margin-block:18px}
+.mhgap-providers>div{background:transparent;border:0;border-radius:0;padding:0;display:block}
+html[data-theme=dark] .mhgap-providers>div{background:transparent}
+.mhgap-providers p{margin:5px 0}
+.mhgap-providers .action{background:transparent;color:var(--blue);padding:6px 0;justify-content:flex-start;text-decoration:underline;text-underline-offset:3px}
+html[data-theme=dark] .mhgap-providers .action{background:transparent;color:var(--blue)}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
