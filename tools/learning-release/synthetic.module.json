@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "module_id": "synthetic-navigation",
+  "content_version": "1.0.0",
+  "language": "en",
+  "translation_source_version": null,
+  "title": "SYNTHETIC navigation exercise — NOT ministry approved",
+  "audience": [
+    "Release test operators"
+  ],
+  "objectives": [
+    "Identify the labelled navigation choice"
+  ],
+  "scope_limits": [
+    "Synthetic interface exercise only; no care guidance"
+  ],
+  "prerequisites": [],
+  "estimated_minutes": 5,
+  "approval": {
+    "status": "in-review",
+    "technical_reviewer": null,
+    "language_reviewer": null,
+    "approver": null,
+    "review_due": null
+  },
+  "sources": [
+    {
+      "source_id": "source-01",
+      "title": "Synthetic navigation fixture",
+      "edition": "1",
+      "reference": "Local synthetic exercise specification",
+      "location": "Test fixture",
+      "rights": "Synthetic test text only; not clinical content"
+    }
+  ],
+  "lessons": [
+    {
+      "lesson_id": "example-01",
+      "title": "Navigation exercise",
+      "objective": "Identify the labelled navigation choice",
+      "estimated_minutes": 5,
+      "blocks": [
+        {
+          "type": "text",
+          "body": "Choose the navigation option labelled Next in this synthetic interface exercise.",
+          "source_ids": [
+            "source-01"
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "example-q01",
+      "objective": "Identify the labelled navigation choice",
+      "prompt": "Which label names the synthetic forward navigation option?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "Next",
+          "rationale": "Next is the synthetic forward label."
+        },
+        {
+          "option_id": "b",
+          "text": "Back",
+          "rationale": "Back is the synthetic previous label."
+        }
+      ],
+      "correct_option_id": "a",
+      "source_ids": [
+        "source-01"
+      ]
+    }
+  ],
+  "completion_policy": {
+    "mode": "formative_trial",
+    "required_lesson_ids": [
+      "example-01"
+    ],
+    "pass_percent": null
+  },
+  "job_aids": [
+    {
+      "aid_id": "example-aid",
+      "title": "Synthetic navigation labels",
+      "body": "Next: forward. Back: previous. Interface test only.",
+      "source_ids": [
+        "source-01"
+      ]
+    }
+  ],
+  "open_questions": []
+}

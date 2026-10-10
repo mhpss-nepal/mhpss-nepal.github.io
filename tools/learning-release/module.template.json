@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "module_id": "example-topic",
+  "content_version": "0.1.0",
+  "language": "en",
+  "translation_source_version": null,
+  "title": "TEMPLATE ONLY \u2014 not learner content",
+  "audience": [
+    "Replace with intended audience"
+  ],
+  "objectives": [
+    "Replace with an observable action"
+  ],
+  "scope_limits": [
+    "Not approved; no clinical instruction"
+  ],
+  "prerequisites": [],
+  "estimated_minutes": 5,
+  "approval": {
+    "status": "draft",
+    "technical_reviewer": null,
+    "language_reviewer": null,
+    "approver": null,
+    "review_due": null
+  },
+  "sources": [
+    {
+      "source_id": "source-01",
+      "title": "Replace with verified source",
+      "edition": "unverified",
+      "reference": "pending",
+      "location": "pending",
+      "rights": "unverified \u2014 do not reproduce"
+    }
+  ],
+  "lessons": [
+    {
+      "lesson_id": "example-01",
+      "title": "Replace lesson",
+      "objective": "Replace with an observable action",
+      "estimated_minutes": 5,
+      "blocks": [
+        {
+          "type": "text",
+          "body": "Template placeholder only. Replace with source-grounded content.",
+          "source_ids": [
+            "source-01"
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "example-q01",
+      "objective": "Replace with an observable action",
+      "prompt": "Template only: which option is marked as correct?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "Example correct option",
+          "rationale": "Template rationale only."
+        },
+        {
+          "option_id": "b",
+          "text": "Example alternative",
+          "rationale": "Template rationale only."
+        }
+      ],
+      "correct_option_id": "a",
+      "source_ids": [
+        "source-01"
+      ]
+    }
+  ],
+  "completion_policy": {
+    "mode": "formative_trial",
+    "required_lesson_ids": [
+      "example-01"
+    ],
+    "pass_percent": null
+  },
+  "job_aids": [
+    {
+      "aid_id": "example-aid",
+      "title": "Replace job aid",
+      "body": "Template only. Not approved for practice.",
+      "source_ids": [
+        "source-01"
+      ]
+    }
+  ],
+  "open_questions": [
+    "Replace all placeholders; obtain source, rights and qualified review before publication."
+  ]
+}

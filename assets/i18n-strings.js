@@ -1089,6 +1089,7 @@ window.I18N_STRINGS = {
     "nav.band.iec": "IEC",
     "nav.band.referral": "Referral Directory",
     "nav.band.resources": "Resources",
+    "nav.band.learning": "Learning",
     "nav.band.videos": "Videos",
     "nav.band.contact": "Contact",
     "foot.draft": "MHPSS Nepal · Rasuwa–Bhotekoshi flood response.",
@@ -2230,6 +2231,7 @@ window.I18N_STRINGS = {
     "nav.band.iec": "IEC सामग्री",
     "nav.band.referral": "रेफरल निर्देशिका",
     "nav.band.resources": "स्रोत सामग्री",
+    "nav.band.learning": "सिकाइ", // Nonclinical UI draft; human review pending.
     "nav.band.videos": "भिडियो",
     "nav.band.contact": "सम्पर्क",
     "hl.all": "सबै हेल्पलाइन, स्रोतसहित →",

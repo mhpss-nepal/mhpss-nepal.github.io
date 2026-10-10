@@ -45,6 +45,8 @@ NAV = [
     ("iec",       "IEC",                "IEC सामग्री",        "iec.html"),
     ("referral",  "Referral Directory", "रेफरल निर्देशिका",   "referral-directory.html"),
     ("resources", "Resources",          "स्रोत सामग्री",       "resources.html"),
+    # Nonclinical interface label; human Nepali review remains pending.
+    ("learning",  "Learning",           "सिकाइ",              "learn/"),
     ("videos",    "Videos",             "भिडियो",             "videos.html"),
     ("contact",   "Contact",            "सम्पर्क",             "contact-us.html"),
 ]
@@ -288,11 +290,19 @@ def run(apply_it):
     missing = []
     for k, en, np, href in NAV:
         rel = "index.html" if href == "./" else href
+        if rel.endswith("/"):
+            rel += "index.html"
         path = os.path.join(ROOT, rel)
         if not os.path.exists(path):
             missing.append("%s -> %s does not exist" % (en, rel))
             continue
         txt = open(path, encoding="utf-8").read()
+        if k == "learning":
+            # Isolated learning shell uses ../ root links and its own keyed UI.
+            # Keep its boundary explicit instead of injecting root-relative NAV.
+            if 'href="../index.html"' not in txt or '<footer' not in txt:
+                missing.append("learn/index.html needs its home link and footer")
+            continue
         for kind in ("top", "foot"):
             if "<!--NAV:%s %s-->" % (kind, k) not in txt:
                 missing.append("%s carries no <!--NAV:%s %s--> marker" % (rel, kind, k))
