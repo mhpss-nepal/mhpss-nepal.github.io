@@ -215,7 +215,8 @@ a{color:var(--wh-tx);text-underline-offset:2px}
 .navband .in{max-width:var(--frame);margin:0 auto;padding:0 var(--gutter);display:flex;flex-wrap:nowrap;align-items:center;gap:12px;min-width:0}
 .navband .nav-middle{display:flex;flex:1 1 auto;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .navband .nav-home{flex:0 0 auto}
-.navband .nav-middle a{flex:0 0 auto}
+.navband .nav-middle a{flex:0 0 auto;min-width:44px;max-width:100%;box-sizing:border-box}
+.navband .nav-middle a b,.navband .nav-middle a i{white-space:normal;overflow-wrap:break-word;hyphens:none}
 .navband a.nav-learning{flex:0 0 auto;flex-direction:row;align-items:center;gap:10px;margin:7px 0 7px auto;padding:9px 16px;min-height:48px;background:#eaf6f4;color:#004969;border:1px solid #b4ddd8;border-radius:9px;box-shadow:0 2px 5px rgba(0,0,0,.12)}
 .navband a.nav-learning i{color:#27566b}
 .navband a.nav-learning:hover{background:#fff;color:#004969}
@@ -239,6 +240,12 @@ a{color:var(--wh-tx);text-underline-offset:2px}
   .navband a.nav-learning{gap:6px;padding:8px 10px}
   .navband a.nav-learning svg{width:20px;height:20px}
   .navband a b{font-size:14px}
+}
+@media (max-width:390px){
+  /* Reserve a readable middle viewport without hiding either pinned action. */
+  .navband .in{padding-inline:8px;gap:4px}
+  .navband a{padding-inline:8px}
+  .navband a.nav-learning{padding-inline:8px}
 }
 
 /* ---------- status strip --------------------------------------------- */
