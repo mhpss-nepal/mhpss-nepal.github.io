@@ -1,0 +1,81 @@
+{
+  "version": "pfa-learning-v1",
+  "status": "Fictional illustration studies selected for the owner-authorised English usability trial only; not field guidance or culturally validated artwork.",
+  "method": "Existing AI-generated Nepal character artwork under Adib Asrori creative direction, reused without redrawing; resized WebP derivatives.",
+  "model": "cx/gpt-image-2.5",
+  "institutional_endorsement": false,
+  "assets": [
+    {
+      "id": "companionship",
+      "file": "companionship.webp",
+      "source_version": "returning-home-v0.1",
+      "source_sha256": "5325a639bea7859bb12aa832a4018bc15df2d0d349f626e03941c66fb26150f7",
+      "sha256": "bdfdedc02ba77efdc37e12d02d2cf460d006bfb27c9e1f61818f55804fed8191",
+      "cast_ids": [
+        "E",
+        "G"
+      ],
+      "alt": "Two women sit alongside one another, hands on their own laps; one turns attentively toward the other.",
+      "width": 720,
+      "height": 960
+    },
+    {
+      "id": "pause-and-look",
+      "file": "pause-and-look.webp",
+      "source_version": "returning-home-v0.1",
+      "source_sha256": "73f1a23676c2bb1896c9a27de1df3c55a2a9789ff0d3a08360654b7517384aa0",
+      "sha256": "6a6ed0069e4f292e0ae3320c36cef60a1af9548ec6423dcee30f716d85afc06c",
+      "cast_ids": [
+        "E",
+        "F"
+      ],
+      "alt": "Two adults remain outside a closed house, looking across the courtyard. The illustration does not establish that the site is safe.",
+      "width": 877,
+      "height": 960
+    },
+    {
+      "id": "listening",
+      "file": "listening.webp",
+      "source_version": "body-language-v0.1",
+      "source_sha256": "675e258e03384e12a29815cdb85d2a960e7c0559a8297bed2ced308f8ccb8772",
+      "sha256": "56035aa86071af278713947556190a63be2c6efa5fc2e83890981cf46465e39b",
+      "cast_ids": [
+        "F",
+        "H"
+      ],
+      "alt": "A woman sits attentively beside a man holding a tissue to his eye. They sit separately without touching; he remains upset.",
+      "width": 694,
+      "height": 957
+    },
+    {
+      "id": "practical-help",
+      "file": "practical-help.webp",
+      "source_version": "next-steps-home-v2",
+      "source_sha256": "ca8dee3ec204140ad7cd9dceaecf6370c3b3e99a5db62129569132e7c18c4ac2",
+      "sha256": "b36fe3933e1bb3efb505940688dd4cec0d325b52239819c796b351ea48794fc0",
+      "cast_ids": [
+        "E",
+        "N"
+      ],
+      "alt": "A woman points to a sheet of paper while a man responds with an open hand. No medicine or completed referral is depicted.",
+      "width": 960,
+      "height": 640
+    },
+    {
+      "id": "colleague-conversation",
+      "file": "colleague-conversation.webp",
+      "source_version": "body-language-v0.1",
+      "source_sha256": "97bc9235641a3328f079525a7c736c97d6099fb3c07875617835b374e6513c0c",
+      "sha256": "ce0a56655e19abbf1987675b3f1c7c6c939c10fd9cf23b5c128e1d829d60f7ac",
+      "cast_ids": [
+        "H",
+        "E",
+        "F",
+        "D"
+      ],
+      "alt": "Four adults sit at the same level. One speaks with an open hand while the others listen; no one touches another person.",
+      "width": 960,
+      "height": 561
+    }
+  ]
+}
