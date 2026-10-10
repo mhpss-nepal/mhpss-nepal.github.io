@@ -1,0 +1,830 @@
+{
+  "schema_version": 1,
+  "module_id": "pfa",
+  "content_version": "0.3.1",
+  "language": "en",
+  "translation_source_version": null,
+  "title": "Psychological First Aid for frontline workers in Nepal",
+  "audience": [
+    "Frontline and community-facing workers and volunteers in Nepal who may meet distressed people after floods, landslides or other crises, for example in health posts, shelters, water and sanitation, food and relief distribution, schools, site management, local government and community or religious leadership.",
+    "No psychology or counselling background is needed. Learners are expected to work through an organisation or an organised community group."
+  ],
+  "objectives": [
+    "In a fictional crisis scenario, choose the response that matches psychological first aid (PFA) and your role, and identify responses that are counselling, debriefing or pressure to talk.",
+    "Before and on arrival at a crisis site, name the information to gather and point out safety risks, urgent basic needs, serious distress reactions and people who need special attention.",
+    "Choose words and actions that approach a distressed person respectfully, ask about needs without pressure, and help a very distressed person feel calmer.",
+    "Match a person's stated needs to practical help, information, loved ones and services, recognise when someone needs more than PFA, and end the contact well.",
+    "Identify signs of stress in yourself and choose realistic actions to look after yourself and your colleagues, including when to talk to a supervisor or a health professional."
+  ],
+  "scope_limits": [
+    "PFA is not counselling, therapy or psychological debriefing. This module does not authorise clinical assessment, diagnosis or treatment, and it does not limit what health professionals already do within their own clinical role.",
+    "This module does not cover telephone or other remote support, adaptations for working directly with children, or gender-based violence response. Remote PFA is covered in a separate module. Basic safeguarding steps for a child who is on their own (do not leave the child unattended; link with child protection) are included here.",
+    "Completing this module is formative practice only. It is not a certificate, a professional qualification or an endorsement by any ministry or agency."
+  ],
+  "prerequisites": [],
+  "estimated_minutes": 56,
+  "approval": {
+    "status": "in-review",
+    "technical_reviewer": "Adib Asrori",
+    "language_reviewer": null,
+    "approver": null,
+    "review_due": null
+  },
+  "sources": [
+    {
+      "source_id": "who-pfa-2011",
+      "title": "Psychological first aid: Guide for field workers",
+      "edition": "World Health Organization, War Trauma Foundation and World Vision International, 2011. ISBN 978 92 4 154820 5",
+      "reference": "https://www.who.int/publications/i/item/9789241548205",
+      "location": "Printed pages as cited in each block; for the main text, printed page equals PDF page minus 7; foreword page ii is PDF page 4",
+      "rights": "Copyright World Health Organization 2011, all rights reserved. Content is paraphrased and cited by page. No reproduction or translation of WHO text, tables or graphics without WHO permission."
+    },
+    {
+      "source_id": "iasc-guidelines-2007",
+      "title": "IASC Guidelines on Mental Health and Psychosocial Support in Emergency Settings",
+      "edition": "Inter-Agency Standing Committee, 2007",
+      "reference": "https://interagencystandingcommittee.org",
+      "location": "Page 13, intervention pyramid, layer of focused non-specialised supports (PDF page 13 shows the two-page spread pp. 12 to 13); action sheet 3.2, printed pp. 58 to 59 (PDF page 36); culture, printed pp. 14 to 15 (PDF page 14)",
+      "rights": "Not yet checked. Cited only; no text reproduced."
+    },
+    {
+      "source_id": "iasc-msp",
+      "title": "IASC Minimum Service Package for Mental Health and Psychosocial Support",
+      "edition": "Inter-Agency Standing Committee, Geneva, 2022 (English edition held in the project library)",
+      "reference": "https://www.mhpssmsp.org",
+      "location": "Section on consent and confidentiality, printed page 22 (PDF page 27); activity 3.2, printed pages 47 to 49 (PDF pages 52 to 54)",
+      "rights": "Copyright IASC 2022, Creative Commons BY-NC-SA 3.0 IGO. Cited and paraphrased only; not adapted as a derivative work."
+    },
+    {
+      "source_id": "sphere-2018",
+      "title": "The Sphere Handbook: Humanitarian Charter and Minimum Standards in Humanitarian Response",
+      "edition": "Fourth edition, 2018",
+      "reference": "https://spherestandards.org/handbook",
+      "location": "Mental health standard 2.5 guidance notes, pages 341 to 342 (PDF pages 382 to 383)",
+      "rights": "Not yet checked. Cited only; no text reproduced."
+    },
+    {
+      "source_id": "nepal-nmhsap-2077",
+      "title": "National Mental Health Strategy and Action Plan 2077",
+      "edition": "Government of Nepal, issued by the Ministry of Health and Population (now the Ministry of Health and Food Safety, MoHFS), 2077 BS (2020), Nepali original",
+      "reference": "Ministry of Health and Food Safety (MoHFS), Government of Nepal",
+      "location": "Working policy 1.6, activity table, printed page 21 (PDF page 25)",
+      "rights": "Government policy document. Cited only; no text reproduced or translated."
+    },
+    {
+      "source_id": "pfa-technical-review-2026",
+      "title": "Technical review of this module",
+      "edition": "Project technical review, 10 October 2026",
+      "reference": "Review register of this module",
+      "location": "Review comment on the role of health professionals in giving medicine",
+      "rights": "Project record."
+    },
+    {
+      "source_id": "mhpss-nepal-referral-directory",
+      "title": "MHPSS Nepal Referral Directory",
+      "edition": "MHPSS Nepal website; official-source listings read on 17 September and 1 October 2026",
+      "reference": "https://mhpss-nepal.github.io/referral-directory.html",
+      "location": "Helplines; Find a service",
+      "rights": "Project website, linked rather than copied. Each listing quotes the provider's own website with the date it was read; a listing does not mean that a service is open today."
+    }
+  ],
+  "lessons": [
+    {
+      "lesson_id": "pfa-01",
+      "title": "What psychological first aid (PFA) is, and where it fits in your role",
+      "objective": "In a fictional crisis scenario, choose the response that matches psychological first aid (PFA) and your role, and identify responses that are counselling, debriefing or pressure to talk.",
+      "estimated_minutes": 10,
+      "blocks": [
+        {
+          "type": "text",
+          "body": "After a flood, a landslide or another crisis, many of the people you meet will be shocked, worried or grieving. Psychological first aid, usually shortened to PFA, is a humane and practical way of supporting them during those first contacts. From here on, this module uses PFA to mean psychological first aid. In practice it means offering care that does not intrude, finding out what people need, helping them meet basic needs such as food, water and information, listening without pushing anyone to talk, helping people feel calmer, connecting them with information, services and the people who matter to them, and protecting them from further harm. Although the name says psychological, PFA is as much about social and practical support as it is about feelings.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "PFA is not only for psychologists or counsellors. Health workers, teachers, shelter and distribution staff, community leaders and volunteers can all offer it, but not without preparation. Humanitarian standards expect helpers to have had a brief orientation in PFA first, and the IASC Minimum Service Package calls for short orientations in basic psychosocial support for people on the front line and for community leaders, backed by people with MHPSS technical expertise and, where possible, offering refreshers and coaching afterwards. In the intervention pyramid of the Inter-Agency Standing Committee, PFA sits in the layer of focused, non-specialised supports (layer 3), which is delivered by workers who are trained and supervised. The Minimum Service Package presents this kind of basic support as a caring, human response to suffering that also opens the way to further help and referral, rather than as a psychological treatment. In Nepal, the National Mental Health Strategy and Action Plan also plans for PFA to be included in disaster-management training.",
+          "source_ids": [
+            "sphere-2018",
+            "iasc-msp",
+            "iasc-guidelines-2007",
+            "who-pfa-2011",
+            "nepal-nmhsap-2077"
+          ]
+        },
+        {
+          "type": "safety",
+          "body": "This self-paced module is an introduction to PFA. Your organisation decides whether it counts as your PFA orientation or whether you also need a facilitated session. Offer PFA only as part of your organisation's response, and ask who will supervise and support you while you do.",
+          "source_ids": [
+            "iasc-msp",
+            "iasc-guidelines-2007",
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "It helps to be clear about what PFA is not. It is not counselling or therapy. It is not psychological debriefing, which means asking people soon after an event to go back over what they saw, thought and felt in a structured way; this practice is not recommended. It does not ask people to make sense of what happened or to sort out the order of events. And it is never about pressing anyone to describe their feelings or experiences.",
+          "source_ids": [
+            "who-pfa-2011",
+            "sphere-2018"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "PFA is for children and adults who are distressed after recently going through a serious crisis. It is usually offered during or soon after the event, but it can still help days or weeks later, depending on how long the crisis lasts and how severe it is. Not everyone will want support. Never push it on anyone; instead, make it easy for people to find you if they want help.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Helping responsibly has four parts: protect people's safety, dignity and rights; adjust what you do to the person's culture; know which other emergency services are operating; and look after yourself. Work through your organisation or an organised community group rather than on your own, follow its code of conduct, and follow the direction of the authorities managing the response. Acting alone can put you at risk, disrupt coordination and leave you unable to connect people with the help they need.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "steps",
+          "body": "Ethical commitments for anyone offering PFA. Do: be honest and trustworthy; respect each person's right to decide for themselves; notice your own biases and set them aside; let people know they can still ask for help later even if they say no now; keep what people tell you private where that is appropriate (lesson pfa-04 explains when and how information may be shared); behave in a way that respects the person's culture, age and gender. Do not: use your position as a helper for personal gain, money or favours; make promises you cannot keep or pass on information you are unsure of; claim skills you do not have; push help on people or press them to tell their story; repeat their story to others; judge them for what they did or how they feel.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "example",
+          "body": "Worked example. A school in a hill district is being used as a temporary shelter after monsoon flooding. Hari, a teacher helping with registration, notices Sunita sitting apart from the others, holding her phone and not eating. Hari introduces himself, asks whether she would like some water and whether there is anything she needs right now. Sunita says she cannot reach her brother, who lives in a village further up the valley. Hari does not ask her to describe the flood. He helps her think about who might have news, tells her where the shelter information desk is and offers to walk there with her. This is PFA: calm presence, practical help and connection, at the person's own pace.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "reflection",
+          "body": "Think about your own work, whether at a health post, a shelter, a distribution point, a school or in the community. At which moments might you meet someone in acute distress? This reflection is for you only; do not write names or details that could identify anyone.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Key points. PFA is practical, humane support that anyone in a helping role can give. It follows the person's pace and never forces talk. It is not counselling or debriefing. Work through your organisation and follow its code of conduct.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "safety",
+          "body": "Offering PFA does not make you a counsellor. When someone needs more than you can offer, the next lessons show how to recognise this and how to connect them with help through your organisation.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        }
+      ]
+    },
+    {
+      "lesson_id": "pfa-02",
+      "title": "Prepare and look",
+      "objective": "Before and on arrival at a crisis site, name the information to gather and point out safety risks, urgent basic needs, serious distress reactions and people who need special attention.",
+      "estimated_minutes": 12,
+      "blocks": [
+        {
+          "type": "text",
+          "body": "Prepare. Crisis sites can be chaotic, but where possible gather accurate information before you go. About the event: what happened, when and where, and roughly how many people are affected and who they are. About help: who is providing emergency medical care, food, water, shelter and family tracing, how people can reach those services, and who else is helping, including community members. About safety: whether the event is over or still unfolding, for example more rain, a rising river or further slope failures; what dangers there are, such as damaged roads, bridges or buildings; and which areas you should avoid or are not permitted to enter.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Look. What you find on arrival may differ from what you were told, so take a moment to look around before you act, even if it is only a quick scan. Make three checks. First, safety: are there hazards such as floodwater, unstable slopes or damaged structures, and can you be there without likely harm to yourself or others? If you are not sure the site is safe, do not go in; try to get help for the people there, and if possible speak with them from a safe distance. Second, obvious urgent basic needs: is anyone badly injured, trapped or in immediate danger, without shelter or adequate clothing, or in need of protection from discrimination or violence? Badly injured people should go to medical staff or to someone trained in physical first aid. Note who else nearby can help. Third, serious distress: is anyone extremely upset, unable to move on their own, not responding to others, or in shock?",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "People react to crises in many ways. Common reactions include physical signs such as shaking, headaches, tiredness, loss of appetite or aches; crying, sadness or grief; fear and anxiety; feeling on edge; poor sleep or nightmares; irritability or anger; guilt or shame; feeling numb, confused or as if things are unreal; withdrawing or becoming very still; not speaking; disorientation; and being unable to look after oneself or one's children. Some people are only mildly distressed, or not at all. Most people recover well with time, especially when their basic needs are met and they have support from those around them. Severe or long-lasting reactions may need more than PFA, particularly when a person cannot manage daily life or may be a danger to themselves or others.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "steps",
+          "body": "Get help as a priority for these four groups: anyone badly injured whose life may be in danger and who needs emergency medical treatment; anyone too distressed to look after themselves or their children; anyone who might harm themselves; and anyone who might harm other people. Do not leave a severely distressed person alone. Stay with them and help keep them safe until the worst of the reaction has passed or until help arrives from health personnel, your supervisor or team leader, local leaders or community members, following your organisation's procedure. Someone calming down does not mean the danger is over: for anyone who is injured or may harm themselves or others, make sure a health worker, your supervisor or another responsible person takes over. Staying close never means putting yourself in danger.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Also look out for people who will probably need extra attention: children and adolescents, especially any who have become separated from their caregivers; anyone with a health condition or a physical or mental disability, including frail older people, women who are pregnant, people living with a severe mental disorder and people who have difficulty seeing or hearing; and anyone at risk of discrimination or violence.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "example",
+          "body": "Worked example. After a landslide blocks the road to a village, Bikash, a water and sanitation volunteer, is sent with a team to a relief distribution point. Before going he asks his team leader whether the slope above the site has been checked and which health team is on site. On arrival he scans the area. A woman has a deep, bleeding cut on her arm. A boy of about eight is standing alone near the truck and says he cannot find his mother. An older man sits apart; when greeted, he looks up, shakes his head and says he does not want to talk. Bikash alerts the health team about the woman first. He asks a team member to stay with the boy and informs the child protection focal person named by his organisation, instead of trying to find the family himself. Bikash respects the older man's wish, tells him where to find the team if he wants help later, and asks a colleague to look in on him from time to time; if the man seemed unwell or confused, or stopped responding, Bikash would ask the health team to check him straight away.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Key points. Prepare where you can and look before you act. Never enter an unsafe site. Life-threatening injuries and people at risk of harming themselves or others come first. Notice children, older people, people with disabilities or health conditions, and anyone at risk of discrimination or violence.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "safety",
+          "body": "Do not try to reunite a separated child with their family on your own; mistakes can make the child's situation worse. Link the child immediately with a trustworthy child protection agency through your organisation and do not leave the child unattended.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        }
+      ]
+    },
+    {
+      "lesson_id": "pfa-03",
+      "title": "Listen",
+      "objective": "Choose words and actions that approach a distressed person respectfully, ask about needs without pressure, and help a very distressed person feel calmer.",
+      "estimated_minutes": 12,
+      "blocks": [
+        {
+          "type": "text",
+          "body": "Approach. Approach people respectfully and in a way that fits their culture. Say your name and your organisation, and ask whether you can help. If possible, find a safer and quieter place to talk, and offer something that helps the person feel more comfortable, such as water. Keep the person safe: move them away from immediate danger if you can do so safely, shield them from media attention to protect their privacy and dignity, and if they are very distressed make sure they are not alone.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Ask. Some needs may look obvious, but always ask people what they need and what worries them. Find out what matters most to them right now and help them sort out their priorities.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Listen. Listening well means giving the person your full attention, really hearing what concerns them, and showing care and respect. Stay close to the person without pressing them to talk, and be ready to listen if they choose to talk about what happened. Silence is fine: sitting quietly with someone can give them the space to speak when they are ready. Pay attention to your body language as well as your words, such as your facial expression, eye contact, hand movements and how you are sitting or standing in relation to the person.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "steps",
+          "body": "Helping a very distressed person feel calmer: speak in a calm, soft voice; keep some eye contact if that is culturally appropriate; let the person know you are there to help them, and that they are safe if that is true. If someone seems detached, as if what is around them is not real, invite them to notice their feet on the ground, to gently tap their hands or fingers on their knees, and to name a few ordinary, non-distressing things they can see or hear around them. Encourage them to pay attention to their breathing and to breathe slowly.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "steps",
+          "body": "Helpful: find a quieter place with fewer distractions; keep the conversation private where appropriate; stay near the person at a distance that suits their age, gender and culture; show you are listening, for example by nodding; stay patient and calm; give factual information if you have it and be honest about what you do not know; use simple words; acknowledge the person's feelings and any losses they mention; recognise the strengths they have shown; allow silence. Unhelpful: pressing someone to tell their story; interrupting or hurrying them; touching them when you are not sure it is appropriate; judging what they did or how they feel, including telling them how they should feel; inventing information; using technical terms; telling them other people's stories or your own troubles; making false promises or reassurances; acting as if you must fix everything for them; taking away their sense that they can manage; describing people with labels such as crazy.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Culture. What is respectful varies between communities, and Nepal is very diverse. Before you start, ask experienced local colleagues rather than assuming. Useful questions include: how to dress and greet people, and which language to use; whether women should be approached by women helpers, and whom to approach first in a family or community; what the customs are around touch, for example holding a hand or touching a shoulder; what to keep in mind with older people, children and women; and which beliefs and practices matter to the people affected, and how they might explain what has happened. These questions guide how you offer help. They do not override the person's own wishes, safety or right to decide, and no one should be denied help because of a local custom or because of who they are.",
+          "source_ids": [
+            "who-pfa-2011",
+            "iasc-guidelines-2007"
+          ]
+        },
+        {
+          "type": "example",
+          "body": "Worked example. At a crowded health post after flooding, Maya, a community health volunteer, notices a young man trembling and breathing fast in the queue. She tells him her name and that she is a volunteer with the health post, and asks if she can help. She invites him to a quieter bench and offers water. Speaking slowly and softly, she suggests he notice his feet on the floor and breathe a little more slowly with her. She does not ask him about the flood. When he is calmer, she asks what he needs most right now. He says he has no news of his mother, who lives in another ward.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "reflection",
+          "body": "What do you usually say when someone asks you something you do not know? Write one honest sentence you could use next time. This reflection is for you only; do not write names or details that could identify anyone.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Key points. Introduce yourself and ask before helping. Always ask what the person needs. Stay close, allow silence and never press for the story. Use calm voice, grounding and slow breathing to help someone feel calmer. Check cultural norms with local colleagues.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "safety",
+          "body": "If anything the person says suggests they may hurt themselves or someone else, stay with them or make sure someone safe does, and get help immediately through your supervisor and your organisation's procedure, until a responsible person takes over. Do not promise to keep this secret. Explain that you will share only what is needed to keep them safe, and only with the people who can help.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        }
+      ]
+    },
+    {
+      "lesson_id": "pfa-04",
+      "title": "Link, and end the contact well",
+      "objective": "Match a person's stated needs to practical help, information, loved ones and services, recognise when someone needs more than PFA, and end the contact well.",
+      "estimated_minutes": 12,
+      "blocks": [
+        {
+          "type": "text",
+          "body": "Every crisis is different, but people commonly need shelter, food, water and sanitation; health care for injuries or long-term conditions; clear and correct information about the event, their loved ones and available services; a way to contact family and friends; support connected to their culture or religion; and to be consulted on decisions that affect them. Connecting people with practical help is a large part of PFA. Often you will meet a person only once, so aim to help people help themselves and regain some control over their situation.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "steps",
+          "body": "Basic needs and services: help the person meet the basic needs they ask for; find out about specific needs such as medicines, clothing or items for feeding small children, and link them with the help available; make sure people who are vulnerable or marginalised are not overlooked; and if you promise to follow up, do so.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "steps",
+          "body": "Coping with problems: help the person decide what needs attention now and what can wait; help them identify family, friends or neighbours who can support them; give practical suggestions, for example how to register for relief or material assistance; ask how they have coped with hard times before and affirm that ability; and ask what usually helps them feel better. Encourage helpful ways of coping, such as resting, eating and drinking water as regularly as possible, spending time with family and friends, talking with someone they trust, relaxing activities such as walking, singing, praying or playing with children, physical activity, and safe ways of helping others. Discourage harmful ones, such as alcohol, drugs or smoking, sleeping all day, working without rest, cutting oneself off from others, neglecting personal hygiene, and violence. Adapt these suggestions to the person's culture and situation.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "steps",
+          "body": "Information: find out where reliable information comes from and when updates are given; keep yourself updated on safety, services and missing or injured people; tell people where your information comes from and how reliable it is; say only what you know and never invent information or give false reassurance; keep messages short and simple, and repeat them; consider sharing information with a group so everyone hears the same message; and tell people whether, when and where you will update them. People may direct their frustration at you when help has fallen short; try to stay calm and understanding. Give contact details for services, or refer people directly, using the referral list your organisation uses or, where it has none, the MHPSS Nepal Referral Directory. This module does not copy phone numbers, so that you always see the current listing.",
+          "source_ids": [
+            "who-pfa-2011",
+            "mhpss-nepal-referral-directory"
+          ]
+        },
+        {
+          "type": "steps",
+          "body": "Loved ones and social support: people who feel well supported after a crisis tend to cope better. Help keep families together and children with their parents or caregivers; help people contact relatives and friends, for example by offering a way to call them; if someone says prayer, religious practice or a religious leader would help, help them reach their religious or spiritual community; respect their beliefs, and do not impose your own beliefs or interpretations, or agree or disagree with theirs; and help affected people support each other, for example by linking someone without family to neighbours.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "When someone needs more than PFA. Link people with further help through your organisation's referral procedure when reactions are severe or long-lasting, when a person cannot manage daily life, or when they may be a danger to themselves or others. Ask people whether they have health conditions or take regular medicine and help them get their medicine or reach health services. Consider linking people with disabilities or chronic conditions with a protection agency or other longer-term support. Separated children go to a trustworthy child protection agency.",
+          "source_ids": [
+            "who-pfa-2011",
+            "mhpss-nepal-referral-directory"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Consent and confidentiality when linking people. Before you refer someone or pass on anything they have told you, explain what you would share, with whom and why, and ask whether they agree. Share only what the other service needs in order to help, and follow your organisation's rules on sharing information. Where it is safe and possible, let people know early on that you may need to involve others if their life or someone else's safety is at risk. When someone may be in serious danger now, getting help comes first: share only the essential information, and only with the people who need it to keep the person safe, such as your supervisor or the health team, as your organisation's procedure says. This does not mean telling family, neighbours or community leaders. For a child, involve your organisation's child protection focal person rather than deciding alone.",
+          "source_ids": [
+            "iasc-msp",
+            "who-pfa-2011",
+            "iasc-guidelines-2007"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Additional note for health workers. If you are a doctor, nurse, health assistant or other health professional, PFA does not change your clinical role. Assessing a person, and prescribing or giving medicine, remain part of your work within your professional scope and your facility's protocols. PFA adds a calm, respectful way of being with distressed people alongside that care. The guidance on medicine in this module is for helpers who are not acting as health professionals. General medicine safety still applies to everyone, and this module does not give or change anyone's authority to prescribe.",
+          "source_ids": [
+            "pfa-technical-review-2026",
+            "iasc-msp"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Ending your help. When and how you finish depends on the situation, your role and the person's needs. If appropriate, let the person know you are going, and introduce anyone who will carry on supporting them. Where you have put the person in touch with other services, explain what to expect and make sure they know how to follow up. Whatever happened during your time together, end warmly and wish them well.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "example",
+          "body": "Worked example, continued from the previous lesson. Maya asks the young man whether there is anyone who might have news of his mother. Together they call his cousin, who lives in the same ward. Maya shows him the board where the municipality posts updates and tells him when the next update is expected. Her shift ends at five, so she explains this, introduces him to the colleague who takes over, and checks that he knows where the ward information desk is before saying goodbye.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Key points. Link people with basic needs, information, loved ones and services, and help them help themselves. Say only what you know and say where it comes from. Use your organisation's referral list or the MHPSS Nepal Referral Directory. Recognise when someone needs more than PFA. End the contact clearly and warmly.",
+          "source_ids": [
+            "who-pfa-2011",
+            "mhpss-nepal-referral-directory"
+          ]
+        },
+        {
+          "type": "safety",
+          "body": "Use the referral list your organisation uses. If it has none, use the MHPSS Nepal Referral Directory, which lists national helplines and hospital mental health services; a listing does not mean the service is open today, so check before you refer, and ask your supervisor if you are unsure. Do not pass on phone numbers from other documents, posters or social media. Never delay emergency help while you look for a contact: in an emergency, follow your organisation's emergency procedure and get the person to the nearest health team or emergency help available.",
+          "source_ids": [
+            "mhpss-nepal-referral-directory",
+            "who-pfa-2011",
+            "iasc-msp"
+          ]
+        },
+        {
+          "type": "external_resource",
+          "body": "MHPSS Nepal Referral Directory, https://mhpss-nepal.github.io/referral-directory.html. It lists national helplines and hospital mental health services, each taken from the provider's own website with the date it was read. A listing does not mean that a service is open today.",
+          "source_ids": [
+            "mhpss-nepal-referral-directory"
+          ]
+        }
+      ]
+    },
+    {
+      "lesson_id": "pfa-05",
+      "title": "Looking after yourself and your colleagues",
+      "objective": "Identify signs of stress in yourself and choose realistic actions to look after yourself and your colleagues, including when to talk to a supervisor or a health professional.",
+      "estimated_minutes": 10,
+      "blocks": [
+        {
+          "type": "text",
+          "body": "Helping in a crisis affects helpers too. You, or your own family, may have been hit by the same disaster, and even if not, what you see and hear can stay with you. Before taking on a helping role, learn about the situation and about the roles of different helpers; consider your own health and any personal or family pressures; and make an honest judgement about whether this is the right time and place for you to take on a helping role.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "steps",
+          "body": "Managing stress while you work: remember what has helped you cope before; make time for meals, rest and relaxation, even in short breaks; keep reasonable working hours by sharing the workload, working in shifts during the acute phase and taking regular breaks; accept that it is not your job to fix every problem people face, and that supporting them to help themselves is enough; keep alcohol, caffeine and nicotine low and avoid medicines that were not prescribed for you; check in with fellow helpers and ask them to check in with you; and talk with friends, family or other people you trust.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "steps",
+          "body": "Rest and reflection after a period of helping: talk about your experience with a supervisor, a colleague or another person you trust; recognise what you were able to do, even in small ways; reflect on what went well, what did not, and the limits of what was possible; and rest before returning to your usual work and life.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "example",
+          "body": "Worked example. Ten days into the flood response, Bikash notices that he is exhausted, sleeping badly and snapping at colleagues. He tells his team leader, who agrees to a shift rota and a day of rest each week. Bikash and a colleague agree to check in with each other at the end of each day.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "reflection",
+          "body": "Write down two things that have helped you cope during a hard period in the past, and think of one colleague you could check in with. This reflection is for you only; do not write names or details that could identify anyone.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "Key points. Decide honestly whether you are ready to help. Keep reasonable hours, rest and eat. You do not have to solve everything. Check in with colleagues and talk with your supervisor.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        },
+        {
+          "type": "safety",
+          "body": "If you keep having upsetting thoughts or memories, feel extremely anxious or deeply sad, sleep badly, or are drinking a lot of alcohol or using drugs, get support from someone you trust. If these problems continue for more than a month, consult a health professional, or a mental health specialist if one is available. Do not wait that long if the problems are severe, getting worse or stopping you from working or looking after yourself or others. If you have thoughts of harming yourself, do not wait: tell your supervisor or a health professional now.",
+          "source_ids": [
+            "who-pfa-2011"
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "pfa-q01",
+      "objective": "In a fictional crisis scenario, choose the response that matches psychological first aid (PFA) and your role, and identify responses that are counselling, debriefing or pressure to talk.",
+      "prompt": "At a temporary shelter, a volunteer wants to support families who survived a landslide. Which plan best matches PFA?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "Gather the families and ask each person to describe in detail what they saw and felt that night, so they can release their emotions.",
+          "rationale": "Not this one. Asking people to go back over the event in detail is psychological debriefing, which is not recommended."
+        },
+        {
+          "option_id": "b",
+          "text": "Offer water and a place to sit, ask what people need, listen if they want to talk, and help them reach information and their relatives.",
+          "rationale": "Correct. This combines practical care, asking about needs, listening without pressure and linking people with information and loved ones."
+        },
+        {
+          "option_id": "c",
+          "text": "Wait until a psychologist arrives, because only specialists should speak with distressed people.",
+          "rationale": "Not this one. PFA is not only for professionals; frontline workers and volunteers can offer it after a short orientation."
+        },
+        {
+          "option_id": "d",
+          "text": "Tell everyone they must talk about the event today, because staying silent will make things worse.",
+          "rationale": "Not this one. PFA never pressures people to talk; some people prefer quiet company or practical help."
+        }
+      ],
+      "correct_option_id": "b",
+      "source_ids": [
+        "who-pfa-2011",
+        "sphere-2018"
+      ]
+    },
+    {
+      "question_id": "pfa-q02",
+      "objective": "In a fictional crisis scenario, choose the response that matches psychological first aid (PFA) and your role, and identify responses that are counselling, debriefing or pressure to talk.",
+      "prompt": "At a relief distribution point, a woman tells you she does not want to talk to anyone right now. What is the most appropriate response?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "Keep asking gently until she agrees to talk, because talking is always needed for recovery.",
+          "rationale": "Not this one. Pressing someone to talk is intrusive and is not part of PFA."
+        },
+        {
+          "option_id": "b",
+          "text": "Record that she refused services so that she is not offered help again.",
+          "rationale": "Not this one. Saying no now does not close the door; she can still access help in the future."
+        },
+        {
+          "option_id": "c",
+          "text": "Respect her choice, let her know where she can find you or other help later, and keep offering practical help if she wants it.",
+          "rationale": "Correct. Help should never be forced, and people should know they can still ask for help later."
+        },
+        {
+          "option_id": "d",
+          "text": "Ask a colleague to persuade her that she needs counselling.",
+          "rationale": "Not this one. PFA is not counselling, and persuading her would be pushing help on her."
+        }
+      ],
+      "correct_option_id": "c",
+      "source_ids": [
+        "who-pfa-2011"
+      ]
+    },
+    {
+      "question_id": "pfa-q03",
+      "objective": "Before and on arrival at a crisis site, name the information to gather and point out safety risks, urgent basic needs, serious distress reactions and people who need special attention.",
+      "prompt": "Your team will visit a village that was cut off by a landslide. Which information is most important to gather before you go?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "The personal history of each family, so you can prepare questions about their experiences.",
+          "rationale": "Not this one. Preparing personal questions about people's experiences is intrusive and is not what preparation means in PFA."
+        },
+        {
+          "option_id": "b",
+          "text": "Only the number of people affected, because everything else can be learned on arrival.",
+          "rationale": "Not this one. Without knowing the services and the safety situation you may be unable to help, or put yourself at risk."
+        },
+        {
+          "option_id": "c",
+          "text": "Nothing; it is better to arrive without any expectations.",
+          "rationale": "Not this one. Learning about the situation in advance helps you offer PFA effectively and stay safe."
+        },
+        {
+          "option_id": "d",
+          "text": "What happened and who is affected, which services are available and how people can reach them, and whether the area is still dangerous.",
+          "rationale": "Correct. Preparation covers the event, the available services and supports, and safety and security."
+        }
+      ],
+      "correct_option_id": "d",
+      "source_ids": [
+        "who-pfa-2011"
+      ]
+    },
+    {
+      "question_id": "pfa-q04",
+      "objective": "Before and on arrival at a crisis site, name the information to gather and point out safety risks, urgent basic needs, serious distress reactions and people who need special attention.",
+      "prompt": "At a flooded health post you see a man with a deep wound who is bleeding heavily, a boy of about eight standing alone and crying, who says he cannot find his parents, and an older woman sitting quietly who answers when spoken to. What do you do first?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "Sit with the older woman first, because she looks the saddest.",
+          "rationale": "Not this one. A life-threatening injury needs emergency medical help as a priority."
+        },
+        {
+          "option_id": "b",
+          "text": "Make sure the injured man gets emergency medical care, ask a colleague to stay with the boy while you inform the child protection focal person, then check on the older woman.",
+          "rationale": "Correct. Life-threatening injuries come first. A child who cannot find his parents must not be left unattended and needs linking with child protection. The older woman is responding and can be supported next."
+        },
+        {
+          "option_id": "c",
+          "text": "Take the boy with you and start searching for his family yourself.",
+          "rationale": "Not this one. Do not try to reunite a separated child on your own; link him with a trustworthy child protection agency and do not leave him unattended."
+        },
+        {
+          "option_id": "d",
+          "text": "Ask the injured man how he feels about the flood.",
+          "rationale": "Not this one. He needs emergency medical care, not conversation about his feelings."
+        }
+      ],
+      "correct_option_id": "b",
+      "source_ids": [
+        "who-pfa-2011"
+      ]
+    },
+    {
+      "question_id": "pfa-q05",
+      "objective": "Choose words and actions that approach a distressed person respectfully, ask about needs without pressure, and help a very distressed person feel calmer.",
+      "prompt": "A young man at a shelter is trembling and says everything feels unreal. Which response fits PFA?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "Tell him firmly to stop overreacting because others have lost more.",
+          "rationale": "Not this one. Judging how someone feels is harmful and can make distress worse."
+        },
+        {
+          "option_id": "b",
+          "text": "Leave him alone so that he can calm down by himself.",
+          "rationale": "Not this one. A very distressed person should not be left alone."
+        },
+        {
+          "option_id": "c",
+          "text": "Speak calmly, remind him you are there to help, and invite him to notice his feet on the ground, name things he can see and hear, and breathe slowly.",
+          "rationale": "Correct. A calm voice, grounding in the present surroundings and slow breathing can help a very distressed person feel calmer."
+        },
+        {
+          "option_id": "d",
+          "text": "Ask him to tell you every detail of what happened so that he can process it.",
+          "rationale": "Not this one. PFA does not ask people to go over the event in detail."
+        }
+      ],
+      "correct_option_id": "c",
+      "source_ids": [
+        "who-pfa-2011"
+      ]
+    },
+    {
+      "question_id": "pfa-q06",
+      "objective": "Choose words and actions that approach a distressed person respectfully, ask about needs without pressure, and help a very distressed person feel calmer.",
+      "prompt": "A mother asks whether the missing bus from her village has been found. You do not know. What do you say?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "Tell her honestly that you do not know yet, that you will try to find out, and show her where official updates are posted.",
+          "rationale": "Correct. Be honest about what you do not know, try to find out, and point her to a reliable source of updates."
+        },
+        {
+          "option_id": "b",
+          "text": "Tell her not to worry because everyone is surely safe.",
+          "rationale": "Not this one. This is a false reassurance; if it turns out to be wrong, it can deepen distress and damage trust."
+        },
+        {
+          "option_id": "c",
+          "text": "Tell her you think the bus was probably found this morning.",
+          "rationale": "Not this one. Never make up information you do not have."
+        },
+        {
+          "option_id": "d",
+          "text": "Tell her it is not your job and she should ask someone else.",
+          "rationale": "Not this one. Even if you cannot answer, PFA means helping her reach correct information."
+        }
+      ],
+      "correct_option_id": "a",
+      "source_ids": [
+        "who-pfa-2011"
+      ]
+    },
+    {
+      "question_id": "pfa-q07",
+      "objective": "Match a person's stated needs to practical help, information, loved ones and services, recognise when someone needs more than PFA, and end the contact well.",
+      "prompt": "An older man at a shelter tells you he has run out of his daily blood pressure medicine. What is the best response?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "Give him some medicine of your own.",
+          "rationale": "Not this one. His medicine should come through the health team or service that can check what he needs, not from a helper's own supply. Medicine meant for someone else could harm him. Health professionals giving medicine within their own clinical role is a different matter; see the note for health workers."
+        },
+        {
+          "option_id": "b",
+          "text": "Tell him stress is the real problem and he should try to relax instead.",
+          "rationale": "Not this one. A crisis can make health conditions worse; he needs access to his medicine."
+        },
+        {
+          "option_id": "c",
+          "text": "Promise to bring the medicine tomorrow without checking whether you can.",
+          "rationale": "Not this one. Do not make promises you cannot keep, and follow up only on what you have committed to."
+        },
+        {
+          "option_id": "d",
+          "text": "Help him reach the health team or service that can provide his medicine, and check that he knows how to follow up.",
+          "rationale": "Correct. Ask about health conditions and medicines, help people reach medical services, and make sure they can follow up."
+        }
+      ],
+      "correct_option_id": "d",
+      "source_ids": [
+        "who-pfa-2011",
+        "pfa-technical-review-2026"
+      ]
+    },
+    {
+      "question_id": "pfa-q08",
+      "objective": "Match a person's stated needs to practical help, information, loved ones and services, recognise when someone needs more than PFA, and end the contact well.",
+      "prompt": "During a conversation at a shelter, a woman tells you she has been thinking about hurting herself. What should you do?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "Promise to keep it a secret so that she continues to trust you.",
+          "rationale": "Not this one. Her safety comes first, so you cannot promise secrecy. Share only what is needed, only with the people who can help her, following your organisation's procedure."
+        },
+        {
+          "option_id": "b",
+          "text": "Stay with her or make sure someone safe is with her, and get help immediately through your supervisor and the health or referral service your organisation uses.",
+          "rationale": "Correct. People who may hurt themselves need more immediate help than PFA alone. Do not leave her alone, and get help straight away."
+        },
+        {
+          "option_id": "c",
+          "text": "Tell her to think positively and move on.",
+          "rationale": "Not this one. This dismisses her and does not get her the help she needs."
+        },
+        {
+          "option_id": "d",
+          "text": "Suggest she comes back next week when a counsellor visits.",
+          "rationale": "Not this one. She needs help now, not next week."
+        }
+      ],
+      "correct_option_id": "b",
+      "source_ids": [
+        "who-pfa-2011"
+      ]
+    },
+    {
+      "question_id": "pfa-q09",
+      "objective": "Identify signs of stress in yourself and choose realistic actions to look after yourself and your colleagues, including when to talk to a supervisor or a health professional.",
+      "prompt": "You have worked 12-hour days for two weeks after the floods. You feel exhausted and keep snapping at colleagues. Which plan is most helpful?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "Work even harder, because resting would let affected people down.",
+          "rationale": "Not this one. You are not responsible for solving every problem, and exhaustion reduces your ability to help."
+        },
+        {
+          "option_id": "b",
+          "text": "Rely on extra coffee and cigarettes to keep going.",
+          "rationale": "Not this one. Keeping caffeine and nicotine low is part of managing stress."
+        },
+        {
+          "option_id": "c",
+          "text": "Talk with your supervisor about the workload, agree regular rest and shared shifts, and set up check-ins with a colleague.",
+          "rationale": "Correct. Reasonable hours, shared workload, rest and mutual check-ins help helpers keep going."
+        },
+        {
+          "option_id": "d",
+          "text": "Stop talking to colleagues so that you do not upset them.",
+          "rationale": "Not this one. Cutting yourself off removes support; checking in with colleagues helps."
+        }
+      ],
+      "correct_option_id": "c",
+      "source_ids": [
+        "who-pfa-2011"
+      ]
+    },
+    {
+      "question_id": "pfa-q10",
+      "objective": "Identify signs of stress in yourself and choose realistic actions to look after yourself and your colleagues, including when to talk to a supervisor or a health professional.",
+      "prompt": "More than a month after returning from field work, a helper still has upsetting memories of what she saw, sleeps badly and feels extremely sad. What is the right next step?",
+      "options": [
+        {
+          "option_id": "a",
+          "text": "Get support from someone she trusts and see a health professional or, where available, a mental health specialist.",
+          "rationale": "Correct. When these difficulties last more than a month, professional help is advised."
+        },
+        {
+          "option_id": "b",
+          "text": "Wait a few more months because it will pass by itself.",
+          "rationale": "Not this one. Difficulties lasting more than a month are a reason to seek professional help now."
+        },
+        {
+          "option_id": "c",
+          "text": "Drink alcohol in the evening to help her sleep.",
+          "rationale": "Not this one. Heavy alcohol use is itself a warning sign and makes things worse."
+        },
+        {
+          "option_id": "d",
+          "text": "Hide it from her supervisor so that she does not look weak.",
+          "rationale": "Not this one. Talking with a supervisor or trusted colleague is part of recovery."
+        }
+      ],
+      "correct_option_id": "a",
+      "source_ids": [
+        "who-pfa-2011"
+      ]
+    }
+  ],
+  "completion_policy": {
+    "mode": "formative_trial",
+    "required_lesson_ids": [
+      "pfa-01",
+      "pfa-02",
+      "pfa-03",
+      "pfa-04",
+      "pfa-05"
+    ],
+    "pass_percent": null
+  },
+  "job_aids": [
+    {
+      "aid_id": "pfa-pocket-steps",
+      "title": "PFA pocket steps",
+      "body": "Prepare: what happened and who is affected; which services exist and how to reach them; is it safe. Look: safety first and never enter an unsafe site; life-threatening injuries go to medical staff; notice very distressed people, children (especially if alone), older people, people with disabilities or health conditions, and anyone at risk of discrimination or violence. Get help immediately for anyone badly injured, anyone too upset to care for themselves or their children, and anyone who may hurt themselves or others; do not leave them alone, and stay involved until a health worker, your supervisor or another responsible person takes over. Listen: say your name and organisation; ask how you can help; offer water and a quieter place; ask what they need; stay close, allow silence, never press for the story; calm voice, feet on the ground, slow breathing. Link: basic needs, information (say only what you know and where it comes from), loved ones, and services through your organisation's referral list or the MHPSS Nepal Referral Directory; a child on their own stays with an adult helper while you link with child protection; share only what is needed, with consent unless someone is in danger now. End well: explain you are leaving, introduce who takes over, make sure they can follow up. Look after yourself: rest, reasonable hours, check in with a colleague, talk to your supervisor. PFA is not counselling and not debriefing. Referral: your organisation's list, or the MHPSS Nepal Referral Directory; check that a service is open before referring; never delay emergency help while looking for a contact. Revision 0.3.1 (usability trial; not for field practice).",
+      "source_ids": [
+        "who-pfa-2011",
+        "iasc-msp",
+        "mhpss-nepal-referral-directory"
+      ]
+    }
+  ],
+  "open_questions": []
+}
