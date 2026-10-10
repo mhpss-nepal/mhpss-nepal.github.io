@@ -1,0 +1,28 @@
+# Broker review corrections — bounded offline candidate
+
+No live GitHub, Pages, credential, Luna or clinical-content operations were performed. Independent review of the final manifested candidate and separately authorized provider commissioning remain gates.
+
+## Authority decision
+
+Local JSON, content-addressed blobs and their checksums are **caches**, not approval authorities. No new secret or self-signed receipt is introduced.
+
+- **B1:** each publish resume derives the full candidate again using the verified signed input package and pinned registry snapshot over the immutable provider base commit. It reruns importer/schema/catalogue/marker checks. Only phase/head/PR/merged/status reconciliation cursors survive; content, changes, readback, branch, manifest and policy fields are regenerated. A history retry also regenerates and validates the protected merge before readback. Already-created feature commits must match the reconstructed scoped content and immutable base's unrelated assets before further mutations.
+- **B2:** rollback resolves the prior protected PR and its actual `merge_commit_sha`, fetches the complete immutable merge and feature-head trees, checks their scoped equality and reconstructs the PR-body manifest identity from those bytes plus a freshly signature-verified receipt. It validates the exact marker, receipt modules and full catalogue/schema/hashes, including retained modules. Retained bytes inherit institution-trusted protected-main provenance; they are not newly represented as signed by the current package receipt. State-only hash recomputation cannot replace that provider tree. The original prior PR/merge identity remains the authority after rollback; the failed receipt on the rollback PR does not become the prior receipt's proof. Resume also rederives the failed publish and verifies its merged PR and rollback-base scoped bytes.
+- **B3:** durable records contain a bounded manifest of SHA-256 blob IDs; binary content is fsynced separately before atomically publishing its JSON envelope. `read_json` hydrates blobs for existing callers/tests, checks each digest/size and refuses symlink data. Blob digests establish cache integrity only; B1/B2 establish authority independently.
+- **B4:** registry raw bytes are captured once, hashed against the independently protected policy pin and used for every signature/importer/rollback authorization. The source pin is rechecked before authorization; replacing a registry file cannot introduce a new key mid-run. Rotation requires explicit institutional policy/environment pin rotation and a new broker instance.
+- **W1:** required checks retain App ID bindings. A same-named wrong-App check or legacy status cannot satisfy an App-bound requirement. GitHub remains the final merge enforcement authority; this is not a claim that its protection was bypassed.
+- **W2:** inspect the original path and all lexical parents before resolution, refuse state descendants that are links, and enforce canonical disjointness against checkout and package/approval/registry boundaries. Import preparation also refuses original source/candidate/input links. Trusted private mount ownership remains required: these checks are not protection against an adversary concurrently replacing directory entries between individual filesystem syscalls.
+
+## Supported bounds and failure behavior
+
+Existing provider bounds remain: complete nontruncated tree <=10,000 entries, blob <=8 MiB, site <=64 MiB. Existing importer bounds remain: compressed package <=8 MiB, expanded <=4 MiB, individual archive entry <=512 KiB, generic JSON <=1 MiB.
+
+Broker scoped content is bounded to 32 MiB; receipt <=64 KiB, stable-asset scope <=256 paths and readback paths <=1024 characters. Publish envelope <=128 KiB reserves space below the 1 MiB durable JSON reader for nested failed/prior rollback records. Each content-addressed artifact <=8 MiB; hydrated state total <=256 MiB. Every state write validates its envelope before writing artifacts; unsupported publish manifests fail before provider mutations. Disk exhaustion or corruption fails closed; no automatic blob garbage collection is introduced. Preserve the entire state directory and blobs together. Oversized legacy inline state is not automatically migrated; manual reconciliation against provider proof is required.
+
+Near-bound regression uses two valid retained modules below 512 KiB each, including restart/idempotent retry and interrupted rollback reconciliation. This is not an exhaustive 32 MiB stress test. A distinct squash-merge-SHA fixture exercises prior authority without assuming head equals merge; original fixtures still simplify real GitHub behavior. Real App checks, provider merge semantics, HTTPS hosting and operational recovery remain unexercised.
+
+## Evidence interpretation
+
+Raw RED/GREEN logs, full suite, validator and original unchanged adversarial runner are under `tests/learning-release/evidence/broker-hardening/`. Original test and runner hashes are compared with the read-only independent review snapshot.
+
+The original adversarial runner cannot report a passing verdict for correct rejection at two seams: its symlink probe unconditionally returns false on normal return, and both that probe and registry-replacement probe let the expected `ReleaseError` escape into their generic `harness_error` handler. Preserve and report the actual raw failures; do not modify original assertions or relabel that verdict green. New failing-first regression tests expressly assert these rejections and zero provider calls. Independent rereview must interpret these explicit rejection results or supply its own corrected exception contract.

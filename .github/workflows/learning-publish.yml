@@ -1,0 +1,65 @@
+name: learning-publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_name:
+        description: Reviewed repository package name
+        required: true
+        type: string
+      package_sha256:
+        description: Exact reviewed ZIP SHA-256
+        required: true
+        type: string
+      execute_deployment:
+        description: Authorize protected content PR and existing legacy Pages publication
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: learning-production-broker
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main' && inputs.execute_deployment
+    # Dedicated institution-managed runner with private persistent state mount.
+    # Do not run untrusted PR jobs on this runner or use disposable hosted state.
+    runs-on: [self-hosted, learning-release-broker]
+    timeout-minutes: 45
+    environment: learning-release-authorization
+    permissions:
+      contents: write
+      pull-requests: write
+      pages: write
+      checks: read
+      statuses: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Single approved-content action - import, protected PR, Pages, exact readback
+        env:
+          TMPDIR: ${{ runner.temp }}
+          GH_TOKEN: ${{ secrets.LEARNING_BROKER_TOKEN }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          LEARNING_PACKAGE: ${{ inputs.package_name }}
+          LEARNING_PACKAGE_SHA256: ${{ inputs.package_sha256 }}
+          LEARNING_EXECUTE_DEPLOYMENT: ${{ inputs.execute_deployment }}
+          LEARNING_REGISTRY_SHA256: ${{ vars.LEARNING_REGISTRY_SHA256 }}
+          LEARNING_PROVIDER_POLICY_SHA256: ${{ vars.LEARNING_PROVIDER_POLICY_SHA256 }}
+          LEARNING_BROKER_STATE_ROOT: ${{ vars.LEARNING_BROKER_STATE_ROOT }}
+        run: python3 tools/learning-release/publish_dispatch.py
+
+# No hosting configuration writes, direct/force main writes, or credential-bearing PR jobs.
+# Environment secret is a commissioned fine-grained App installation token (or externally
+# refreshed short-lived token) with Contents + Pull requests + Pages write,
+# Checks + Commit statuses + Administration read; no Administration write.
+# Unlike GITHUB_TOKEN it must permit PR-triggered check workflows; no rule-bypass authority.
+# gh owns token transport. Persist pending/last-good state even if this job fails.

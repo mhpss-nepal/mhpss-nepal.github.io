@@ -1,0 +1,1 @@
+Vendored `validate_content.py` and `module.template.json` from shared-foundation, schema v1. Draft validator remains draft-only; signed release authorization is separate. Synthetic fixture derived from template and contains interface navigation only, no clinical instruction.
