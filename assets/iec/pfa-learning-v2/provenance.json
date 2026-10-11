@@ -1,0 +1,36 @@
+{
+  "version": "pfa-learning-v2",
+  "content_sha256": "632ba399952e424e4c4d5bb37f164b48c432bb14c7dcc4be8ffd7ceda1d39a71",
+  "asset": {
+    "file": "preparation-landslide.webp",
+    "sha256": "3952ec1ff6ff679bd1015b0c9f7376546308c63087ea0ac33b6f07df588a47ec",
+    "cast_ids": [
+      "E",
+      "F"
+    ],
+    "model": "cx/gpt-image-2.5",
+    "provider": "panji-9router",
+    "source_references": [
+      {
+        "file": "../pfa-learning-v1/pause-and-look.webp",
+        "sha256": "6a6ed0069e4f292e0ae3320c36cef60a1af9548ec6423dcee30f716d85afc06c",
+        "controls": "E/F identity and wardrobe; existing Nepal style"
+      },
+      {
+        "file": "../pfa-learning-v1/companionship.webp",
+        "sha256": "bdfdedc02ba77efdc37e12d02d2cf460d006bfb27c9e1f61818f55804fed8191",
+        "controls": "E identity and wardrobe confirmation"
+      }
+    ],
+    "purpose": "Preparation and route-disruption context only. Not the triage worked example or a demonstration of the correct answer.",
+    "limits": [
+      "Background separation is visible, but actual site safety is not established.",
+      "Route discussion is visible; exact predeparture timing and village isolation remain story context.",
+      "Does not depict full prepare checklist or any triage example.",
+      "Generated reference continuity remains approximate, not a frozen production anchor."
+    ],
+    "identity_status": "Existing E/F cast reference-guided draft; approximate continuity, not a frozen production anchor."
+  },
+  "disclosure": "AI-generated fictional illustration studies under Adib Asrori creative direction; Myanmar/Syria commissioned-illustration visual DNA adapted for Nepal. English usability trial only; not culturally validated, field guidance, certification, or institutional endorsement. No logos.",
+  "review_scope": "English learning/usability trial; contextual placement checked, not human cultural validation or institutional endorsement."
+}

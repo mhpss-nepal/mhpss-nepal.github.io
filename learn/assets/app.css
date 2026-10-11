@@ -47,7 +47,27 @@ body.learning-active #trial-boundary,body.learning-active #locale-review,body.le
 #reader-root .step-rail{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 0;border-block:1px solid var(--line);font-size:17px}
 #reader-root .step-rail p{flex:1 1 220px;margin:0}
 #reader-root .step-rail select{max-width:100%;min-width:0;flex:1 1 260px;width:260px}
-#reader-root .decision-grid{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,1.3fr);gap:28px;align-items:start}
+#reader-root .decision-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:28px;align-items:start;max-width:65ch}
+#reader-root .decision-grid:has(.learning-scene){grid-template-columns:minmax(180px,.7fr) minmax(0,1.3fr)}
+#reader-root .activity-task{font-weight:700;margin-bottom:20px}
+#reader-root .model-sequence,#reader-root .action-checklist{padding-left:30px;max-width:65ch}
+#reader-root .model-sequence li{padding:14px;margin-block:12px;background:var(--paper);border:1px solid var(--line);border-radius:6px}
+#reader-root .model-cue{display:block;font-size:18px;color:var(--ink);margin-bottom:8px}
+#reader-root .model-sequence p{margin:0}
+@media(max-width:700px){#reader-root .guided-block.activity-model{padding:12px}#reader-root .model-sequence{padding-left:24px}#reader-root .model-sequence li{padding:10px}}
+#reader-root .model-sequence li::marker{color:var(--ink);font-weight:700}
+#reader-root .action-checklist li{padding:10px 12px;margin-block:10px;border-left:4px solid var(--teal);background:var(--wash)}
+#reader-root .source-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+#reader-root .source-comparison section{padding:18px;border-left:5px solid var(--green);background:var(--greenwash)}
+#reader-root .source-comparison .comparison-avoid{border-color:var(--rose);background:var(--rosewash)}
+#reader-root .lesson-goal{font-size:17px;color:var(--muted)}
+#reader-root #quiz-content{font-size:21px;line-height:1.65;max-width:65ch}
+#reader-root .quiz-question{margin-block:28px;padding-block:22px;border-bottom:1px solid var(--line)}
+#reader-root #quiz-result{font-size:23px;font-weight:700;padding:18px;background:var(--tealwash);max-width:65ch}
+#reader-root #quiz-error:not(:empty){padding:16px;border:2px solid var(--rose);background:var(--rosewash)}
+#reader-root #quiz-submit,#reader-root #quiz-retry{margin:12px 12px 12px 0;max-width:100%;white-space:normal}
+#reader-root #quiz-submit{background:#116b69;color:#fff;border-color:#116b69}
+@media(max-width:700px){#reader-root .source-comparison{grid-template-columns:minmax(0,1fr)}#reader-root #quiz-content{font-size:19px}#reader-root .decision-grid:has(.learning-scene){grid-template-columns:minmax(0,1fr)}}
 #reader-root .learning-scene{margin:0;min-width:0;background:#fff;color:#183744;border:1px solid var(--line);border-radius:6px;overflow:hidden}
 #reader-root .learning-scene img{display:block;width:100%;height:auto;max-height:410px;object-fit:contain;background:#fff}
 #reader-root .learning-scene figcaption{font-size:17px;line-height:1.5;padding:14px 18px}
@@ -69,6 +89,7 @@ body.learning-active #trial-boundary,body.learning-active #locale-review,body.le
 #reader-root .decision-safety h3,#reader-root .decision-safety h4{font-size:21px;margin:0 0 12px}
 #reader-root .source-details{margin-top:18px;font-size:16px;line-height:1.5}
 #reader-root summary{cursor:pointer;min-height:44px;padding-block:10px;line-height:1.5}
+#reader-root summary:focus-visible{outline:3px solid #d66a00;outline-offset:3px}
 #reader-root .citations{font-size:16px;line-height:1.55}
 #reader-root .citations a,#reader-root .referral-link,#reader-root .media-note a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;max-width:100%;white-space:normal}
 #reader-root .guided-block{max-width:65ch;padding:20px 0}
