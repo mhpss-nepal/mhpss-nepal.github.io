@@ -14,7 +14,7 @@ BAD_TEXT = re.compile(r'<[^>]*>|(?:javascript|data|vbscript)\s*:', re.I)
 BLOCKS = {'text', 'steps', 'example', 'safety', 'reflection', 'job_aid', 'external_resource'}
 
 
-def validate(data):
+def _validate_v1(data):
     errors = []
 
     def check(ok, location, message):
@@ -172,6 +172,44 @@ def validate(data):
     return errors
 
 
+def validate(data, *, mode='draft', asset_root=None, check_assets=False):
+    """Draft contract remains draft/in-review only; release mode checks scenes, not authority."""
+    import importlib.util
+    path = Path(__file__).resolve().with_name('validate_v2.py')
+    spec = importlib.util.spec_from_file_location('learning_contract_v2', path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if mode not in ('draft', 'release') or type(check_assets) is not bool:
+        return ['invalid validation controls']
+    if asset_root is not None and not isinstance(asset_root, (str, Path)):
+        return ['invalid asset root']
+    errors = module.json_safety(data)
+    if errors:
+        return errors
+    try:
+        if type(data) is dict and type(data.get('schema_version')) is int and data['schema_version'] == 2:
+            return module.validate_v2(data, _validate_v1, mode=mode,
+                asset_root=asset_root or Path(__file__).resolve().parents[2] / 'learn/assets/scenes',
+                check_assets=check_assets)
+        return _validate_v1(data)
+    except (TypeError, ValueError, KeyError, IndexError, OverflowError, RecursionError) as exc:
+        return ['$: malformed package: ' + str(exc)]
+
+
+def load_json(path):
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result:
+                raise ValueError('duplicate JSON key: ' + key)
+            result[key] = value
+        return result
+    def constant(value):
+        raise ValueError('non-finite JSON constant: ' + value)
+    return json.loads(Path(path).read_text(), object_pairs_hook=pairs, parse_constant=constant)
+
+
 def self_test():
     sample = json.loads((Path(__file__).resolve().parent / 'module.template.json').read_text())
     assert not validate(sample), validate(sample)
@@ -221,7 +259,7 @@ def main():
     seen = set()
     for path in files:
         try:
-            data = json.loads(path.read_text())
+            data = load_json(path)
             errors = validate(data)
             if type(data) is dict and type(data.get('module_id')) is str:
                 identity = (data['module_id'], data.get('content_version'), data.get('language'))

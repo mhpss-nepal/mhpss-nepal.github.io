@@ -1,5 +1,5 @@
 // NAV-KEYBOARD-01: native Tab, never direct focus on a middle link.
-import {chromium} from '/root/.hermes/outputs/mhpss-learning-architecture/prototype-build/learn-demo/node_modules/playwright/index.mjs';
+import {chromium} from './playwright-helper.mjs';
 import {createServer} from 'node:http';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
@@ -10,7 +10,7 @@ const server=createServer(async(req,res)=>{try{let p=new URL(req.url,'http://loc
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 let browser;const results=[];
 try{
- browser=await chromium.launch({headless:true,executablePath:'/root/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome',args:['--no-sandbox']});
+ browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  for(const font of ['fallback','actual']){
   const context=await browser.newContext({serviceWorkers:'block'});
   if(font==='fallback')await context.route('https://**/*',r=>r.abort());

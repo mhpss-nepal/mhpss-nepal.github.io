@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 import {readFileSync, mkdirSync, writeFileSync} from 'node:fs';
 import {createServer} from 'node:http';
 import {resolve, extname} from 'node:path';
-import {chromium} from '/root/.hermes/outputs/mhpss-learning-architecture/prototype-build/learn-demo/node_modules/playwright/index.mjs';
+import {chromium} from './playwright-helper.mjs';
 const root=resolve(new URL('../',import.meta.url).pathname);
 const course=JSON.parse(readFileSync(root+'/learn/content/modules/pfa/0.3.1/en.json'));
 const evidence=resolve(root,'../implementation-evidence');mkdirSync(evidence,{recursive:true});
-const server=createServer((req,res)=>{let path=resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://local').pathname));if(path.endsWith('/learn'))path+='/';if(path.endsWith('/'))path+='index.html';if(!path.startsWith(root+'/')){res.writeHead(403).end();return;}try{const data=readFileSync(path);res.setHeader('Content-Type',({'.js':'text/javascript','.css':'text/css','.json':'application/json','.html':'text/html','.webp':'image/webp'})[extname(path)]||'application/octet-stream');res.end(data);}catch{res.writeHead(404).end();}});
+const server=createServer((req,res)=>{let path=resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://local').pathname));if(path.endsWith('/learn'))path+='/';if(path.endsWith('/'))path+='index.html';if(!path.startsWith(root+'/')){res.writeHead(403).end();return;}try{// This suite freezes the v1 baseline; actual 0.4.1 has its own real-file suite.
+const data=path.endsWith('/learn/content/catalogue.json')?JSON.stringify({schema_version:1,modules:[{module_id:'pfa',content_version:'0.3.1',language:'en',path:'modules/pfa/0.3.1/en.json',sha256:'632ba399952e424e4c4d5bb37f164b48c432bb14c7dcc4be8ffd7ceda1d39a71'}]}):readFileSync(path);res.setHeader('Content-Type',({'.js':'text/javascript','.css':'text/css','.json':'application/json','.html':'text/html','.webp':'image/webp'})[extname(path)]||'application/octet-stream');res.end(data);}catch{res.writeHead(404).end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}/learn/`;
-const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||'/root/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome'});
+const browser=await chromium.launch({headless:true,});
 process.on('exit',()=>server.close());
 async function page(){const p=await browser.newPage();await p.goto(base+'?view=quiz');await p.waitForSelector('body[data-ready]');return p;}
 try{
