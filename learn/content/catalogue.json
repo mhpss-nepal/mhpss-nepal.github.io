@@ -3,10 +3,10 @@
   "modules": [
     {
       "module_id": "pfa",
-      "content_version": "0.3.1",
+      "content_version": "0.4.1",
       "language": "en",
-      "path": "modules/pfa/0.3.1/en.json",
-      "sha256": "632ba399952e424e4c4d5bb37f164b48c432bb14c7dcc4be8ffd7ceda1d39a71"
+      "path": "modules/pfa/0.4.1/en.json",
+      "sha256": "30955a3cdba96420d3b1e2bae7bb89f82122c6bc6cb916cce80a07ff398732ae"
     }
   ]
 }

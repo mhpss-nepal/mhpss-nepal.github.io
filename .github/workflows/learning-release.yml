@@ -29,6 +29,8 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2; verified upstream tag
         with:
           persist-credentials: false
+      - name: Install pinned image-validation dependency
+        run: python3 -m pip install --disable-pip-version-check -r tools/learning-release/requirements.txt
       - name: Release acceptance and private roleplay
         env:
           TMPDIR: ${{ runner.temp }}
