@@ -156,3 +156,10 @@ p,li,td,legend,figcaption,.option span{max-width:none;hyphens:none;text-align:ju
 
 /* Bibliographic URLs are technical tokens: wrap only when an unbroken URL cannot fit. */
 #reader-root .citations p{word-break:break-word}
+
+/* Couple existing teaching art with its source activity rather than a full-width empty image panel. */
+#reader-root .activity-with-scene{display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,.48fr);gap:24px;align-items:start}
+#reader-root .activity-copy{min-width:0}
+#reader-root .activity-with-scene .learning-scene{width:100%;align-self:start}
+#reader-root .activity-with-scene .learning-scene img{width:100%;height:auto;max-height:none;object-fit:contain}
+@media(max-width:800px){#reader-root .activity-with-scene{display:block}#reader-root .activity-with-scene .learning-scene{width:100%;max-width:360px;margin:20px 0 0}}

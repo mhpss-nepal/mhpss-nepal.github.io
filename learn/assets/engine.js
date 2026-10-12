@@ -195,8 +195,9 @@ function renderActivity(step,index,root){
  else if(activity==='compare'){const marker=index===0?'Do not:':'Unhelpful:',at=step.body.indexOf(marker),grid=el('div',undefined,{class:'source-comparison'});[step.body.slice(0,at).trim(),step.body.slice(at)].forEach((body,i)=>{const box=el('section',undefined,{class:i?'comparison-avoid':'comparison-helpful'});box.append(el('p',body));grid.append(box);});section.append(el('p','Compare these reviewed actions. Notice what the helper does and avoids.',{class:'activity-task'}),grid);}
  else if(activity==='checklist'){section.append(el('p','Follow the reviewed checks and actions. Keep the qualifications with each action.',{class:'activity-task'}));const ol=el('ol',undefined,{class:'action-checklist'});const chunks=step.body.includes(';')?step.body.match(/[^;]+;?/g):step.body.split(/(?<=[.!?])\s+/);chunks.forEach(chunk=>ol.append(el('li',chunk.trim())));section.append(ol);}
  else{section.append(el('p',step.body));if(activity==='observe'){section.prepend(el('p','Notice the helper actions in this source text. Which could you describe without looking?',{class:'activity-task'}));const d=el('details',undefined,{class:'rehearsal'});d.append(el('summary','Private recall and comparison'),el('p','Look away and think through the actions. Then compare with the source text above. Nothing is recorded or submitted.'));section.append(d);}if(activity==='rehearse')section.append(el('p','Optional: think privately or use your own paper. There is no personal-note entry field. You may skip this step.',{class:'notice'}));}
- const media=SCENE_BINDINGS.steps[step.id];if(media!==undefined)section.append(scene(media));
- if(step.block.source_ids.includes('mhpss-nepal-referral-directory'))referralLink(section);section.append(sourceDetails(step.block.source_ids));root.append(section);
+ const media=SCENE_BINDINGS.steps[step.id];
+ if(step.block.source_ids.includes('mhpss-nepal-referral-directory'))referralLink(section);section.append(sourceDetails(step.block.source_ids));
+ if(media!==undefined){const copy=el('div',undefined,{class:'activity-copy'});while(section.firstChild)copy.append(section.firstChild);section.classList.add('activity-with-scene');section.append(copy,scene(media));}root.append(section);
 }
 function decisionSafety(q,index){
  const l=C.lessons[index],ids=[],bodies=[];
