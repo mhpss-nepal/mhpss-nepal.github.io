@@ -10,7 +10,7 @@ else {try {playwright=require('playwright');} catch(error) {
 }}
 export async function clickCourseControl(page,selector){
  const control=page.locator(selector);
- if(!await control.isVisible())await page.locator('.course-details > summary').click();
+ if(!await control.isVisible())await page.locator(selector.includes('data-lesson')?'#lesson-menu > summary':'.course-details > summary').click();
  await control.click();
 }
 const native=playwright.chromium;

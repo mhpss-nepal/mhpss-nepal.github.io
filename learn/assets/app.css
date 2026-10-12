@@ -115,7 +115,7 @@ body.learning-active #trial-boundary,body.learning-active #locale-review,body.le
 #reader-root .rehearsal{margin:22px 0;padding:16px 20px;background:var(--wash);border:1px solid var(--line)}
 #reader-root .step-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;margin:24px 0}
 #reader-root .step-controls button{white-space:normal;text-align:left;max-width:100%;line-height:1.5}
-#reader-root #step-next,#reader-root #next-lesson,#reader-root #mark-read{background:#116b69;color:#fff;border-color:#116b69}
+#reader-root .primary-forward{background:#116b69;color:#fff;border-color:#116b69}
 #reader-root #learning-tools{border-top:1px solid var(--line);margin-top:24px;padding-top:14px}
 #reader-root #learning-tools>summary{font-size:18px}
 #reader-root #learning-tools .settings label{min-height:44px;display:flex;align-items:center;gap:12px;cursor:pointer}
@@ -135,6 +135,17 @@ body.learning-active #trial-boundary,body.learning-active #locale-review,body.le
  #reader-root .lesson-objective{font-size:17px}
  #reader-root .step-controls button{flex:1 1 160px}
 }
+
+/* Compact course navigation stays available while reading long activities. */
+#reader-root .course-position{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--line);padding:6px 0;font-size:16px;line-height:1.3;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px}
+#reader-root .course-position strong,#reader-root .course-position>span{grid-column:1;overflow-wrap:break-word}
+#reader-root #lesson-menu{grid-column:2;grid-row:1 / 4;align-self:center}
+#reader-root #lesson-menu>summary{min-height:44px;padding:10px 8px}
+#reader-root #lesson-menu[open]{grid-column:1 / -1;grid-row:4}
+#reader-root #lesson-menu .guided-lessons{margin:4px 0 8px}
+#reader-root .course-details>summary{font-size:16px}
+#reader-root #mark-read{background:var(--paper);color:var(--ink);border-color:var(--line)}
+#reader-root .course-position #lesson-menu[open] .guided-lessons{max-height:45vh;overflow:auto;padding:4px}
 
 /* Adib paragraph contract: running text uses its full container, without a measure. */
 p,li,td,legend,figcaption,.option span{max-width:none;hyphens:none;text-align:justify;overflow-wrap:normal;word-break:normal}

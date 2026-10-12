@@ -44,7 +44,7 @@ try{
    }
    const recap=await p.locator('#course-content').innerText();
    for(const [i,b] of l.blocks.entries())if(b.type==='safety'||b.body.startsWith('Key points.'))assert.ok(recap.includes(b.body));else assert.ok(seen.has(i),`${l.lesson_id} source block ${i} retained`);
-   await p.locator('#mark-read').click();assert.match(await p.locator(`[data-lesson="${l.lesson_id}"]`).innerText(),/read/);
+   await p.locator('#mark-read').click();await p.locator('#lesson-menu > summary').click();assert.match(await p.locator(`[data-lesson="${l.lesson_id}"]`).innerText(),/read/);
   }
   await clickCourseControl(p,'[data-lesson="pfa-03"]');assert.equal(await p.locator('#skill-loop-phases').count(),1);
   for(const [phase,type] of [['1','scene_tap'],['0','contrast_pair'],['4','buddy_practice']]){await p.locator('#skill-loop-phases').selectOption(phase);assert.equal(await p.locator(`[data-block="${type}"]`).count(),1);}

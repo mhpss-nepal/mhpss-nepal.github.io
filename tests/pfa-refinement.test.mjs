@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync, mkdirSync, writeFileSync} from 'node:fs';
 import {createServer} from 'node:http';
 import {resolve, extname} from 'node:path';
-import {chromium} from './playwright-helper.mjs';
+import {chromium,clickCourseControl} from './playwright-helper.mjs';
 const root=resolve(new URL('../',import.meta.url).pathname);
 const course=JSON.parse(readFileSync(root+'/learn/content/modules/pfa/0.3.1/en.json'));
 const evidence=resolve(root,'../implementation-evidence');mkdirSync(evidence,{recursive:true});
@@ -37,7 +37,7 @@ await test('dedicated quiz scores only a complete independent attempt, invalidat
 await test('all five lessons teach a reviewed model and varied source activities with atomic consent and complete reading',async()=>{
  const p=await page();await p.locator('#quiz-return').click();
  for(const [i,l] of course.lessons.entries()){
-  await p.locator(`[data-lesson="${l.lesson_id}"]`).click();
+  await clickCourseControl(p,`[data-lesson="${l.lesson_id}"]`);
   assert.equal(await p.locator('.decision-grid img').count(),i===1?1:0,'only reviewed preparation context is bound to its question');
   if(i===1){assert.match(await p.locator('.decision-grid img').getAttribute('src'),/pfa-learning-v2\/preparation-landslide\.webp$/);await p.waitForFunction(()=>document.querySelector('.decision-grid img').complete&&document.querySelector('.decision-grid img').naturalWidth>0);}
   await p.locator('#step-next').click();assert.equal(await p.locator('[data-activity="model"]').count(),1);
@@ -49,26 +49,26 @@ await test('all five lessons teach a reviewed model and varied source activities
   if(i===3){const consent=options.find(o=>o.text.includes('Consent and confidentiality'));await p.locator('#step-picker').selectOption(consent.value);assert.equal(await p.locator('[data-source-block="6"]').innerText().then(t=>t.includes(l.blocks[6].body)),true);assert.equal(options.filter(o=>o.text.includes('Consent and confidentiality')).length,1);}
   await p.locator('#step-picker').selectOption(options.at(-1).value);assert.equal(await p.locator('[data-activity="recap"]').count(),1);for(const b of l.blocks.filter(b=>b.type==='safety'))assert.ok((await p.locator('#course-content').innerText()).includes(b.body));
  }
- await p.locator('#full-reference').click();let count=0;for(const l of course.lessons){await p.locator(`[data-lesson="${l.lesson_id}"]`).click();const blocks=await p.locator('[data-block]').allInnerTexts();assert.equal(blocks.length,l.blocks.length);for(const b of l.blocks)assert.ok(blocks.some(t=>t.includes(b.body)));count+=blocks.length;}assert.equal(count,49);
+ await clickCourseControl(p,'#full-reference');let count=0;for(const l of course.lessons){await clickCourseControl(p,`[data-lesson="${l.lesson_id}"]`);const blocks=await p.locator('[data-block]').allInnerTexts();assert.equal(blocks.length,l.blocks.length);for(const b of l.blocks)assert.ok(blocks.some(t=>t.includes(b.body)));count+=blocks.length;}assert.equal(count,49);
  await p.close();
 });
 await test('quiz entry and retry preserve opted-in course practice while catalogue navigation exits quiz route',async()=>{
  const p=await page();await p.locator('#quiz-return').click();await p.locator('#learning-tools > summary').click();await p.locator('#save-progress').check();const q=course.questions[0];await p.locator(`input[name="${q.question_id}"][value="${q.correct_option_id}"]`).check();await p.locator('[data-check]').click();const before=await p.evaluate(()=>JSON.stringify(localStorage));
- await p.locator('#quiz-entry').click();assert.equal(await p.locator('#quiz-content input:checked').count(),0);assert.equal(await p.locator('[data-rationale]').count(),0);await p.locator('#quiz-retry').click();assert.equal(await p.evaluate(()=>JSON.stringify(localStorage)),before);await p.locator('#quiz-return').click();assert.equal(await p.locator('input:checked').first().inputValue(),q.correct_option_id);assert.ok(await p.locator('[data-rationale]').count()>0);
- await p.locator('#quiz-entry').click();await p.locator('.nav a[href="#catalogue"]').click();assert.equal(new URL(p.url()).searchParams.has('view'),false);await p.reload();await p.waitForSelector('body[data-ready]');assert.equal(await p.locator('#quiz-submit').count(),0);await p.close();
+ await clickCourseControl(p,'#quiz-entry');assert.equal(await p.locator('#quiz-content input:checked').count(),0);assert.equal(await p.locator('[data-rationale]').count(),0);await p.locator('#quiz-retry').click();assert.equal(await p.evaluate(()=>JSON.stringify(localStorage)),before);await p.locator('#quiz-return').click();assert.equal(await p.locator('input:checked').first().inputValue(),q.correct_option_id);assert.ok(await p.locator('[data-rationale]').count()>0);
+ await clickCourseControl(p,'#quiz-entry');await p.locator('.nav a[href="#catalogue"]').click();assert.equal(new URL(p.url()).searchParams.has('view'),false);await p.reload();await p.waitForSelector('body[data-ready]');assert.equal(await p.locator('#quiz-submit').count(),0);await p.close();
 });
 await test('phone and desktop journey has readable activities, real Tab navigation, theme and locale support',async()=>{
  const measurements=[];
  for(const width of [320,390,1280])for(const theme of ['light','dark']){
   const p=await page();await p.setViewportSize({width,height:900});await p.evaluate(t=>document.documentElement.dataset.theme=t,theme);await p.locator('#quiz-return').click();
   for(const [li,l] of course.lessons.entries()){
-   await p.locator(`[data-lesson="${l.lesson_id}"]`).click();
+   await clickCourseControl(p,`[data-lesson="${l.lesson_id}"]`);
    const positions=await p.locator('#step-picker option').evaluateAll(es=>es.map(e=>e.value));
    for(const position of positions){await p.locator('#step-picker').selectOption(position);const measure=await p.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,font:parseFloat(getComputedStyle(document.querySelector('#course-content')).fontSize),step:document.querySelector('#step-title').textContent,colors:[...document.querySelectorAll('.model-cue,.model-sequence p,.source-comparison p,.action-checklist li,.activity-task')].map(e=>{let b=e;while(b.parentElement&&getComputedStyle(b).backgroundColor==='rgba(0, 0, 0, 0)')b=b.parentElement;return {text:getComputedStyle(e).color,background:getComputedStyle(b).backgroundColor};})}));assert.equal(measure.scroll,width,`${width} ${theme} ${l.lesson_id} ${position}`);assert.equal(measure.font,width<=700?19:21);measurements.push({...measure,theme,lesson:l.lesson_id});}
   }
-  await p.locator('[data-lesson="pfa-03"]').click();
+  await clickCourseControl(p,'[data-lesson="pfa-03"]');
   for(const [name,pos] of [['question','0'],['model','1'],['recap',String(await p.locator('#step-picker option').count()-1)]]){await p.locator('#step-picker').selectOption(pos);await p.locator('#step-title').scrollIntoViewIfNeeded();await p.screenshot({path:`${evidence}/${name}-${width}-${theme}.png`,fullPage:true});}
-  await p.locator('#quiz-entry').click();await p.locator('#quiz-submit').click();assert.equal(await p.evaluate(()=>document.activeElement.name),'pfa-q01');await p.keyboard.press('Tab');assert.ok(await p.evaluate(()=>document.activeElement.getBoundingClientRect().width>0));
+  await clickCourseControl(p,'#quiz-entry');await p.locator('#quiz-submit').click();assert.equal(await p.evaluate(()=>document.activeElement.name),'pfa-q01');await p.keyboard.press('Tab');assert.ok(await p.evaluate(()=>document.activeElement.getBoundingClientRect().width>0));
   await p.locator('#locale').selectOption('ne');assert.equal(await p.locator('#quiz-content').getAttribute('lang'),'en');assert.match(await p.locator('#reader-root').innerText(),/Reviewed Nepali course content is not available/);
   await p.locator('#locale').selectOption('en');await p.locator('#quiz-return').click();await p.locator('#step-picker').selectOption('1');await p.locator('#step-title').focus();const focused=[];for(let i=0;i<8;i++){await p.keyboard.press('Tab');focused.push(await p.evaluate(()=>({tag:document.activeElement.tagName,text:document.activeElement.textContent.slice(0,80),outline:getComputedStyle(document.activeElement).outlineStyle})));}assert.ok(focused.some(f=>f.tag==='SUMMARY'));assert.ok(focused.filter(f=>f.tag!=='BODY').every(f=>f.outline!=='none'),JSON.stringify(focused));await p.close();
  }
