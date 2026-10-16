@@ -44,6 +44,20 @@ aside{position:sticky;top:16px}
 .panel .alt{padding:10px 16px;font-size:12.5px;border-top:1px solid var(--line);color:var(--muted)}
 .jump{display:none}
 footer{border-top:1px solid var(--line);padding:18px 0 30px;font-size:12.5px;color:var(--muted)}
+
+.pipe{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px 20px 22px}
+.pipe h2{margin:0 0 4px;font-size:21px;color:var(--navy)}
+.pipe .lede{margin:0 0 16px;color:var(--muted);font-size:14.5px}
+.groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grp{background:var(--bg);border-radius:10px;padding:14px 16px;border-top:4px solid var(--blue)}
+.grp.joint{border-top-color:var(--orange)}
+.grp h3{margin:0 0 8px;font-size:15px;color:var(--navy)}
+.grp ul{margin:0;padding-left:18px;font-size:14px}
+.grp li{margin:3px 0}
+.grp li small{color:var(--muted)}
+.cta{margin-top:16px;background:var(--sky);border-radius:10px;padding:14px 16px;font-size:14.5px}
+.cta b{color:var(--navy)}
+@media (max-width:640px){.groups{grid-template-columns:1fr}}
 /* lightbox */
 .lb{position:fixed;inset:0;background:rgba(10,20,30,.92);display:none;z-index:50}
 .lb.open{display:block}
@@ -120,6 +134,36 @@ footer{border-top:1px solid var(--line);padding:18px 0 30px;font-size:12.5px;col
         </div>
         <div class="ask"><b>Feedback:</b> questions on Material 4 in the form.</div>
       </article>
+
+      <section class="pipe" id="pipeline">
+        <h2>What else is in the pipeline</h2>
+        <p class="lede">Beyond the four samples above, these topics are planned. Tell us in the form which ones your organisation needs most, and what else your teams see a need for in the field.</p>
+        <div class="groups">
+          <div class="grp"><h3>For communities</h3><ul>
+            <li>Common reactions and practical coping <small>(sample 1)</small></li>
+            <li>Difficult nights: sleep and fear</li>
+            <li>Returning home <small>(samples 2 and 3)</small></li>
+            <li>Grief and mourning, for families <small>(later, with the grief task force)</small></li>
+          </ul></div>
+          <div class="grp"><h3>For frontline workers</h3><ul>
+            <li>Psychological first aid pocket card</li>
+            <li>Supporting people who are grieving <small>(sample 4)</small></li>
+            <li>When and where to refer</li>
+            <li>Safe MHPSS practice in holding centres</li>
+          </ul></div>
+          <div class="grp"><h3>For partners and supervisors</h3><ul>
+            <li>MHPSS service layers and roles</li>
+            <li>Care for caregivers</li>
+            <li>Reporting: counting people and contacts</li>
+          </ul></div>
+          <div class="grp joint"><h3>To develop together with partners</h3><ul>
+            <li>Supporting students after the floods, for teachers</li>
+            <li>Talking with children about loss, for parents and caregivers</li>
+            <li>Survivor-centred GBV and MHPSS referral card</li>
+          </ul></div>
+        </div>
+        <div class="cta"><b>Your turn:</b> in the form, choose the topics your organisation needs most, and describe any other IEC need you see on the ground: who it is for, and the language or format that would work best.</div>
+      </section>
 
     </main>
 
