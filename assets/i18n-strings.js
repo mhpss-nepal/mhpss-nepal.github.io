@@ -694,6 +694,12 @@ window.I18N_STRINGS = {
   },
 
   en: {
+    "res.pub.leichner.by": "Leichner, Akhtar, Nic a Bhaird and others — Global Mental Health, 2021",
+    "res.tool.cmc.by": "Centre for Mental Health and Counselling – Nepal (CMC-Nepal) and CBM — no date printed; hosted on MHPSS.net",
+    "res.tool.dwmne.by": "World Health Organization, 2020 — Nepali translation by the United Nations Division of Healthcare Management and Occupational Safety and Health, 2024",
+    "res.np.tpo.by": "Psychosocial Support Working Group, Protection Cluster Nepal — published by TPO Nepal with support from UNICEF Nepal, 2077 BS; hosted on MHPSS.net",
+    "res.mhn.group.by": "MHPSS.net — the group for this response, where further material is shared",
+    "res.mhn.kit.by": "MHPSS.net, 14 September 2026 — the briefing kit for this response",
     "iec.src": "<b>Source</b> — राष्ट्रिय स्वास्थ्य शिक्षा, सूचना तथा सञ्चार केन्द्र / National Health Education, Information and Communication Centre, Ministry of Health and Food Safety, Government of Nepal, as printed on each material; shared for distribution in the flood response. The files are the Centre’s own, with their content unchanged. The 1166 hotline image carries the Ministry’s earlier name, स्वास्थ्य तथा जनसंख्या मन्त्रालय.",
     "iec.workers.print": "Flex banner (100 × 50 cm)",
     "iec.workers.for": "Health workers",

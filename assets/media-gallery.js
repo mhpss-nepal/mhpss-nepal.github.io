@@ -85,7 +85,7 @@
      the journal articles are articles; the rest are pages to read. */
   function formatOf(it) {
     if (/\.pdf(\?|#|$)/i.test(it.href)) return "pdf";
-    if (/pubmed|biomedcentral|ijmhs|ncbi/i.test(it.href)) return "article";
+    if (/pubmed|biomedcentral|ijmhs|ncbi|cambridge\.org\/core/i.test(it.href)) return "article";
     return "web";
   }
 
