@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>IEC Draft Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16222E;--muted:#5B6B7A;--navy:#0B3C5D;--blue:#0B6E9F;--sky:#E6F2FA;--line:#D9E2EA;--paper:#FFFFFF;--bg:#F4F7FA;--orange:#D9822B;--amber:#FFF4E5}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+a{color:var(--blue)}
+p,.notice,.ask,.panel-head p,footer{text-align:justify;hyphens:none;-webkit-hyphens:none}
+header{background:var(--navy);color:#fff;padding:22px 16px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 16px}
+header .kick{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#BFE3F5}
+header h1{margin:6px 0 4px;font-size:clamp(22px,3vw,30px);line-height:1.2}
+header p{margin:0;color:#DCE8F1;font-size:15px}
+.notice{background:var(--amber);border-left:5px solid var(--orange);border-radius:10px;padding:14px 18px;margin:20px 0;font-size:14.5px}
+.notice b{color:#8A4B0F}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:28px;align-items:start;padding-bottom:40px}
+.gallery{display:flex;flex-direction:column;gap:28px}
+.item{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.item-head{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border-bottom:1px solid var(--line)}
+.num{flex:0 0 36px;height:36px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;display:grid;place-items:center}
+.item-head h2{margin:0;font-size:19px;color:var(--navy)}
+.item-head .meta{font-size:13.5px;color:var(--muted);margin-top:2px}
+.tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.12em;color:#fff;background:var(--orange);border-radius:4px;padding:2px 7px;margin-left:8px;vertical-align:2px}
+.pages{display:grid;gap:12px;padding:14px;background:#EEF3F7}
+.pages.two{grid-template-columns:1fr 1fr}
+figure{margin:0;position:relative}
+figure img{display:block;width:100%;height:auto;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:zoom-in}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;gap:8px}
+.ask{padding:12px 18px 16px;font-size:14px;color:var(--muted)}
+.ask b{color:var(--ink)}
+aside{position:sticky;top:16px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.panel-head{padding:14px 16px;border-bottom:1px solid var(--line)}
+.panel-head h3{margin:0;font-size:17px;color:var(--navy)}
+.panel-head p{margin:4px 0 0;font-size:13px;color:var(--muted)}
+.panel iframe{display:block;width:100%;height:calc(100vh - 150px);min-height:560px;border:0}
+.panel .alt{padding:10px 16px;font-size:12.5px;border-top:1px solid var(--line);color:var(--muted)}
+.jump{display:none}
+footer{border-top:1px solid var(--line);padding:18px 0 30px;font-size:12.5px;color:var(--muted)}
+/* lightbox */
+.lb{position:fixed;inset:0;background:rgba(10,20,30,.92);display:none;z-index:50}
+.lb.open{display:block}
+.lb-bar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;color:#fff;font-size:14px;gap:10px}
+.lb-bar button{background:#fff;color:var(--navy);border:0;border-radius:8px;padding:8px 12px;font:600 14px Inter,system-ui,sans-serif;cursor:pointer}
+.lb-scroll{position:absolute;top:52px;left:0;right:0;bottom:0;overflow:auto;text-align:center;padding:0 10px 20px}
+.lb-scroll img{max-width:100%;height:auto;background:#fff;cursor:zoom-in}
+.lb-scroll.zoom img{max-width:none;width:180%;cursor:zoom-out}
+@media (max-width:1060px){
+  .layout{grid-template-columns:1fr}
+  aside{position:static}
+  .panel iframe{height:900px}
+  .jump{display:inline-block;margin-top:10px;background:#fff;color:var(--navy);font-weight:700;text-decoration:none;border-radius:8px;padding:8px 12px;font-size:14px}
+}
+@media (max-width:640px){ .pages.two{grid-template-columns:1fr} .lb-scroll.zoom img{width:260%} }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="kick">MHPSS partners · Flood response 2026</div>
+    <h1>IEC materials: draft samples for your feedback</h1>
+    <p>Scroll through the four draft samples. Open any page to read it at full size, then share your comments in the feedback form.</p>
+    <a class="jump" href="#feedback">Go to the feedback form ↓</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="notice">
+    <b>Draft samples for review only. Please do not circulate, print or use them yet.</b> These are early drafts for discussion with MHPSS partners, shared after the partners meeting on Friday 16 October 2026. They will be reviewed with the National Health Education, Information and Communication Centre (NHEICC), translated into Nepali and field-tested before any use. Illustrations are AI-assisted, developed under human direction. <b>Please share your feedback by Tuesday 27 October 2026.</b>
+  </div>
+
+  <div class="layout">
+    <main class="gallery">
+
+      <article class="item" id="m1">
+        <div class="item-head"><div class="num">1</div><div>
+          <h2>Common reactions after a disaster <span class="tag">DRAFT</span></h2>
+          <div class="meta">A3 poster · For communities</div></div></div>
+        <div class="pages">
+          <figure><img src="iec-feedback/iec-01-common-reactions-1.jpg" alt="Draft poster: Common reactions after a disaster" loading="lazy" data-title="1. Common reactions after a disaster"><figcaption><span>Poster</span><a href="iec-feedback/iec-01-common-reactions-1.jpg" target="_blank" rel="noopener">Open full size ↗</a></figcaption></figure>
+        </div>
+        <div class="ask"><b>Feedback:</b> questions on Material 1 in the form.</div>
+      </article>
+
+      <article class="item" id="m2">
+        <div class="item-head"><div class="num">2</div><div>
+          <h2>Returning home after the flood <span class="tag">DRAFT</span></h2>
+          <div class="meta">A3 poster · For families returning home</div></div></div>
+        <div class="pages">
+          <figure><img src="iec-feedback/iec-02-returning-home-1.jpg" alt="Draft poster: Returning home after the flood" loading="lazy" data-title="2. Returning home after the flood"><figcaption><span>Poster</span><a href="iec-feedback/iec-02-returning-home-1.jpg" target="_blank" rel="noopener">Open full size ↗</a></figcaption></figure>
+        </div>
+        <div class="ask"><b>Feedback:</b> questions on Material 2 in the form.</div>
+      </article>
+
+      <article class="item" id="m3">
+        <div class="item-head"><div class="num">3</div><div>
+          <h2>Finding your next step after the flood <span class="tag">DRAFT</span></h2>
+          <div class="meta">Two-sided A4 leaflet · For families leaving holding centres</div></div></div>
+        <div class="pages two">
+          <figure><img src="iec-feedback/iec-03-next-step-1.jpg" alt="Draft leaflet, side 1: Finding your next step after the flood" loading="lazy" data-title="3. Finding your next step after the flood · Side 1"><figcaption><span>Side 1</span><a href="iec-feedback/iec-03-next-step-1.jpg" target="_blank" rel="noopener">Open full size ↗</a></figcaption></figure>
+          <figure><img src="iec-feedback/iec-03-next-step-2.jpg" alt="Draft leaflet, side 2: Finding your next step after the flood" loading="lazy" data-title="3. Finding your next step after the flood · Side 2"><figcaption><span>Side 2</span><a href="iec-feedback/iec-03-next-step-2.jpg" target="_blank" rel="noopener">Open full size ↗</a></figcaption></figure>
+        </div>
+        <div class="ask"><b>Feedback:</b> questions on Material 3 in the form.</div>
+      </article>
+
+      <article class="item" id="m4">
+        <div class="item-head"><div class="num">4</div><div>
+          <h2>Supporting someone who is grieving <span class="tag">DRAFT</span></h2>
+          <div class="meta">Two-sided A4 aid · For trained frontline workers</div></div></div>
+        <div class="pages two">
+          <figure><img src="iec-feedback/iec-04-supporting-grief-1.jpg" alt="Draft aid, side 1: Supporting someone who is grieving" loading="lazy" data-title="4. Supporting someone who is grieving · Side 1"><figcaption><span>Side 1</span><a href="iec-feedback/iec-04-supporting-grief-1.jpg" target="_blank" rel="noopener">Open full size ↗</a></figcaption></figure>
+          <figure><img src="iec-feedback/iec-04-supporting-grief-2.jpg" alt="Draft aid, side 2: Supporting someone who is grieving" loading="lazy" data-title="4. Supporting someone who is grieving · Side 2"><figcaption><span>Side 2</span><a href="iec-feedback/iec-04-supporting-grief-2.jpg" target="_blank" rel="noopener">Open full size ↗</a></figcaption></figure>
+        </div>
+        <div class="ask"><b>Feedback:</b> questions on Material 4 in the form.</div>
+      </article>
+
+    </main>
+
+    <aside id="feedback">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Your feedback</h3>
+          <p>About ten minutes. Your answers go only to the review team; other partners do not see them.</p>
+        </div>
+        <iframe src="https://forms.office.com/Pages/ResponsePage.aspx?id=t8AQ9iS9OUuBCz3CgK-1kFAmTG4bFaxIii9FJQgPTJdUQUgyNFRMRFdYRTFJNFBRRlVPWlpNUDZMRi4u&amp;embed=true" title="Feedback form" allowfullscreen></iframe>
+        <div class="alt">If the form does not load, <a href="https://forms.office.com/Pages/ResponsePage.aspx?id=t8AQ9iS9OUuBCz3CgK-1kFAmTG4bFaxIii9FJQgPTJdUQUgyNFRMRFdYRTFJNFBRRlVPWlpNUDZMRi4u" target="_blank" rel="noopener">open it in a new tab ↗</a>.</div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    Draft samples shared for review by MHPSS partners in the Nepal flood response. Not for circulation or use. Questions: <a href="mailto:adib.asrori@who.int">adib.asrori@who.int</a>
+  </footer>
+</div>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Full-size view">
+  <div class="lb-bar"><span id="lbTitle"></span><span><button id="lbZoom">Zoom in</button> <button id="lbClose">Close ✕</button></span></div>
+  <div class="lb-scroll" id="lbScroll"><img id="lbImg" alt=""></div>
+</div>
+
+<script>
+(function(){
+  var lb=document.getElementById('lb'),img=document.getElementById('lbImg'),sc=document.getElementById('lbScroll'),zb=document.getElementById('lbZoom'),tt=document.getElementById('lbTitle');
+  function setZoom(on){sc.classList.toggle('zoom',on);zb.textContent=on?'Fit to screen':'Zoom in';}
+  document.querySelectorAll('.pages img').forEach(function(el){
+    el.addEventListener('click',function(){img.src=el.src;img.alt=el.alt;tt.textContent=el.getAttribute('data-title')||'';setZoom(false);lb.classList.add('open');sc.scrollTop=0;document.body.style.overflow='hidden';});
+  });
+  function close(){lb.classList.remove('open');document.body.style.overflow='';}
+  document.getElementById('lbClose').addEventListener('click',close);
+  zb.addEventListener('click',function(){setZoom(!sc.classList.contains('zoom'));});
+  img.addEventListener('click',function(){setZoom(!sc.classList.contains('zoom'));});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+})();
+</script>
+</body>
+</html>
